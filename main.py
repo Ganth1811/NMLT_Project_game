@@ -13,7 +13,7 @@ pygame.display.set_caption("Alpha 1.0")
 
 
 #* setting the default state
-current_state = gs.TitleMenu()
+current_state = gs.SplashScreen()
 
 #* main game loop
 while True:
