@@ -1,6 +1,6 @@
 import pygame
-import platforms
 from sys import exit
+import platforms
 import gameStates as gs
 from settings import SCREEN_HEIGHT, SCREEN_WIDTH
 
@@ -10,7 +10,7 @@ pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 pygame.display.set_caption("Alpha 1.0")
-
+pygame.display.set_icon(pygame.image.load('img\\Other\\game_icon.png').convert_alpha())
 
 #* setting the default state
 current_state = gs.SplashScreen()

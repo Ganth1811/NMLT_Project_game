@@ -40,7 +40,7 @@ class State(object):
 class SplashScreen(State):
     def __init__(self):
         super(State, self).__init__()
-        self.splash_screen = pygame.image.load("img\Other\splash_screen.png").convert_alpha()
+        self.splash_screen = pygame.image.load("img\\Other\\splash_screen.png").convert_alpha()
         self.fade = False
         self.alpha = 0
         self.bg_music = pygame.mixer_music.load("music\\bgm\\stage_theme.mp3")
@@ -74,7 +74,7 @@ class TitleMenu(State):
     def __init__(self):
         super(State, self).__init__()
         
-        self.background = pygame.image.load("img\Bg\\main_menu_bg.png").convert_alpha()
+        self.background = pygame.image.load("img\\Bg\\main_menu_bg.png").convert_alpha()
         
         # self.bg_music = pygame.mixer_music.load("music\\bgm\\stage_theme.mp3")
         # pygame.mixer_music.play(-1)
@@ -161,9 +161,9 @@ class MainGame(State):
         super(State, self).__init__()
         
         #background and other visual objects
-        self.background = pygame.transform.scale(pygame.image.load("Sunny-land-files\Graphical Assets\environment\Background\Background.jpg").convert_alpha(), (1280, 720))
-        self.ground_surface = pygame.Surface((1280,300));
-        self.ground_surface.fill('darkolivegreen1');
+        self.background = pygame.transform.scale(pygame.image.load("Sunny-land-files\\Graphical Assets\\environment\\Background\\Background.jpg").convert_alpha(), (1280, 720))
+        self.ground_surface = pygame.Surface((1280,300))
+        self.ground_surface.fill('darkolivegreen1')
         
         #background music
         self.bg_music = pygame.mixer_music.load("music\\bgm\\game_bg_music.mp3")
