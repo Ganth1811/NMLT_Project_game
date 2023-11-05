@@ -13,7 +13,7 @@ pygame.display.set_caption("Alpha 1.0")
 
 
 #* setting the default state
-current_state = gs.SplashScreen()
+current_state = gs.TitleMenu()
 
 #* main game loop
 while True:
@@ -28,4 +28,4 @@ while True:
     current_state.update()
     
     pygame.display.update()
-    clock.tick(60)    
+    clock.tick(60)
