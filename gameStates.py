@@ -6,47 +6,11 @@ import sfx
 from player import player
 
 
+
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-def fade_transition(screen, direction, speed=2):
-    # Create a surface to cover the screen
-    cover_surface = pygame.Surface((1280, 720))
-    #cover_surface.fill('black')
 
-    if direction == "in":
-        alpha = 255  # Fully opaque for fade-in
-    else:
-        alpha = 0  # Fully transparent for fade-out
-
-    clock = pygame.time.Clock()
-    running = True
-
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        if direction == "in":
-            alpha -= speed
-            if alpha <= 0:
-                alpha = 0
-        else:
-            alpha += speed
-            if alpha >= 255:
-                alpha = 255
-
-        # Set the alpha value of the cover surface
-        cover_surface.set_alpha(alpha)
-
-        screen.fill('black')  # Fill the screen with the background color
-        screen.blit(cover_surface, (0, 0))  # Blit the cover surface on top
-
-        pygame.display.flip()
-        clock.tick(60)
-
-        if (direction == "in" and alpha == 0) or (direction == "out" and alpha == 255):
-            running = False
 
 class State(object):
     #TODO: initialize general properties of the state class and its subclass 
@@ -74,7 +38,7 @@ class State(object):
 class SplashScreen(State):
     def __init__(self):
         super(State, self).__init__()
-        self.splash_screen = pygame.transform.scale(pygame.image.load("img\Other\splash_screen.png"), (646, 436))
+        self.splash_screen = pygame.image.load("img\\Other\\splash_screen.png").convert_alpha()
         self.fade = False
         self.alpha = 0
         self.bg_music = pygame.mixer_music.load("music\\bgm\\stage_theme.mp3")
@@ -86,20 +50,19 @@ class SplashScreen(State):
         super().processEvent(events)
         if pygame.time.get_ticks() > 6000:
             return TitleMenu()
-    
+
     def render(self):        
         #* Check if the Splash Screen is in the fading procress then fade it in
         if not self.fade:
-            fade_surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
-            fade_surface.fill((0, 0, 0, 255 - self.alpha))
-            screen.blit(fade_surface, (0, 0))
+            fade_transition(self.splash_screen)
+            self.fade = True
             
-        pygame.display.flip()
         
     
     def update(self):
         self.render()
-        self.clock.tick(60)
+        
+        
 
 
 #* The title menu displays the game name and different options player can choose
@@ -107,8 +70,9 @@ class TitleMenu(State):
     def __init__(self):
         super(State, self).__init__()
         
-        self.background = pygame.image.load("img\Bg\\main_menu_bg.png").convert_alpha()
-                
+
+        self.background = pygame.image.load("img\\Bg\\main_menu_bg.png").convert_alpha()
+        
         # self.bg_music = pygame.mixer_music.load("music\\bgm\\stage_theme.mp3")
         # pygame.mixer_music.play(-1)
         
@@ -192,9 +156,9 @@ class MainGame(State):
         super(State, self).__init__()
         
         #background and other visual objects
-        self.background = pygame.transform.scale(pygame.image.load("Sunny-land-files\Graphical Assets\environment\Background\Background.jpg").convert_alpha(), (1280, 720))
-        self.ground_surface = pygame.Surface((1280,300));
-        self.ground_surface.fill('darkolivegreen1');
+        self.background = pygame.transform.scale(pygame.image.load("Sunny-land-files\\Graphical Assets\\environment\\Background\\Background.jpg").convert_alpha(), (1280, 720))
+        self.ground_surface = pygame.Surface((1280,300))
+        self.ground_surface.fill('darkolivegreen1')
         
         #background music
         self.bg_music = pygame.mixer_music.load("music\\bgm\\game_bg_music.mp3")
@@ -215,6 +179,7 @@ class MainGame(State):
     def update(self):
         self.render()
         self.player.update()
+
 
 
 #* I was so tired so I used chatGPT to generate this function ;) so still don't really understand wtf it does 
@@ -248,3 +213,4 @@ def fade_transition(fade_surface, FADE_SPEED = 5, FADE_DELAY = 6000):
         # Exit the loop after the fade-in and fade-out are complete
         if elapsed_time > FADE_DELAY + 255 * FADE_SPEED:
             break
+
