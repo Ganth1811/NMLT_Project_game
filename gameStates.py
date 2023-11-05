@@ -12,31 +12,29 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 
 
-
-
-
-
 class State(object):
-    #* initialize general properties of the state class and its subclass 
+    #TODO: initialize general properties of the state class and its subclass 
     def __init__(self):
         self.screen = screen
         
-    #* processing the events
+    #TODO: processing the events
     def processEvent(self, events):
         for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
     
-    #* render necessary things in the state
+    #TODO: render necessary things in the state
     def render(self):
         pass
     
-    #* update the state, basically mean doing everything in the state
+    #TODO: update the state, basically mean doing everything in the state
     def update(self):
         pass
     
     
+
+#* The splash screen displays the logo of the group for a few seconds then fades out
 class SplashScreen(State):
     def __init__(self):
         super(State, self).__init__()
@@ -52,11 +50,9 @@ class SplashScreen(State):
         super().processEvent(events)
         if pygame.time.get_ticks() > 6000:
             return TitleMenu()
-    
-    def render(self):
-        # screen.fill('White')
-        # screen.blit(self.splash_screen, (640 - 646/2, 360 - 436/2))
-        
+
+    def render(self):        
+        #* Check if the Splash Screen is in the fading procress then fade it in
         if not self.fade:
             fade_transition(self.splash_screen)
             self.fade = True
@@ -64,16 +60,17 @@ class SplashScreen(State):
         
     
     def update(self):
-        
         self.render()
         
         
 
-    
+
+#* The title menu displays the game name and different options player can choose
 class TitleMenu(State):
     def __init__(self):
         super(State, self).__init__()
         
+
         self.background = pygame.image.load("img\\Bg\\main_menu_bg.png").convert_alpha()
         
         # self.bg_music = pygame.mixer_music.load("music\\bgm\\stage_theme.mp3")
@@ -82,7 +79,7 @@ class TitleMenu(State):
         #* initialize the button objects
         self.buttons = self.createButtons()
     
-
+    #TODO: create the buttons and add them to a dictionary
     def createButtons(self):
         new_game_button = bt.new_game_button
         option_button = bt.option_button
@@ -134,8 +131,6 @@ class TitleMenu(State):
         screen.blit(self.background, (0, 0))
         self.buttons["button_group"].update()
         self.buttons["button_group"].draw(screen)
-        
-        
     
     def update(self):    
         self.render()
@@ -187,7 +182,7 @@ class MainGame(State):
 
 
 
-
+#* I was so tired so I used chatGPT to generate this function ;) so still don't really understand wtf it does 
 def fade_transition(fade_surface, FADE_SPEED = 5, FADE_DELAY = 6000):
     start_time = pygame.time.get_ticks()
     while True:
@@ -218,3 +213,4 @@ def fade_transition(fade_surface, FADE_SPEED = 5, FADE_DELAY = 6000):
         # Exit the loop after the fade-in and fade-out are complete
         if elapsed_time > FADE_DELAY + 255 * FADE_SPEED:
             break
+
