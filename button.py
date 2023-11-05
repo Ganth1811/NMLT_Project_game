@@ -17,7 +17,8 @@ class Button(pygame.sprite.Sprite):
         self.position = (x_pos, y_pos)
         self.hovered = False
     
-    #* Draw the button on the screen depending on the state (hover or static)
+    
+    #TODO: Draw the button on the screen depending on the state (hover or static)
     def drawButton(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             self.image = self.hovering_image
@@ -29,20 +30,23 @@ class Button(pygame.sprite.Sprite):
             self.image = self.default_image
             self.hovered = False
         
-    #* check if the button is clicked
+        
+    #TODO: Check if the button is clicked
     def isClicked(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             return 1
         return 0
     
-    #update the surface of the button
+    
+    #TODO: update the surface of the button
     def update(self):
         self.drawButton()
         
         
-            
-new_game_default = pygame.image.load("img\Buttons\\NewGame_default.png").convert_alpha()
-new_game_hover = pygame.image.load("img\Buttons\\NewGame_hover.png").convert_alpha()
+
+#* Creating buttons      
+new_game_default = pygame.image.load("img\\Buttons\\NewGame_default.png").convert_alpha()
+new_game_hover = pygame.image.load("img\\Buttons\\NewGame_hover.png").convert_alpha()
 
 resume_default = pygame.image.load("img\Buttons\\Resume_default.png").convert_alpha()
 resume_hover = pygame.image.load("img\Buttons\\Resume_hover.png").convert_alpha()
@@ -55,7 +59,6 @@ quit_game_hover = pygame.image.load("img\Buttons\\QuitGame_hover.png").convert_a
 
 option_default = pygame.image.load("img\Buttons\\Option_default.png").convert_alpha()
 option_hover = pygame.image.load("img\Buttons\\Option_hover.png").convert_alpha()
-
 
 new_game_button = Button(new_game_default, new_game_hover, 640, 400)
 #high_score_button = Button(high_score_default, high_score_hover, 640, 520)
