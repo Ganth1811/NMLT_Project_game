@@ -5,7 +5,7 @@ import sfx
 pygame.init()
 
 screen = pygame.display.set_mode((st.SCREEN_WIDTH, st.SCREEN_HEIGHT))
-hover_sound = pygame.mixer_music.load("music\\cirno.mp3")
+hover_sound = pygame.mixer_music.load("music\cirno.mp3")
 
 class Button(pygame.sprite.Sprite):
     def __init__(self, default_image, hovering_image, x_pos, y_pos):
@@ -31,7 +31,9 @@ class Button(pygame.sprite.Sprite):
         
     #* check if the button is clicked
     def isClicked(self):
-        return self.hovered
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            return 1
+        return 0
     
     #update the surface of the button
     def update(self):
@@ -39,20 +41,20 @@ class Button(pygame.sprite.Sprite):
         
         
             
-new_game_default = pygame.image.load("img\\Buttons\\NewGame_default.png").convert_alpha()
-new_game_hover = pygame.image.load("img\\Buttons\\NewGame_hover.png").convert_alpha()
+new_game_default = pygame.image.load("img\Buttons\\NewGame_default.png").convert_alpha()
+new_game_hover = pygame.image.load("img\Buttons\\NewGame_hover.png").convert_alpha()
 
-resume_default = pygame.image.load("img\\Buttons\\Resume_default.png").convert_alpha()
-resume_hover = pygame.image.load("img\\Buttons\\Resume_hover.png").convert_alpha()
+resume_default = pygame.image.load("img\Buttons\\Resume_default.png").convert_alpha()
+resume_hover = pygame.image.load("img\Buttons\\Resume_hover.png").convert_alpha()
 
-high_score_default = pygame.image.load("img\\Buttons\\HighScore_default.png").convert_alpha()
-high_score_hover = pygame.image.load("img\\Buttons\\HighScore_hover.png").convert_alpha()
+high_score_default = pygame.image.load("img\Buttons\\HighScore_default.png").convert_alpha()
+high_score_hover = pygame.image.load("img\Buttons\\HighScore_hover.png").convert_alpha()
 
-quit_game_default = pygame.image.load("img\\Buttons\\QuitGame_default.png").convert_alpha()
-quit_game_hover = pygame.image.load("img\\Buttons\\QuitGame_hover.png").convert_alpha()
+quit_game_default = pygame.image.load("img\Buttons\\QuitGame_default.png").convert_alpha()
+quit_game_hover = pygame.image.load("img\Buttons\\QuitGame_hover.png").convert_alpha()
 
-option_default = pygame.image.load("img\\Buttons\\Option_default.png").convert_alpha()
-option_hover = pygame.image.load("img\\Buttons\\Option_hover.png").convert_alpha()
+option_default = pygame.image.load("img\Buttons\\Option_default.png").convert_alpha()
+option_hover = pygame.image.load("img\Buttons\\Option_hover.png").convert_alpha()
 
 
 new_game_button = Button(new_game_default, new_game_hover, 640, 400)
