@@ -42,8 +42,8 @@ class SplashScreen(State):
         self.fade = False
         self.alpha = 0
         self.bg_music = pygame.mixer_music.load("music\\bgm\\stage_theme.mp3")
-        pygame.mixer_music.play(-1)
         self.clock = pygame.time.Clock()
+        pygame.mixer_music.play(-1)
             
     
     def processEvent(self, events):
