@@ -3,7 +3,7 @@ from sys import exit
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 import button as bt
 import sfx
-from player import player
+from player import player, bullets
 
 
 
@@ -164,8 +164,9 @@ class MainGame(State):
         self.bg_music = pygame.mixer_music.load("music\\bgm\\game_bg_music.mp3")
         pygame.mixer_music.play(-1)
         
-        #player
+        #player and bullets
         self.player = player
+        self.bullets = bullets
     
     def processEvent(self, events):
         super().processEvent(events)
@@ -175,10 +176,12 @@ class MainGame(State):
         screen.blit(self.background, (0, 0))
         screen.blit(self.ground_surface, (0, 500))
         self.player.draw(screen)
+        self.bullets.draw(screen)
     
     def update(self):
         self.render()
         self.player.update()
+        self.bullets.update()
 
 
 

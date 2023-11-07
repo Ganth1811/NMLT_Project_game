@@ -15,7 +15,8 @@ pygame.display.set_caption("Alpha 1.0")
 pygame.display.set_icon(pygame.image.load('img\\Other\\game_icon.png').convert_alpha())
 
 #setting the default state
-current_state = gs.SplashScreen()
+# current_state = gs.SplashScreen()
+current_state = gs.TitleMenu()
 
 time.sleep(1)
 

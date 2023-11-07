@@ -1,5 +1,6 @@
 import pygame
 import sfx
+import settings as st
 
 pygame.init()
 
@@ -38,11 +39,20 @@ class Player(pygame.sprite.Sprite):
         self.gravity = 0.8
         self.vertical_velocity = 0
         self.isColliding = False
+
+        #* input related, see details in getPlayerInput()
+        self.keys = pygame.key.get_pressed()
         
     def getPlayerInput(self):
-        keys = pygame.key.get_pressed()
-        if(keys[pygame.K_SPACE] and (self.rect.bottom == 500 or self.isColliding)):
+
+        #* This code check if the button is pressed once, prevent multiple input in 1 press
+        self.last_keys = self.keys
+        self.keys = pygame.key.get_pressed()
+
+        if (self.keys[pygame.K_SPACE] and not self.last_keys[pygame.K_SPACE] and (self.rect.bottom == 500 or self.isColliding)):
             self.makePlayerJump()
+        if self.keys[pygame.K_a] and not self.last_keys[pygame.K_a]:
+            bullets.add(Bullets(self.rect.right, self.rect.centery))
 
     def animatePlayer(self):
 
@@ -106,5 +116,24 @@ class Player(pygame.sprite.Sprite):
         self.affectGravityOnPlayer()
         self.animatePlayer()
 
-player = pygame.sprite.Group()
+class Bullets(pygame.sprite.Sprite):
+    def __init__(self, Player_right, Player_centery):
+        super().__init__()
+        
+        self.speed = 10
+        self.image = pygame.Surface((10, 5))
+        self.rect = self.image.get_rect(midleft = (Player_right, Player_centery))
+        self.image.fill("red")
+
+    def update(self):
+        self.rect.x += self.speed
+        self.destroy()
+    
+    def destroy(self):
+        if self.rect.left > st.SCREEN_WIDTH:
+            self.kill()
+
+bullets = pygame.sprite.Group()
+
+player = pygame.sprite.GroupSingle()
 player.add(Player())
