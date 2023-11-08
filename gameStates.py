@@ -3,7 +3,7 @@ from sys import exit
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 import button as bt
 import sfx
-from player import player
+from player import player, bullets
 from platforms import Platform
 import random
 
@@ -166,7 +166,7 @@ class MainGame(State):
         self.bg_music = pygame.mixer_music.load("music\\bgm\\game_bg_music.mp3")
         pygame.mixer_music.play(-1)
         
-        #* player
+        #* player and bullets
         self.player_group = player
         self.player_sprite = self.player_group.sprites()[0]
         
@@ -177,6 +177,7 @@ class MainGame(State):
         #* time
         self.last_spawn_time = pygame.time.get_ticks()
         self.spawn_delay = 400
+        self.bullets = bullets
     
     def processEvent(self, events):
         super().processEvent(events)
@@ -193,8 +194,7 @@ class MainGame(State):
         screen.fill('Black')
         screen.blit(self.background, (0, 0))
         screen.blit(self.ground_surface, (0, 500))
-        self.player_group.draw(screen)    
-        self.platform_group.draw(screen)
+        self.player.draw(screen)
     
     def update(self):
         self.generatePlatform()
@@ -202,6 +202,9 @@ class MainGame(State):
         self.player_group.update()
         self.player_sprite.handleCollision(self.platform_group.sprites())
         self.render()
+        self.player.update()
+        self.bullets.update()
+
 
 
 #* I was so tired so I used chatGPT to generate this function ;) so still don't really understand wtf it does 
