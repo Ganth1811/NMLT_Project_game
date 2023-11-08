@@ -4,6 +4,8 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 import button as bt
 import sfx
 from player import player
+from platforms import Platform
+import random
 
 
 
@@ -164,22 +166,42 @@ class MainGame(State):
         self.bg_music = pygame.mixer_music.load("music\\bgm\\game_bg_music.mp3")
         pygame.mixer_music.play(-1)
         
-        #player
-        self.player = player
+        #* player
+        self.player_group = player
+        self.player_sprite = self.player_group.sprites()[0]
+        
+        #* platforms
+        self.platform_group = pygame.sprite.Group()
+        self.platform_group.add(Platform(1280, 500, 400, 100, screen)) #* initial platform
+        
+        #* time
+        self.last_spawn_time = pygame.time.get_ticks()
+        self.spawn_delay = 400
     
     def processEvent(self, events):
         super().processEvent(events)
+        
+    def generatePlatform(self):
+        platform = Platform(1280, random.randint(250, 500), 400, 50, screen)
+        current_spawn_time  = pygame.time.get_ticks()
+        
+        if current_spawn_time - self.last_spawn_time > 1000:
+            self.platform_group.add(platform)
+            self.last_spawn_time = current_spawn_time
     
     def render(self):
         screen.fill('Black')
         screen.blit(self.background, (0, 0))
         screen.blit(self.ground_surface, (0, 500))
-        self.player.draw(screen)
+        self.player_group.draw(screen)    
+        self.platform_group.draw(screen)
     
     def update(self):
+        self.generatePlatform()
+        self.platform_group.update()
+        self.player_group.update()
+        self.player_sprite.handleCollision(self.platform_group.sprites())
         self.render()
-        self.player.update()
-
 
 
 #* I was so tired so I used chatGPT to generate this function ;) so still don't really understand wtf it does 
