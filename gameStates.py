@@ -194,17 +194,17 @@ class MainGame(State):
         screen.fill('Black')
         screen.blit(self.background, (0, 0))
         screen.blit(self.ground_surface, (0, 500))
-        self.player.draw(screen)
+        self.player_group.draw(screen)
+        self.platform_group.draw(screen)
+        self.bullets.draw(screen)
     
     def update(self):
         self.generatePlatform()
         self.platform_group.update()
         self.player_group.update()
         self.player_sprite.handleCollision(self.platform_group.sprites())
-        self.render()
-        self.player.update()
         self.bullets.update()
-
+        self.render()
 
 
 #* I was so tired so I used chatGPT to generate this function ;) so still don't really understand wtf it does 
