@@ -4,7 +4,7 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 import button as bt
 import sfx
 from player import player, bullets
-from platforms import Platform
+from platforms import Platform, Enemy
 import random
 
 
@@ -58,15 +58,12 @@ class SplashScreen(State):
         if not self.fade:
             fade_transition(self.splash_screen)
             self.fade = True
-            
-        
+               
     
     def update(self):
         self.render()
         
         
-
-
 #* The title menu displays the game name and different options player can choose
 class TitleMenu(State):
     def __init__(self):
@@ -171,10 +168,11 @@ class MainGame(State):
         self.player_sprite = self.player_group.sprites()[0]
         self.bullets_group = bullets
         
-        #* platforms
+        #* platforms and enemy
         self.platform_group = pygame.sprite.Group()
         self.platform_group.add(Platform(1280, 500, 400, 100, screen)) #* initial platform
-        
+        self.enemy_group = pygame.sprite.Group()
+
         #* time
         self.last_spawn_time = pygame.time.get_ticks()
         self.spawn_delay = 400
@@ -184,23 +182,27 @@ class MainGame(State):
         
     def generatePlatform(self):
         platform = Platform(1280, random.randint(250, 500), 400, 50, screen)
+        enemy = Enemy(platform.rect.topright, platform.speed)
         current_spawn_time  = pygame.time.get_ticks()
         
         if current_spawn_time - self.last_spawn_time > 1000:
             self.platform_group.add(platform)
+            self.enemy_group.add(enemy)
             self.last_spawn_time = current_spawn_time
     
     def render(self):
         screen.fill('Black')
         screen.blit(self.background, (0, 0))
         screen.blit(self.ground_surface, (0, 500))
-        self.player_group.draw(screen)
         self.platform_group.draw(screen)
+        self.enemy_group.draw(screen)
         self.bullets_group.draw(screen)
+        self.player_group.draw(screen)
     
     def update(self):
         self.generatePlatform()
         self.platform_group.update()
+        self.enemy_group.update()
 
         self.player_group.update()
         self.player_sprite.handleCollision(self.platform_group.sprites())
@@ -208,6 +210,7 @@ class MainGame(State):
         self.bullets_group.update()
         for bullet in self.bullets_group.sprites():
             bullet.handlePlatformCollision(self.platform_group.sprites())
+            bullet.handleEnemyCollision(self.enemy_group.sprites())
         
         self.render()
 

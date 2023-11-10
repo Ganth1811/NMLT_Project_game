@@ -21,7 +21,7 @@ class Player(pygame.sprite.Sprite):
         self.player_jump = pygame.transform.scale(pygame.image.load("Sunny-land-files\\Graphical Assets\\sprites\\player\\jump\\playerJump1.png").convert_alpha(), (100, 100))
         self.player_descend = pygame.transform.scale(pygame.image.load("Sunny-land-files\\Graphical Assets\\sprites\\player\\jump\\playerJump2.png").convert_alpha(), (100, 100))
 
-        self.image = pygame.transform.scale(self.player_run_anim[self.player_anim_frame], (100,100))
+        self.image = self.player_run_anim[self.player_anim_frame]
         self.rect = self.image.get_rect(midbottom = (150, 500))
         self.previous_position = self.rect.copy()
         
@@ -54,14 +54,13 @@ class Player(pygame.sprite.Sprite):
         if (self.player_anim_frame >= 6):
             self.player_anim_frame = 0
 
-
         #* Check if player is above the ground level and is not on another platform
         if (self.rect.bottom < 500 and not(self.isColliding) and self.vertical_velocity < 0):
-            self.image = pygame.transform.scale(self.player_jump, (100, 100))
+            self.image = self.player_jump
         elif(self.rect.bottom < 500 and not(self.isColliding) and self.vertical_velocity > 0):
-            self.image = pygame.transform.scale(self.player_descend, (100, 100))
+            self.image = self.player_descend
         else:        
-            self.image = pygame.transform.scale(self.player_run_anim[int(self.player_anim_frame)], (100, 100))
+            self.image = self.player_run_anim[int(self.player_anim_frame)]
 
     def makePlayerJump(self):
         self.vertical_velocity = -PLAYER_JUMP_FORCE
@@ -115,6 +114,7 @@ class Player(pygame.sprite.Sprite):
         self.animatePlayer()
 
 
+
 class Bullets(pygame.sprite.Sprite):
     def __init__(self, Player_right, Player_centery):
         super().__init__()
@@ -166,7 +166,14 @@ class Bullets(pygame.sprite.Sprite):
         for platform in platforms:
             if self.rect.colliderect(platform.rect):
                 self.kill()
-                break;
+                break
+
+    def handleEnemyCollision(self, enemies):
+        for enemy in enemies:
+            if self.rect.colliderect(enemy.rect) and not enemy.is_shot:
+                enemy.shot()
+                self.kill()
+                break
 
 bullets = pygame.sprite.Group()
 

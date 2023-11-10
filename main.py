@@ -1,8 +1,5 @@
 import pygame
-import platforms
 import time
-from sys import exit
-import platforms
 import gameStates as gs
 from settings import SCREEN_HEIGHT, SCREEN_WIDTH
 
