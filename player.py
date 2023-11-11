@@ -16,16 +16,17 @@ class Player(pygame.sprite.Sprite):
 
         #* initializing player spirte animations
         self.player_anim_frame = 0
-        self.player_run1 =  pygame.image.load("Sunny-land-files\Graphical Assets\sprites\player\Run\playerRun1.png").convert_alpha()
-        self.player_run2 =  pygame.image.load("Sunny-land-files\Graphical Assets\sprites\player\Run\playerRun2.png").convert_alpha()
-        self.player_run3 =  pygame.image.load("Sunny-land-files\Graphical Assets\sprites\player\Run\playerRun3.png").convert_alpha()
-        self.player_run4 =  pygame.image.load("Sunny-land-files\Graphical Assets\sprites\player\Run\playerRun4.png").convert_alpha()
-        self.player_run5 =  pygame.image.load("Sunny-land-files\Graphical Assets\sprites\player\Run\playerRun5.png").convert_alpha()
-        self.player_run6 =  pygame.image.load("Sunny-land-files\Graphical Assets\sprites\player\Run\playerRun6.png").convert_alpha()
-        self.player_run_anim = [self.player_run1, self.player_run2, self.player_run3, self.player_run4, self.player_run5, self.player_run6]
-        self.player_jump = pygame.image.load("Sunny-land-files\Graphical Assets\sprites\player\jump\playerJump1.png").convert_alpha()
-        self.player_descend = pygame.image.load("Sunny-land-files\Graphical Assets\sprites\player\jump\playerJump2.png").convert_alpha()
-        self.previous_pos = self.rect.copy()
+
+        #* import player sprites and scale it
+        self.player_run_anim = [pygame.image.load(f"Sunny-land-files\\Graphical Assets\\sprites\\player\\Run\\playerRun{i}.png").convert_alpha() for i in range(1,7)]
+        self.player_run_anim = [pygame.transform.scale(image, (100, 100)) for image in self.player_run_anim]
+
+        self.player_jump = pygame.transform.scale(pygame.image.load("Sunny-land-files\\Graphical Assets\\sprites\\player\\jump\\playerJump1.png").convert_alpha(), (100, 100))
+        self.player_descend = pygame.transform.scale(pygame.image.load("Sunny-land-files\\Graphical Assets\\sprites\\player\\jump\\playerJump2.png").convert_alpha(), (100, 100))
+
+        self.image = self.player_run_anim[self.player_anim_frame]
+        self.rect = self.image.get_rect(midbottom = (150, 500))
+        self.previous_position = self.rect.copy()
         
         #* jumping related 
         self.gravity = 1
@@ -34,22 +35,23 @@ class Player(pygame.sprite.Sprite):
         self.jump_force = 17
 
         #* input related, see details in getPlayerInput()
+        self.mouses_click = pygame.mouse.get_pressed()
         self.keys = pygame.key.get_pressed()
-        
-        
-        self.is_dead = False
-        
+        self.is_dead = False    
     #TODO: Get the player input 
     def getPlayerInput(self):
 
-        #* This code check if the button is pressed once, prevent multiple input in 1 press
-        self.last_keys = self.keys
+        #* This code check if the mouse is pressed once, prevent multiple input in 1 press
         self.keys = pygame.key.get_pressed()
+        self.last_click = self.mouses_click
+        self.mouses_click = pygame.mouse.get_pressed()
 
         if (self.keys[pygame.K_SPACE] and self.is_colliding):
             self.makePlayerJump()
-        if self.keys[pygame.K_a] and not self.last_keys[pygame.K_a]:
+        if self.mouses_click[0] and not self.last_click[0]:
             bullets.add(Bullets(self.rect.right, self.rect.centery))
+            #? There's an error that the player will shoot when you click start the game.
+            #? I think it is related to the bug I told you (the sound duplicated one)
 
     #TODO: animate the player 
     def animatePlayer(self):
@@ -57,7 +59,6 @@ class Player(pygame.sprite.Sprite):
 
         if (self.player_anim_frame >= 6):
             self.player_anim_frame = 0
-
 
         #* Check if player is above the ground level and is not on another platform
         if (self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity < 0):
@@ -74,6 +75,7 @@ class Player(pygame.sprite.Sprite):
         
     #TODO: pull the player down every frame by a constant amount
     def affectGravityOnPlayer(self):
+        self.vertical_velocity += self.gravity 
         self.vertical_velocity += self.gravity 
         if self.vertical_velocity > 20:
             self.vertical_velocity = 20; 
@@ -131,14 +133,16 @@ class Player(pygame.sprite.Sprite):
         self.affectGravityOnPlayer()
         self.animatePlayer()
 
+
+
 class Bullets(pygame.sprite.Sprite):
     def __init__(self, Player_right, Player_centery):
         super().__init__()
 
         self.Player_right, self.Player_centery = Player_right, Player_centery
-        self.speed = 5
+        self.speed = 15
         self.init_image = pygame.Surface((10, 5))
-        self.init_image.fill("green")
+        self.init_image.fill("darkgreen")
 
         #* Vector related: Shooting aim
         mouse_x = pygame.mouse.get_pos()[0] - Player_right
@@ -153,27 +157,43 @@ class Bullets(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(midleft = (self.Player_right, self.Player_centery))
         #? There's a problem when the rotate angle is about 45 degrees, the image becomes a square
 
-        #* Precision related: see animateBullet()
+        #* Precision related: see moveBullet()
         self.pos_x, self. pos_y = self.rect.x, self.rect.y
 
-    def animateBullet(self):
+        sfx.player_shoot.play()
+
+    def moveBullet(self):
 
         #* Because rect.x and rect.y can only be integer, the sai số will add up
-        #* So I make another variables that can hold the exact location of the bullet
+        #* So I make variables that can hold the exact location of the bullet
         self.pos_x += self.vector_mouse.x * self.speed
         self.pos_y += self.vector_mouse.y * self.speed
         self.rect.x, self.rect.y = self.pos_x, self.pos_y
 
     def update(self):
         self.destroy()
-        self.animateBullet()
+        self.moveBullet()
     
     def destroy(self):
+
         #* Limit the angle
         if abs(self.angle) > 75:
             self.kill()
-        if self.rect.left > st.SCREEN_WIDTH + 5 or self.rect.top < -5 or self.rect.bottom >= 500:
+        if self.rect.left > st.SCREEN_WIDTH + 5 or self.rect.top < -5 or self.rect.bottom >= st.SCREEN_HEIGHT:
             self.kill()
+
+    def handlePlatformCollision(self, platforms):
+        for platform in platforms:
+            if self.rect.colliderect(platform.rect):
+                self.kill()
+                break
+
+    def handleEnemyCollision(self, enemies):
+        for enemy in enemies:
+            if self.rect.colliderect(enemy.rect) and not enemy.is_shot:
+                enemy.shot()
+                self.kill()
+                break
 
 bullets = pygame.sprite.Group()
 

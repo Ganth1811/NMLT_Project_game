@@ -4,7 +4,7 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 import button as bt
 import sfx
 from player import player, bullets, Player
-from platforms import Platform, PlatformSpawner 
+from platforms import Platform, PlatformSpawner, Enemy
 import random
 
 
@@ -46,6 +46,7 @@ class SplashScreen(State):
         self.bg_music = pygame.mixer_music.load("music\\bgm\\stage_theme.mp3")
         self.clock = pygame.time.Clock()
         pygame.mixer_music.play(-1)
+        pygame.mixer_music.play(-1)
             
     
     def processEvent(self, events):
@@ -58,15 +59,12 @@ class SplashScreen(State):
         if not self.fade:
             fade_transition(self.splash_screen)
             self.fade = True
-            
-        
+
     
     def update(self):
         self.render()
         
         
-
-
 #* The title menu displays the game name and different options player can choose
 class TitleMenu(State):
     def __init__(self):
@@ -178,6 +176,9 @@ class MainGame(State):
         self.prev_platform_pos = self.init_platform.rect
         self.platform_speed = 10
         
+        #* enemy
+        self.enemy_group = pygame.sprite.Group()
+        
         #* time
         self.start_time = pygame.time.get_ticks()
         self.dt = 0
@@ -204,6 +205,8 @@ class MainGame(State):
         
         #* spawn a platform
         platform = self.platform_spawner.generatePlatform(self.prev_platform_pos, 100, self.platform_speed)
+        enemy = Enemy(platform.rect.topright, platform.speed)
+        self.enemy_group.add(enemy)
         
         if platform is not None:   
             self.prev_platform_pos = platform.rect
@@ -213,9 +216,10 @@ class MainGame(State):
         screen.fill('Black')
         screen.blit(self.background, (0, 0))
         #screen.blit(self.ground_surface, (0, 500))
-        self.player_group.draw(screen)
         self.platform_group.draw(screen)
-        self.bullets.draw(screen)
+        self.enemy_group.draw(screen)
+        self.bullets_group.draw(screen)
+        self.player_group.draw(screen)
     
     def update(self):
         if not self.player_sprite.is_dead:
@@ -225,8 +229,13 @@ class MainGame(State):
             self.platform_group.update(self.platform_speed)
             
             self.player_group.update()
+            self.enemy_group.update()
+            
             self.player_sprite.handleCollision(self.platform_group.sprites())
-            self.bullets.update()
+            self.bullets_group.update()
+            for bullet in self.bullets_group.sprites():
+                bullet.handlePlatformCollision(self.platform_group.sprites())
+                bullet.handleEnemyCollision(self.enemy_group.sprites())
             
             self.render()
 
@@ -307,4 +316,3 @@ def fade_transition(fade_surface, FADE_SPEED = 5, FADE_DELAY = 6000):
         # Exit the loop after the fade-in and fade-out are complete
         if elapsed_time > FADE_DELAY + 255 * FADE_SPEED:
             break
-
