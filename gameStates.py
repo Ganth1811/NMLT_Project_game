@@ -183,7 +183,7 @@ class MainGame(State):
         self.start_time = pygame.time.get_ticks()
         self.dt = 0
         self.spawn_delay = 400
-        self.bullets = bullets
+        self.bullets_group = bullets
     
     def processEvent(self, events):
         super().processEvent(events)
@@ -205,12 +205,15 @@ class MainGame(State):
         
         #* spawn a platform
         platform = self.platform_spawner.generatePlatform(self.prev_platform_pos, 100, self.platform_speed)
-        enemy = Enemy(platform.rect.topright, platform.speed)
-        self.enemy_group.add(enemy)
         
+            
         if platform is not None:   
+            enemy = Enemy(platform.rect.topright, self.platform_speed)
+            self.enemy_group.add(enemy)
             self.prev_platform_pos = platform.rect
             self.platform_group.add(platform)
+    
+    
     
     def render(self):
         screen.fill('Black')
@@ -229,7 +232,7 @@ class MainGame(State):
             self.platform_group.update(self.platform_speed)
             
             self.player_group.update()
-            self.enemy_group.update()
+            self.enemy_group.update(self.platform_speed)
             
             self.player_sprite.handleCollision(self.platform_group.sprites())
             self.bullets_group.update()

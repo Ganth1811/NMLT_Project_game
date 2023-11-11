@@ -18,13 +18,13 @@ class Platform(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft = (x_pos, y_pos))
         
         self.previous_pos = self.rect.copy()
-    
+        
     #TODO: move the platform leftward by a given speed
     def movePlatform(self, speed):
         self.rect.x -= speed
         if self.rect.right <= -5:
             self.kill()
-            
+            del self
     #TODO: update the state of the platform
     def update(self, speed):
         self.previous_pos = self.rect.copy()
@@ -90,7 +90,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(bottomright = Platform_topright)
         
         self.is_shot = False
-        self.speed = Platform_speed * 1.2
+        #self.speed = Platform_speed * 1.2
         self.platform_topright = Platform_topright
 
     def animateEnemy(self):
@@ -103,19 +103,20 @@ class Enemy(pygame.sprite.Sprite):
         
         self.image = self.enemy_anim_list[int(self.enemy_anim_frame)]
 
-    def moveEnemy(self):
-        self.rect.x -= self.speed
+    def moveEnemy(self, speed):
+        self.rect.x -= speed + 0.1
     
     def shot(self):
         self.is_shot = True
         self.enemy_anim_frame = 0
         self.enemy_anim_list = self.enemy_death_anim
 
-    def update(self):     
+    def update(self, speed):     
         self.destroy()
         self.animateEnemy()
-        self.moveEnemy()
+        self.moveEnemy(speed)
     
     def destroy(self):
         if self.rect.right < 0:
             self.kill()
+            del self

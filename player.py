@@ -76,7 +76,6 @@ class Player(pygame.sprite.Sprite):
     #TODO: pull the player down every frame by a constant amount
     def affectGravityOnPlayer(self):
         self.vertical_velocity += self.gravity 
-        self.vertical_velocity += self.gravity 
         if self.vertical_velocity > 20:
             self.vertical_velocity = 20; 
         self.rect.y += self.vertical_velocity
