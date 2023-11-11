@@ -4,7 +4,6 @@ import settings as st
 
 pygame.init()
 
-PLAYER_JUMP_FORCE = 17
 
 
 class Player(pygame.sprite.Sprite):
@@ -29,9 +28,10 @@ class Player(pygame.sprite.Sprite):
         self.previous_pos = self.rect.copy()
         
         #* jumping related 
-        self.gravity = 0.8
+        self.gravity = 1
         self.vertical_velocity = 0
-        self.isColliding = False
+        self.is_colliding = False
+        self.jump_force = 17
 
         #* input related, see details in getPlayerInput()
         self.keys = pygame.key.get_pressed()
@@ -42,7 +42,7 @@ class Player(pygame.sprite.Sprite):
         self.last_keys = self.keys
         self.keys = pygame.key.get_pressed()
 
-        if (self.keys[pygame.K_SPACE] and (self.rect.bottom == 500 or self.isColliding)):
+        if (self.keys[pygame.K_SPACE] and self.is_colliding):
             self.makePlayerJump()
         if self.keys[pygame.K_a] and not self.last_keys[pygame.K_a]:
             bullets.add(Bullets(self.rect.right, self.rect.centery))
@@ -56,15 +56,15 @@ class Player(pygame.sprite.Sprite):
 
 
         #* Check if player is above the ground level and is not on another platform
-        if (self.rect.bottom < 500 and not(self.isColliding) and self.vertical_velocity < 0):
+        if (self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity < 0):
             self.image = pygame.transform.scale(self.player_jump, (100, 100))
-        elif(self.rect.bottom < 500 and not(self.isColliding) and self.vertical_velocity > 0):
+        elif(self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity > 0):
             self.image = pygame.transform.scale(self.player_descend, (100, 100))
         else:        
             self.image = pygame.transform.scale(self.player_run_anim[int(self.player_anim_frame)], (100, 100))
 
     def makePlayerJump(self):
-        self.vertical_velocity = -PLAYER_JUMP_FORCE
+        self.vertical_velocity = -self.jump_force
         sfx.player_jump.play()
         
 
@@ -73,8 +73,6 @@ class Player(pygame.sprite.Sprite):
         if self.vertical_velocity > 20:
             self.vertical_velocity = 20; 
         self.rect.y += self.vertical_velocity
-        if(self.rect.bottom >= 500):
-            self.rect.bottom = 500
 
     def handleCollision(self, platforms):    
         on_platform = False
@@ -85,10 +83,10 @@ class Player(pygame.sprite.Sprite):
                         if (self.previous_pos.bottom <= platform.previous_pos.top):
                             self.rect.bottom = platform.rect.top
                             on_platform = True
-                            self.isColliding = True
+                            self.is_colliding = True
                             self.vertical_velocity = 0        
                         else:
-                            self.isColliding = False
+                            self.is_colliding = False
                             self.vertical_velocity = 1    
                             print("vei")
                     else:
@@ -96,7 +94,7 @@ class Player(pygame.sprite.Sprite):
                         self.vertical_velocity = 1
                         
             if not on_platform:  
-                self.isColliding = False
+                self.is_colliding = False
                     
                     
                 #* Check if the player is pushed out of the screen then enter the game over

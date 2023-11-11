@@ -4,7 +4,7 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 import button as bt
 import sfx
 from player import player, bullets
-from platforms import Platform
+from platforms import Platform, PlatformSpawner 
 import random
 
 
@@ -157,12 +157,12 @@ class MainGame(State):
     def __init__(self):
         super(State, self).__init__()
         
-        #background and other visual objects
+        #* background and other visual objects
         self.background = pygame.transform.scale(pygame.image.load("Sunny-land-files\\Graphical Assets\\environment\\Background\\Background.jpg").convert_alpha(), (1280, 720))
         self.ground_surface = pygame.Surface((1280,300))
         self.ground_surface.fill('darkolivegreen1')
         
-        #background music
+        #* background music
         self.bg_music = pygame.mixer_music.load("music\\bgm\\game_bg_music.mp3")
         pygame.mixer_music.play(-1)
         
@@ -172,23 +172,31 @@ class MainGame(State):
         
         #* platforms
         self.platform_group = pygame.sprite.Group()
-        self.platform_group.add(Platform(1280, 500, 400, 100, screen)) #* initial platform
+        self.init_platform = Platform(100, 500, 1200, 100, 10)
+        self.platform_group.add(Platform(0, 500, 2500, 100, 10)) #* initial platform
+        self.platform_spawner = PlatformSpawner()
+        self.prev_platform_pos = self.init_platform.rect
+        self.platform_speed = 10
         
         #* time
-        self.last_spawn_time = pygame.time.get_ticks()
+        self.start_time = pygame.time.get_ticks()
+        self.dt = 0
         self.spawn_delay = 400
         self.bullets = bullets
     
     def processEvent(self, events):
         super().processEvent(events)
+    
         
     def generatePlatform(self):
-        platform = Platform(1280, random.randint(250, 500), 400, 50, screen)
-        current_spawn_time  = pygame.time.get_ticks()
+        platform_speed = self.platform_speed + self.dt * 0.5
+        platform = self.platform_spawner.generatePlatform(self.prev_platform_pos, 100, platform_speed)
         
-        if current_spawn_time - self.last_spawn_time > 1000:
+        if platform is not None:   
+            self.prev_platform_pos = platform.rect
             self.platform_group.add(platform)
-            self.last_spawn_time = current_spawn_time
+            
+        
     
     def render(self):
         screen.fill('Black')
@@ -199,11 +207,15 @@ class MainGame(State):
         self.bullets.draw(screen)
     
     def update(self):
+        self.dt = pygame.time.get_ticks() / 1000
+        
         self.generatePlatform()
         self.platform_group.update()
+        
         self.player_group.update()
         self.player_sprite.handleCollision(self.platform_group.sprites())
         self.bullets.update()
+        
         self.render()
 
 
