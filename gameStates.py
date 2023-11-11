@@ -3,7 +3,7 @@ from sys import exit
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 import button as bt
 import sfx
-from player import player, bullets
+from player import player, bullets, Player
 from platforms import Platform, PlatformSpawner 
 import random
 
@@ -167,13 +167,13 @@ class MainGame(State):
         pygame.mixer_music.play(-1)
         
         #* player and bullets
-        self.player_group = player
-        self.player_sprite = self.player_group.sprites()[0]
+        self.player_group = pygame.sprite.Group(Player())
+        self.player_sprite: Player = self.player_group.sprites()[0]
         
         #* platforms
         self.platform_group = pygame.sprite.Group()
-        self.init_platform = Platform(100, 500, 1200, 100, 10)
-        self.platform_group.add(Platform(0, 500, 2500, 100, 10)) #* initial platform
+        self.init_platform = Platform(100, 500, 1200, 100)
+        self.platform_group.add(Platform(0, 500, 3000, 100)) #* initial platform
         self.platform_spawner = PlatformSpawner()
         self.prev_platform_pos = self.init_platform.rect
         self.platform_speed = 10
@@ -186,38 +186,95 @@ class MainGame(State):
     
     def processEvent(self, events):
         super().processEvent(events)
+        if self.player_sprite.is_dead:
+            pygame.mixer_music.unload()
+            sfx.player_die.play()
+            return GameOver()
+            
     
         
     def generatePlatform(self):
-        platform_speed = self.platform_speed + self.dt * 0.5
-        platform = self.platform_spawner.generatePlatform(self.prev_platform_pos, 100, platform_speed)
+        #* Increasing the speed by a constant each frame
+        self.platform_speed = self.platform_speed + 0.05 / 40
+        
+        #* ensuring the speed does not exceed the maximum value
+        if self.platform_speed >= 30:
+            self.platform_speed = 30
+        #print(self.platform_speed)
+        
+        #* spawn a platform
+        platform = self.platform_spawner.generatePlatform(self.prev_platform_pos, 100, self.platform_speed)
         
         if platform is not None:   
             self.prev_platform_pos = platform.rect
             self.platform_group.add(platform)
-            
-        
     
     def render(self):
         screen.fill('Black')
         screen.blit(self.background, (0, 0))
-        screen.blit(self.ground_surface, (0, 500))
+        #screen.blit(self.ground_surface, (0, 500))
         self.player_group.draw(screen)
         self.platform_group.draw(screen)
         self.bullets.draw(screen)
     
     def update(self):
-        self.dt = pygame.time.get_ticks() / 1000
-        
-        self.generatePlatform()
-        self.platform_group.update()
-        
-        self.player_group.update()
-        self.player_sprite.handleCollision(self.platform_group.sprites())
-        self.bullets.update()
-        
-        self.render()
+        if not self.player_sprite.is_dead:
+            self.dt = pygame.time.get_ticks() / 1000
+            
+            self.generatePlatform()
+            self.platform_group.update(self.platform_speed)
+            
+            self.player_group.update()
+            self.player_sprite.handleCollision(self.platform_group.sprites())
+            self.bullets.update()
+            
+            self.render()
 
+class GameOver(State):
+    def __init__(self):
+        super(State, self).__init__()
+        self.is_transitioned = False
+        self.transition_counter = 0
+        
+    #TODO: Transition to the game over screen
+    def transition(self):
+        if not self.is_transitioned:
+                
+            #? Some logic stuff that I don't realy know how to explain
+            #? basically spawn 6 rectangles coming from 2 edges of the screen interchangably and then move them
+            if self.transition_counter <= SCREEN_WIDTH:
+                for transition_index in range(0, 6, 2):
+                    self.transition_counter += 15
+                    pygame.draw.rect(screen, 'black', (0, transition_index * 120, self.transition_counter, SCREEN_HEIGHT / 6))
+                    pygame.draw.rect(screen, 'black', (SCREEN_WIDTH - self.transition_counter, (transition_index + 1) * 120, SCREEN_WIDTH, SCREEN_HEIGHT / 6))
+            
+            else:
+                self.is_transitioned = True
+                self.render()
+                
+    def processEvent(self, events):
+        super().processEvent(events)
+        
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    return MainGame()
+
+    #TODO: displaying text
+    def render(self):
+        #! This is just temporary
+        font = pygame.font.Font("font.ttf", 35)
+        text = font.render(f"GAME OVER", 0, 'White')
+        text2= font.render(f"press space to play again", 0, 'White')
+        screen.blit(text, (SCREEN_WIDTH / 2 - 100, 300))
+        screen.blit(text2, (SCREEN_WIDTH / 2 - 200, 400))
+        
+    def update(self):
+        self.transition()
+
+
+        
+        
 
 #* I was so tired so I used chatGPT to generate this function ;) so still don't really understand wtf it does 
 def fade_transition(fade_surface, FADE_SPEED = 5, FADE_DELAY = 6000):
