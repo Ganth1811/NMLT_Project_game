@@ -15,7 +15,6 @@ pygame.display.set_icon(pygame.image.load('img\\Other\\game_icon.png').convert_a
 # current_state = gs.SplashScreen()
 current_state = gs.TitleMenu()
 
-time.sleep(1)
 
 #* main game loop
 while 1: 

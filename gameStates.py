@@ -167,6 +167,7 @@ class MainGame(State):
         #* player and bullets
         self.player_group = pygame.sprite.Group(Player())
         self.player_sprite: Player = self.player_group.sprites()[0]
+        self.bullets_group = bullets
         
         #* platforms
         self.platform_group = pygame.sprite.Group()
@@ -183,7 +184,6 @@ class MainGame(State):
         self.start_time = pygame.time.get_ticks()
         self.dt = 0
         self.spawn_delay = 400
-        self.bullets_group = bullets
     
     def processEvent(self, events):
         super().processEvent(events)
@@ -192,7 +192,6 @@ class MainGame(State):
             sfx.player_die.play()
             return GameOver()
             
-    
         
     def generatePlatform(self):
         #* Increasing the speed by a constant each frame
@@ -204,16 +203,16 @@ class MainGame(State):
         #print(self.platform_speed)
         
         #* spawn a platform
-        platform = self.platform_spawner.generatePlatform(self.prev_platform_pos, 100, self.platform_speed)
-        
-            
-        if platform is not None:   
-            enemy = Enemy(platform.rect.topright, self.platform_speed)
+        #* Spawn a new platform when the last platform reach SCREEN_WIDTH + 50
+        if self.platform_group.sprites()[-1].rect.right <= SCREEN_WIDTH + 50:
+            platform = self.platform_spawner.generatePlatform(self.prev_platform_pos, 100, self.platform_speed)
+                 
+            # if platform is not None:
+            enemy = Enemy(platform.rect.topright)#, self.platform_speed)
             self.enemy_group.add(enemy)
             self.prev_platform_pos = platform.rect
             self.platform_group.add(platform)
-    
-    
+       
     
     def render(self):
         screen.fill('Black')
@@ -241,6 +240,8 @@ class MainGame(State):
                 bullet.handleEnemyCollision(self.enemy_group.sprites())
             
             self.render()
+            # print(len(self.platform_group.sprites()))
+            
 
 class GameOver(State):
     def __init__(self):

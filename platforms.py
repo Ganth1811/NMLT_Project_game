@@ -15,7 +15,6 @@ class Platform(pygame.sprite.Sprite):
         self.image = pygame.Surface((self.width, self.height))
         self.rect = self.image.get_rect(topleft =  (self.x_pos, self.y_pos))
         self.image.fill('RED')
-        self.rect = self.image.get_rect(topleft = (x_pos, y_pos))
         
         self.previous_pos = self.rect.copy()
         
@@ -38,40 +37,41 @@ class Platform(pygame.sprite.Sprite):
 #! this will get the job done.
 class PlatformSpawner(object):
     def __init__(self):
-        self.last_spawn_time = pygame.time.get_ticks()
-        self.spawn_delay = 2500
+        # self.last_spawn_time = pygame.time.get_ticks()
+        # self.spawn_delay = 2500
+        pass
     
     def generatePlatform(self, prev_platform_pos: pygame.Rect, platform_gap, platform_speed):
         
         #* spawn the platform after 2.5s to prevent lag from continuous spawning
-        self.current_time = pygame.time.get_ticks()
-        if self.current_time - self.last_spawn_time >= self.spawn_delay:            
-            if prev_platform_pos.top <= 200:
-                prev_platform_pos.y += 200
-            
-            #* separate two platforms by a certain distance relative to their speed
-            platform_x = prev_platform_pos.right + platform_gap * (platform_speed / 5.0)
-            
-            #* manipulate the platform y value according to the previous platform position
-            if prev_platform_pos.bottom >= 500:
-                platform_y = randint(prev_platform_pos.top - 50, prev_platform_pos.bottom - 30)
-            else:
-                platform_y = randint(prev_platform_pos.top - 50, prev_platform_pos.bottom + 100)
-            
-            #* get a random platform type and spawn it
-            platform_type_set = ["long", "long", "long", "short"]
-            platform_type = choice(platform_type_set)
-            
-            if platform_type == "long":
-                platform_width = 600
-            else:
-                platform_width = 300
-            
-            return Platform(platform_x, platform_y, platform_width, 50)
+        # self.current_time = pygame.time.get_ticks()
+        # if self.current_time - self.last_spawn_time >= self.spawn_delay:            
+        if prev_platform_pos.top <= 200:
+            prev_platform_pos.y += 200
+        
+        #* separate two platforms by a certain distance relative to their speed
+        platform_x = prev_platform_pos.right + platform_gap * (platform_speed / 5.0)
+        
+        #* manipulate the platform y value according to the previous platform position
+        if prev_platform_pos.bottom >= 500:
+            platform_y = randint(prev_platform_pos.top - 50, prev_platform_pos.bottom - 30)
+        else:
+            platform_y = randint(prev_platform_pos.top - 50, prev_platform_pos.bottom + 100)
+        
+        #* get a random platform type and spawn it
+        platform_type_set = ["long", "long", "long", "short"]
+        platform_type = choice(platform_type_set)
+        
+        if platform_type == "long":
+            platform_width = 600
+        else:
+            platform_width = 300
+        
+        return Platform(platform_x, platform_y, platform_width, 50)
         
         
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, Platform_topright, Platform_speed):
+    def __init__(self, Platform_topright):#, Platform_speed):
         super().__init__()
 
         #* initializing enemy spirte animations
