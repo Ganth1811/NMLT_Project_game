@@ -118,12 +118,12 @@ class Player(pygame.sprite.Sprite):
                     
                 #* Check if the player is pushed out of the screen then enter the game over
                 if (self.rect.right < -5):
-                    self.die() 
+                    self.die()
                     
     #TODO: kill the player, thus ending the game
     def die(self):
         self.is_dead = True
-        self.kill()
+        # self.kill()
     
     #TODO: update the state of the player
     def update(self):
@@ -131,6 +131,11 @@ class Player(pygame.sprite.Sprite):
         self.getPlayerInput()
         self.affectGravityOnPlayer()
         self.animatePlayer()
+        self.destroy()
+    
+    def destroy(self):
+        if self.rect.top >= st.SCREEN_HEIGHT + 5:
+            self.kill()
 
 
 
@@ -192,7 +197,8 @@ class Bullets(pygame.sprite.Sprite):
             if self.rect.colliderect(enemy.rect) and not enemy.is_shot:
                 enemy.shot()
                 self.kill()
-                break
+                return True
+        return False
 
 bullets = pygame.sprite.Group()
 

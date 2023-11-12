@@ -183,6 +183,7 @@ class PauseMenu(State):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.previous_state.is_pause = False
+                    self.previous_state.start_time = pygame.time.get_ticks()
                     pygame.mixer_music.unpause()
                     
                     #* returning the old game MainGame object instead of initializing a new instance
@@ -194,6 +195,7 @@ class PauseMenu(State):
                         sfx.button_pressed.play()
                         if button_name == "resume":
                             self.previous_state.is_pause = False
+                            self.previous_state.start_time = pygame.time.get_ticks()
                             pygame.mixer_music.unpause()
                             return self.previous_state 
                 
@@ -243,7 +245,8 @@ class MainGame(State):
         
         #* time
         self.start_time = pygame.time.get_ticks()
-        self.current_time = 0
+        self.previous_run_time = 0
+        self.run_time = 0
         self.spawn_delay = 400
         
         #* pausing mechanism
@@ -252,11 +255,19 @@ class MainGame(State):
         #* score
         self.score_border = pygame.Rect(SCREEN_WIDTH / 2 - 100, 30, 200, 100)
         self.font = pygame.font.Font("font.ttf", 60)
-        self.score = pygame.Surface((0, 0))
+        self.score_surf = pygame.Surface((0, 0))
+
+        self.score_by_playtime = 0
+        self.score_by_player = 0
+        self.total_score = 0
+
+        self.enemy_kill_point = 20
         
     #TODO: Calculate the score and add it to a surface
-    def calculateScore(self, score):
-        self.score = self.font.render(f"Score: {score}", 0, "Black")
+    def calculateScore(self, time):
+        self.score_by_playtime = time
+        self.total_score = self.score_by_player + self.score_by_playtime
+        self.score_surf = self.font.render(f"Score: {self.total_score}", 0, "Black")
         
     
     def processEvent(self, events):
@@ -264,13 +275,14 @@ class MainGame(State):
         if self.player_sprite.is_dead:
             pygame.mixer_music.unload()
             sfx.player_die.play()
-            return GameOver()
+            return GameOver(self.total_score)
         
         for event in events:
             #* Pausing the game
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.is_pause = True
+                    self.previous_run_time = self.run_time
                     #* Get the state of the current instance of MainGame, so that when the player
                     #* unpauses the game, they will go back to the current game as it was before pause
                     #* instead of returning to the start of the game due to calling a new instance of MainGame
@@ -307,7 +319,7 @@ class MainGame(State):
         self.player_group.draw(screen)
         
         pygame.draw.rect(screen, "White", self.score_border)
-        screen.blit(self.score, (640 - 100, 50))
+        screen.blit(self.score_surf, (640 - 100, 50))
     
     def update(self):
         if not self.player_sprite.is_dead and not self.is_pause:
@@ -318,30 +330,36 @@ class MainGame(State):
             #! When they return, the score will jump to 20 instead of keep counting to 16
             
             #* getting the second elapsed since MainGame ran as score
-            self.current_time = int((pygame.time.get_ticks() - self.start_time) / 1000)
-            self.calculateScore(self.current_time)
+            self.run_time = self.previous_run_time + int((pygame.time.get_ticks() - self.start_time) / 1000)
+            self.calculateScore(self.run_time)
             
             self.generatePlatform()
             self.platform_group.update(self.platform_speed)
             
             self.player_group.update()
             self.enemy_group.update(self.platform_speed)
+            for enemy in self.enemy_group.sprites():
+                if enemy.handlePlayerCollision(self.player_sprite):
+                    self.player_sprite.die()
             
             self.player_sprite.handleCollision(self.platform_group.sprites())
             self.bullets_group.update()
             for bullet in self.bullets_group.sprites():
                 bullet.handlePlatformCollision(self.platform_group.sprites())
-                bullet.handleEnemyCollision(self.enemy_group.sprites())
+                if bullet.handleEnemyCollision(self.enemy_group.sprites()):
+                    self.score_by_player += self.enemy_kill_point
             
             self.render()
             # print(len(self.platform_group.sprites()))
             
 
 class GameOver(State):
-    def __init__(self):
+    def __init__(self, score):
         super(State, self).__init__()
         self.is_transitioned = False
         self.transition_counter = 0
+
+        self.score = score
         
     #TODO: Transition to the game over screen
     def transition(self):
@@ -371,10 +389,14 @@ class GameOver(State):
     def render(self):
         #! This is just temporary
         font = pygame.font.Font("font.ttf", 35)
+
         text = font.render(f"GAME OVER", 0, 'White')
-        text2= font.render(f"press space to play again", 0, 'White')
-        screen.blit(text, (SCREEN_WIDTH / 2 - 100, 300))
-        screen.blit(text2, (SCREEN_WIDTH / 2 - 200, 400))
+        text_score = font.render(f"Your score: {self.score}", 0, 'White')
+        text2 = font.render(f"press space to play again", 0, 'White')
+
+        screen.blit(text, text.get_rect(center = (SCREEN_WIDTH / 2, 300)))
+        screen.blit(text_score, text_score.get_rect(center = ((SCREEN_WIDTH / 2, 400))))
+        screen.blit(text2, text2.get_rect(center = ((SCREEN_WIDTH / 2, 500))))
         
     def update(self):
         self.transition()
