@@ -137,17 +137,78 @@ class TitleMenu(State):
     
     
 class PauseMenu(State):
-    def __init__(self):
+    def __init__(self, previous_state):
         super(State, self).__init__()
+        
+        #* Pause the music temporarily
+        pygame.mixer_music.pause()
+        self.previous_state = previous_state
+        self.blurScreen()
+        self.buttons = self.createButtons()
+        
+    #* Not really blur but make the game screen behind darker
+    #TODO: make the game screen blur
+    def blurScreen(self):
+        self.blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.blur.set_alpha(69)
+        screen.blit(self.blur, (0, 0))
+    
+    def createButtons(self):
+        resume_button = bt.resume_button
+        restart_button = bt.restart_button
+        main_menu_button = bt.main_menu_button
+        
+        #* creating the buttons dictionary to detect which button is being pressed
+        button_names = {
+            "resume": resume_button,
+            "restart": restart_button,
+            "main_menu": main_menu_button
+        }
+        
+        #* creating the button group to draw the buttons
+        button_group = pygame.sprite.Group()
+        button_group.add(button_names.values())
+        
+        #* return both of the button types
+        return {
+            "button_names": button_names,
+            "button_group": button_group
+        }
     
     def processEvent(self, events):
         super().processEvent(events)
+        
+        #* If the player presses escape then unpause the game
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.previous_state.is_pause = False
+                    pygame.mixer_music.unpause()
+                    
+                    #* returning the old game MainGame object instead of initializing a new instance
+                    return self.previous_state 
+                
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for button_name, button in self.buttons["button_names"].items():
+                    if button.isClicked():
+                        sfx.button_pressed.play()
+                        if button_name == "resume":
+                            self.previous_state.is_pause = False
+                            pygame.mixer_music.unpause()
+                            return self.previous_state 
+                
+                        elif button_name == "restart":
+                            return MainGame()
+                        
+                        elif button_name == "main_menu":
+                            return TitleMenu()
     
     def render(self):
-        pass
+        self.buttons["button_group"].update()
+        self.buttons["button_group"].draw(screen)
     
     def update(self):
-        pass
+        self.render()
     
     
 
@@ -182,8 +243,21 @@ class MainGame(State):
         
         #* time
         self.start_time = pygame.time.get_ticks()
-        self.dt = 0
+        self.current_time = 0
         self.spawn_delay = 400
+        
+        #* pausing mechanism
+        self.is_pause = False
+        
+        #* score
+        self.score_border = pygame.Rect(SCREEN_WIDTH / 2 - 100, 30, 200, 100)
+        self.font = pygame.font.Font("font.ttf", 60)
+        self.score = pygame.Surface((0, 0))
+        
+    #TODO: Calculate the score and add it to a surface
+    def calculateScore(self, score):
+        self.score = self.font.render(f"Score: {score}", 0, "Black")
+        
     
     def processEvent(self, events):
         super().processEvent(events)
@@ -191,6 +265,17 @@ class MainGame(State):
             pygame.mixer_music.unload()
             sfx.player_die.play()
             return GameOver()
+        
+        for event in events:
+            #* Pausing the game
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.is_pause = True
+                    #* Get the state of the current instance of MainGame, so that when the player
+                    #* unpauses the game, they will go back to the current game as it was before pause
+                    #* instead of returning to the start of the game due to calling a new instance of MainGame
+                    previous_state = self
+                    return PauseMenu(previous_state)
             
         
     def generatePlatform(self):
@@ -206,13 +291,11 @@ class MainGame(State):
         #* Spawn a new platform when the last platform reach SCREEN_WIDTH + 50
         if self.platform_group.sprites()[-1].rect.right <= SCREEN_WIDTH + 50:
             platform = self.platform_spawner.generatePlatform(self.prev_platform_pos, 100, self.platform_speed)
-                 
-            # if platform is not None:
-            enemy = Enemy(platform.rect.topright)#, self.platform_speed)
+            
+            enemy = Enemy(platform.rect.topright)
             self.enemy_group.add(enemy)
             self.prev_platform_pos = platform.rect
             self.platform_group.add(platform)
-       
     
     def render(self):
         screen.fill('Black')
@@ -222,10 +305,21 @@ class MainGame(State):
         self.enemy_group.draw(screen)
         self.bullets_group.draw(screen)
         self.player_group.draw(screen)
+        
+        pygame.draw.rect(screen, "White", self.score_border)
+        screen.blit(self.score, (640 - 100, 50))
     
     def update(self):
-        if not self.player_sprite.is_dead:
-            self.dt = pygame.time.get_ticks() / 1000
+        if not self.player_sprite.is_dead and not self.is_pause:
+            print(self.is_pause)
+            
+            #! The score will be wrong when the player pauses the game
+            #! For example, if the score is 15 and the player pauses the game for 5 seconds
+            #! When they return, the score will jump to 20 instead of keep counting to 16
+            
+            #* getting the second elapsed since MainGame ran as score
+            self.current_time = int((pygame.time.get_ticks() - self.start_time) / 1000)
+            self.calculateScore(self.current_time)
             
             self.generatePlatform()
             self.platform_group.update(self.platform_speed)

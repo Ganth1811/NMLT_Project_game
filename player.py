@@ -36,6 +36,7 @@ class Player(pygame.sprite.Sprite):
 
         #* input related, see details in getPlayerInput()
         self.mouses_click = pygame.mouse.get_pressed()
+        self.keys = pygame.key.get_pressed()
         self.is_dead = False    
     #TODO: Get the player input 
     def getPlayerInput(self):

@@ -32,6 +32,7 @@ while 1:
     #Update the current state (meaning handling everything in that state)
     current_state.update()
     
+    #print(clock.get_fps())
     pygame.display.update()
 
     clock.tick(60)
