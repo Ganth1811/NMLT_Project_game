@@ -3,8 +3,8 @@ from sys import exit
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 import button as bt
 import sfx
-from player import player, bullets
-from platforms import Platform, Enemy
+from player import player, bullets, Player
+from platforms import Platform, PlatformSpawner, Enemy
 import random
 
 
@@ -46,6 +46,7 @@ class SplashScreen(State):
         self.bg_music = pygame.mixer_music.load("music\\bgm\\stage_theme.mp3")
         self.clock = pygame.time.Clock()
         pygame.mixer_music.play(-1)
+        pygame.mixer_music.play(-1)
             
     
     def processEvent(self, events):
@@ -58,7 +59,7 @@ class SplashScreen(State):
         if not self.fade:
             fade_transition(self.splash_screen)
             self.fade = True
-               
+
     
     def update(self):
         self.render()
@@ -136,17 +137,78 @@ class TitleMenu(State):
     
     
 class PauseMenu(State):
-    def __init__(self):
+    def __init__(self, previous_state):
         super(State, self).__init__()
+        
+        #* Pause the music temporarily
+        pygame.mixer_music.pause()
+        self.previous_state = previous_state
+        self.blurScreen()
+        self.buttons = self.createButtons()
+        
+    #* Not really blur but make the game screen behind darker
+    #TODO: make the game screen blur
+    def blurScreen(self):
+        self.blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.blur.set_alpha(69)
+        screen.blit(self.blur, (0, 0))
+    
+    def createButtons(self):
+        resume_button = bt.resume_button
+        restart_button = bt.restart_button
+        main_menu_button = bt.main_menu_button
+        
+        #* creating the buttons dictionary to detect which button is being pressed
+        button_names = {
+            "resume": resume_button,
+            "restart": restart_button,
+            "main_menu": main_menu_button
+        }
+        
+        #* creating the button group to draw the buttons
+        button_group = pygame.sprite.Group()
+        button_group.add(button_names.values())
+        
+        #* return both of the button types
+        return {
+            "button_names": button_names,
+            "button_group": button_group
+        }
     
     def processEvent(self, events):
         super().processEvent(events)
+        
+        #* If the player presses escape then unpause the game
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.previous_state.is_pause = False
+                    pygame.mixer_music.unpause()
+                    
+                    #* returning the old game MainGame object instead of initializing a new instance
+                    return self.previous_state 
+                
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for button_name, button in self.buttons["button_names"].items():
+                    if button.isClicked():
+                        sfx.button_pressed.play()
+                        if button_name == "resume":
+                            self.previous_state.is_pause = False
+                            pygame.mixer_music.unpause()
+                            return self.previous_state 
+                
+                        elif button_name == "restart":
+                            return MainGame()
+                        
+                        elif button_name == "main_menu":
+                            return TitleMenu()
     
     def render(self):
-        pass
+        self.buttons["button_group"].update()
+        self.buttons["button_group"].draw(screen)
     
     def update(self):
-        pass
+        self.render()
     
     
 
@@ -154,66 +216,172 @@ class MainGame(State):
     def __init__(self):
         super(State, self).__init__()
         
-        #background and other visual objects
+        #* background and other visual objects
         self.background = pygame.transform.scale(pygame.image.load("Sunny-land-files\\Graphical Assets\\environment\\Background\\Background.jpg").convert_alpha(), (1280, 720))
         self.ground_surface = pygame.Surface((1280,300))
         self.ground_surface.fill('darkolivegreen1')
         
-        #background music
+        #* background music
         self.bg_music = pygame.mixer_music.load("music\\bgm\\game_bg_music.mp3")
         pygame.mixer_music.play(-1)
         
         #* player and bullets
-        self.player_group = player
-        self.player_sprite = self.player_group.sprites()[0]
+        self.player_group = pygame.sprite.Group(Player())
+        self.player_sprite: Player = self.player_group.sprites()[0]
         self.bullets_group = bullets
         
-        #* platforms and enemy
+        #* platforms
         self.platform_group = pygame.sprite.Group()
-        self.platform_group.add(Platform(1280, 500, 400, 100, screen)) #* initial platform
+        self.init_platform = Platform(100, 500, 1200, 100)
+        self.platform_group.add(Platform(0, 500, 3000, 100)) #* initial platform
+        self.platform_spawner = PlatformSpawner()
+        self.prev_platform_pos = self.init_platform.rect
+        self.platform_speed = 10
+        
+        #* enemy
         self.enemy_group = pygame.sprite.Group()
-
+        
         #* time
-        self.last_spawn_time = pygame.time.get_ticks()
+        self.start_time = pygame.time.get_ticks()
+        self.current_time = 0
         self.spawn_delay = 400
+        
+        #* pausing mechanism
+        self.is_pause = False
+        
+        #* score
+        self.score_border = pygame.Rect(SCREEN_WIDTH / 2 - 100, 30, 200, 100)
+        self.font = pygame.font.Font("font.ttf", 60)
+        self.score = pygame.Surface((0, 0))
+        
+    #TODO: Calculate the score and add it to a surface
+    def calculateScore(self, score):
+        self.score = self.font.render(f"Score: {score}", 0, "Black")
+        
     
     def processEvent(self, events):
         super().processEvent(events)
+        if self.player_sprite.is_dead:
+            pygame.mixer_music.unload()
+            sfx.player_die.play()
+            return GameOver()
+        
+        for event in events:
+            #* Pausing the game
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.is_pause = True
+                    #* Get the state of the current instance of MainGame, so that when the player
+                    #* unpauses the game, they will go back to the current game as it was before pause
+                    #* instead of returning to the start of the game due to calling a new instance of MainGame
+                    previous_state = self
+                    return PauseMenu(previous_state)
+            
         
     def generatePlatform(self):
-        platform = Platform(1280, random.randint(250, 500), 400, 50, screen)
-        enemy = Enemy(platform.rect.topright, platform.speed)
-        current_spawn_time  = pygame.time.get_ticks()
+        #* Increasing the speed by a constant each frame
+        self.platform_speed = self.platform_speed + 0.05 / 40
         
-        if current_spawn_time - self.last_spawn_time > 1000:
-            self.platform_group.add(platform)
+        #* ensuring the speed does not exceed the maximum value
+        if self.platform_speed >= 30:
+            self.platform_speed = 30
+        #print(self.platform_speed)
+        
+        #* spawn a platform
+        #* Spawn a new platform when the last platform reach SCREEN_WIDTH + 50
+        if self.platform_group.sprites()[-1].rect.right <= SCREEN_WIDTH + 50:
+            platform = self.platform_spawner.generatePlatform(self.prev_platform_pos, 100, self.platform_speed)
+            
+            enemy = Enemy(platform.rect.topright)
             self.enemy_group.add(enemy)
-            self.last_spawn_time = current_spawn_time
+            self.prev_platform_pos = platform.rect
+            self.platform_group.add(platform)
     
     def render(self):
         screen.fill('Black')
         screen.blit(self.background, (0, 0))
-        screen.blit(self.ground_surface, (0, 500))
+        #screen.blit(self.ground_surface, (0, 500))
         self.platform_group.draw(screen)
         self.enemy_group.draw(screen)
         self.bullets_group.draw(screen)
         self.player_group.draw(screen)
+        
+        pygame.draw.rect(screen, "White", self.score_border)
+        screen.blit(self.score, (640 - 100, 50))
     
     def update(self):
-        self.generatePlatform()
-        self.platform_group.update()
-        self.enemy_group.update()
+        if not self.player_sprite.is_dead and not self.is_pause:
+            print(self.is_pause)
+            
+            #! The score will be wrong when the player pauses the game
+            #! For example, if the score is 15 and the player pauses the game for 5 seconds
+            #! When they return, the score will jump to 20 instead of keep counting to 16
+            
+            #* getting the second elapsed since MainGame ran as score
+            self.current_time = int((pygame.time.get_ticks() - self.start_time) / 1000)
+            self.calculateScore(self.current_time)
+            
+            self.generatePlatform()
+            self.platform_group.update(self.platform_speed)
+            
+            self.player_group.update()
+            self.enemy_group.update(self.platform_speed)
+            
+            self.player_sprite.handleCollision(self.platform_group.sprites())
+            self.bullets_group.update()
+            for bullet in self.bullets_group.sprites():
+                bullet.handlePlatformCollision(self.platform_group.sprites())
+                bullet.handleEnemyCollision(self.enemy_group.sprites())
+            
+            self.render()
+            # print(len(self.platform_group.sprites()))
+            
 
-        self.player_group.update()
-        self.player_sprite.handleCollision(self.platform_group.sprites())
-
-        self.bullets_group.update()
-        for bullet in self.bullets_group.sprites():
-            bullet.handlePlatformCollision(self.platform_group.sprites())
-            bullet.handleEnemyCollision(self.enemy_group.sprites())
+class GameOver(State):
+    def __init__(self):
+        super(State, self).__init__()
+        self.is_transitioned = False
+        self.transition_counter = 0
         
-        self.render()
+    #TODO: Transition to the game over screen
+    def transition(self):
+        if not self.is_transitioned:
+                
+            #? Some logic stuff that I don't realy know how to explain
+            #? basically spawn 6 rectangles coming from 2 edges of the screen interchangably and then move them
+            if self.transition_counter <= SCREEN_WIDTH:
+                for transition_index in range(0, 6, 2):
+                    self.transition_counter += 15
+                    pygame.draw.rect(screen, 'black', (0, transition_index * 120, self.transition_counter, SCREEN_HEIGHT / 6))
+                    pygame.draw.rect(screen, 'black', (SCREEN_WIDTH - self.transition_counter, (transition_index + 1) * 120, SCREEN_WIDTH, SCREEN_HEIGHT / 6))
+            
+            else:
+                self.is_transitioned = True
+                self.render()
+                
+    def processEvent(self, events):
+        super().processEvent(events)
+        
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    return MainGame()
 
+    #TODO: displaying text
+    def render(self):
+        #! This is just temporary
+        font = pygame.font.Font("font.ttf", 35)
+        text = font.render(f"GAME OVER", 0, 'White')
+        text2= font.render(f"press space to play again", 0, 'White')
+        screen.blit(text, (SCREEN_WIDTH / 2 - 100, 300))
+        screen.blit(text2, (SCREEN_WIDTH / 2 - 200, 400))
+        
+    def update(self):
+        self.transition()
+
+
+        
+        
 
 #* I was so tired so I used chatGPT to generate this function ;) so still don't really understand wtf it does 
 def fade_transition(fade_surface, FADE_SPEED = 5, FADE_DELAY = 6000):

@@ -15,10 +15,9 @@ pygame.display.set_icon(pygame.image.load('img\\Other\\game_icon.png').convert_a
 # current_state = gs.SplashScreen()
 current_state = gs.TitleMenu()
 
-time.sleep(1)
 
 #* main game loop
-while True:
+while 1: 
     #Getting the events and passing it to the current state so it can procress the events accordingly
     events = pygame.event.get()
     current_state.processEvent(events)
@@ -33,6 +32,7 @@ while True:
     #Update the current state (meaning handling everything in that state)
     current_state.update()
     
+    #print(clock.get_fps())
     pygame.display.update()
 
     clock.tick(60)

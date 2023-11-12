@@ -58,9 +58,17 @@ quit_game_hover = pygame.image.load("img\\Buttons\\QuitGame_hover.png").convert_
 option_default = pygame.image.load("img\\Buttons\\Option_default.png").convert_alpha()
 option_hover = pygame.image.load("img\\Buttons\\Option_hover.png").convert_alpha()
 
+restart_default = pygame.image.load("img\\Buttons\\Restart_default.png").convert_alpha()
+restart_hover = pygame.image.load("img\\Buttons\\Restart_hover.png").convert_alpha()
+
+main_menu_default = pygame.image.load("img\\Buttons\\MainMenu_default.png").convert_alpha()
+main_menu_hover = pygame.image.load("img\\Buttons\\MainMenu_hover.png").convert_alpha()
+
 new_game_button = Button(new_game_default, new_game_hover, 640, 400)
 #high_score_button = Button(high_score_default, high_score_hover, 640, 520)
 option_button = Button(option_default, option_hover, 640, 520)
 quit_game_button = Button(quit_game_default, quit_game_hover, 640, 640)
 
-resume_button = Button(resume_default, resume_hover, 100, 100)
+resume_button = Button(resume_default, resume_hover, 640, 400)
+restart_button = Button(restart_default, restart_hover, 640, 520)
+main_menu_button = Button(main_menu_default, main_menu_hover, 640, 640)
