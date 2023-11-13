@@ -120,6 +120,14 @@ class Player(pygame.sprite.Sprite):
                 if (self.rect.right < -5):
                     self.die()
                     
+
+    #TODO: handle enemy collisions
+    def handleConllision(self, enemies):
+        for enemy in enemies:
+            if self.rect.colliderect(enemy.rect):
+                self.die()
+    
+    
     #TODO: kill the player, thus ending the game
     def die(self):
         self.is_dead = True

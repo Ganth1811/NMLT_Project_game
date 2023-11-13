@@ -30,11 +30,6 @@ class Platform(pygame.sprite.Sprite):
         self.movePlatform(speed)  
         
     
-#! My laptop encounters some lagging issues when running the game, but it is fine on stronger computers
-#! Will think of a way to fix this, also try to make the game less frame dependent so it can run on multiple
-#! platforms flawlessly
-#! Also this platform generation logic is still pretty buggy, I'm thinking of a better sollution, in the mean time
-#! this will get the job done.
 class PlatformSpawner(object):
     def __init__(self):
         # self.last_spawn_time = pygame.time.get_ticks()
@@ -110,6 +105,7 @@ class Enemy(pygame.sprite.Sprite):
         self.is_shot = True
         self.enemy_anim_frame = 0
         self.enemy_anim_list = self.enemy_death_anim
+    
 
     def update(self, speed):     
         self.destroy()

@@ -323,7 +323,6 @@ class MainGame(State):
     
     def update(self):
         if not self.player_sprite.is_dead and not self.is_pause:
-            print(self.is_pause)
             
             #! The score will be wrong when the player pauses the game
             #! For example, if the score is 15 and the player pauses the game for 5 seconds
@@ -343,6 +342,8 @@ class MainGame(State):
                     self.player_sprite.die()
             
             self.player_sprite.handleCollision(self.platform_group.sprites())
+            self.player_sprite.handleConllision(enemies = self.enemy_group.sprites())
+            
             self.bullets_group.update()
             for bullet in self.bullets_group.sprites():
                 bullet.handlePlatformCollision(self.platform_group.sprites())
