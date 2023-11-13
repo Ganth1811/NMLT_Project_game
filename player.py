@@ -62,11 +62,11 @@ class Player(pygame.sprite.Sprite):
 
         #* Check if player is above the ground level and is not on another platform
         if (self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity < 0):
-            self.image = pygame.transform.scale(self.player_jump, (100, 100))
+            self.image = self.player_jump
         elif(self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity > 0):
-            self.image = pygame.transform.scale(self.player_descend, (100, 100))
+            self.image = self.player_descend
         else:        
-            self.image = pygame.transform.scale(self.player_run_anim[int(self.player_anim_frame)], (100, 100))
+            self.image = self.player_run_anim[int(self.player_anim_frame)]
 
     #TODO: make the player jump
     def makePlayerJump(self):
