@@ -323,6 +323,7 @@ class MainGame(State):
     
     def update(self):
         if not self.player_sprite.is_dead and not self.is_pause:
+            self.render()
             
             #! The score will be wrong when the player pauses the game
             #! For example, if the score is 15 and the player pauses the game for 5 seconds
@@ -337,12 +338,14 @@ class MainGame(State):
             
             self.player_group.update()
             self.enemy_group.update(self.platform_speed)
+            
             for enemy in self.enemy_group.sprites():
+                enemy.getSlashed(self.player_sprite.slash_hitboxss)
                 if enemy.handlePlayerCollision(self.player_sprite):
+                    
                     self.player_sprite.die()
             
             self.player_sprite.handleCollision(self.platform_group.sprites())
-            self.player_sprite.handleConllision(enemies = self.enemy_group.sprites())
             
             self.bullets_group.update()
             for bullet in self.bullets_group.sprites():
@@ -350,7 +353,6 @@ class MainGame(State):
                 if bullet.handleEnemyCollision(self.enemy_group.sprites()):
                     self.score_by_player += self.enemy_kill_point
             
-            self.render()
             # print(len(self.platform_group.sprites()))
             
 

@@ -5,6 +5,7 @@ import settings as st
 pygame.init()
 
 
+screen = pygame.display.set_mode((st.SCREEN_WIDTH, st.SCREEN_HEIGHT))
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -38,6 +39,12 @@ class Player(pygame.sprite.Sprite):
         self.mouses_click = pygame.mouse.get_pressed()
         self.keys = pygame.key.get_pressed()
         self.is_dead = False    
+        
+        #* slash
+        self.slash_hitbox = None
+        self.slash_counter = 0
+        self.is_slashing = 0
+        
     #TODO: Get the player input 
     def getPlayerInput(self):
 
@@ -49,7 +56,8 @@ class Player(pygame.sprite.Sprite):
         if (self.keys[pygame.K_SPACE] and self.is_colliding):
             self.makePlayerJump()
         if self.mouses_click[0] and not self.last_click[0]:
-            bullets.add(Bullets(self.rect.right, self.rect.centery))
+            #bullets.add(Bullets(self.rect.right, self.rect.centery))
+            self.is_slashing = True
             #? There's an error that the player will shoot when you click start the game.
             #? I think it is related to the bug I told you (the sound duplicated one)
 
@@ -72,6 +80,19 @@ class Player(pygame.sprite.Sprite):
     def makePlayerJump(self):
         self.vertical_velocity = -self.jump_force
         sfx.player_jump.play()
+        
+    def strike(self):
+        if (self.slash_counter >= 20):
+            self.slash_counter = 0
+            self.is_slashing = False
+            self.slash_hitbox = None
+        
+        
+        if self.is_slashing:
+            self.slash_hitbox = pygame.Rect(self.rect.right, self.rect.top, 100, 100)
+            pygame.draw.rect(screen, "Green", self.slash_hitbox)
+            self.slash_counter += 1
+            print("Strike")
         
     #TODO: pull the player down every frame by a constant amount
     def affectGravityOnPlayer(self):
@@ -139,6 +160,7 @@ class Player(pygame.sprite.Sprite):
         self.getPlayerInput()
         self.affectGravityOnPlayer()
         self.animatePlayer()
+        self.strike()
         self.destroy()
     
     def destroy(self):

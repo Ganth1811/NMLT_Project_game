@@ -116,8 +116,16 @@ class Enemy(pygame.sprite.Sprite):
         if self.rect.right < 0:
             self.kill()
             del self
-    
+            
     def handlePlayerCollision(self, player):
         if self.rect.colliderect(player.rect) and not self.is_shot:
             return True
         return False
+    
+    def getSlashed(self, slash_hitbox):
+        if slash_hitbox is not None:
+            if self.rect.colliderect(slash_hitbox):
+                self.shot()
+                
+            
+        
