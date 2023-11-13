@@ -56,8 +56,8 @@ class Player(pygame.sprite.Sprite):
         if (self.keys[pygame.K_SPACE] and self.is_colliding):
             self.makePlayerJump()
         if self.mouses_click[0] and not self.last_click[0]:
-            #bullets.add(Bullets(self.rect.right, self.rect.centery))
-            self.is_slashing = True
+            bullets.add(Bullets(self.rect.right, self.rect.centery))
+            # self.is_slashing = True
             #? There's an error that the player will shoot when you click start the game.
             #? I think it is related to the bug I told you (the sound duplicated one)
 
@@ -70,11 +70,11 @@ class Player(pygame.sprite.Sprite):
 
         #* Check if player is above the ground level and is not on another platform
         if (self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity < 0):
-            self.image = pygame.transform.scale(self.player_jump, (100, 100))
+            self.image = self.player_jump
         elif(self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity > 0):
-            self.image = pygame.transform.scale(self.player_descend, (100, 100))
+            self.image = self.player_descend
         else:        
-            self.image = pygame.transform.scale(self.player_run_anim[int(self.player_anim_frame)], (100, 100))
+            self.image = self.player_run_anim[int(self.player_anim_frame)]
 
     #TODO: make the player jump
     def makePlayerJump(self):
@@ -82,7 +82,7 @@ class Player(pygame.sprite.Sprite):
         sfx.player_jump.play()
         
     def strike(self):
-        if (self.slash_counter >= 20):
+        if (self.slash_counter >= 30):
             self.slash_counter = 0
             self.is_slashing = False
             self.slash_hitbox = None
@@ -158,9 +158,9 @@ class Player(pygame.sprite.Sprite):
     def update(self):
         self.previous_pos = self.rect.copy()
         self.getPlayerInput()
+        self.strike()
         self.affectGravityOnPlayer()
         self.animatePlayer()
-        self.strike()
         self.destroy()
     
     def destroy(self):
@@ -175,44 +175,22 @@ class Bullets(pygame.sprite.Sprite):
 
         self.Player_right, self.Player_centery = Player_right, Player_centery
         self.speed = 15
-        self.init_image = pygame.Surface((10, 5))
-        self.init_image.fill("darkgreen")
+        self.image = pygame.Surface((10, 5))
+        self.image.fill("darkgreen")
 
-        #* Vector related: Shooting aim
-        mouse_x = pygame.mouse.get_pos()[0] - Player_right
-        mouse_y = pygame.mouse.get_pos()[1] - Player_centery
-        self.vector_mouse = pygame.Vector2()
-        self.vector_mouse.xy = mouse_x, mouse_y
-        pygame.math.Vector2.normalize_ip(self.vector_mouse)
+        self.rect = self.image.get_rect(midleft = (self.Player_right, self.Player_centery + 15))
 
-        #* Rotate the bullet base on its direction
-        self.angle = self.vector_mouse.as_polar()[1]
-        self.image = pygame.transform.rotate(self.init_image, self.angle)
-        self.rect = self.image.get_rect(midleft = (self.Player_right, self.Player_centery))
-        #? There's a problem when the rotate angle is about 45 degrees, the image becomes a square
-
-        #* Precision related: see moveBullet()
-        self.pos_x, self. pos_y = self.rect.x, self.rect.y
 
         sfx.player_shoot.play()
 
     def moveBullet(self):
-
-        #* Because rect.x and rect.y can only be integer, the sai số will add up
-        #* So I make variables that can hold the exact location of the bullet
-        self.pos_x += self.vector_mouse.x * self.speed
-        self.pos_y += self.vector_mouse.y * self.speed
-        self.rect.x, self.rect.y = self.pos_x, self.pos_y
+        self.rect.x += self.speed
 
     def update(self):
         self.destroy()
         self.moveBullet()
     
     def destroy(self):
-
-        #* Limit the angle
-        if abs(self.angle) > 75:
-            self.kill()
         if self.rect.left > st.SCREEN_WIDTH + 5 or self.rect.top < -5 or self.rect.bottom >= st.SCREEN_HEIGHT:
             self.kill()
 

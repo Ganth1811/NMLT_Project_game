@@ -325,9 +325,6 @@ class MainGame(State):
         if not self.player_sprite.is_dead and not self.is_pause:
             self.render()
             
-            #! The score will be wrong when the player pauses the game
-            #! For example, if the score is 15 and the player pauses the game for 5 seconds
-            #! When they return, the score will jump to 20 instead of keep counting to 16
             
             #* getting the second elapsed since MainGame ran as score
             self.run_time = self.previous_run_time + int((pygame.time.get_ticks() - self.start_time) / 1000)
@@ -340,9 +337,9 @@ class MainGame(State):
             self.enemy_group.update(self.platform_speed)
             
             for enemy in self.enemy_group.sprites():
-                enemy.getSlashed(self.player_sprite.slash_hitboxss)
-                if enemy.handlePlayerCollision(self.player_sprite):
-                    
+                if enemy.getSlashed(self.player_sprite.slash_hitbox):
+                    self.score_by_player += self.enemy_kill_point
+                if enemy.handlePlayerCollision(self.player_sprite):               
                     self.player_sprite.die()
             
             self.player_sprite.handleCollision(self.platform_group.sprites())

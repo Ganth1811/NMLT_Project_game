@@ -124,8 +124,11 @@ class Enemy(pygame.sprite.Sprite):
     
     def getSlashed(self, slash_hitbox):
         if slash_hitbox is not None:
-            if self.rect.colliderect(slash_hitbox):
+            if self.rect.colliderect(slash_hitbox) and not self.is_shot:
                 self.shot()
+                return True
+        return False
+
                 
             
         
