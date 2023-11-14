@@ -305,15 +305,16 @@ class MainGame(State):
         #* spawn a platform
         #* Spawn a new platform when the last platform reach SCREEN_WIDTH + 50
         if self.platform_group.sprites()[-1].rect.right <= SCREEN_WIDTH + 50:
-            platform = self.platform_spawner.generatePlatform(self.prev_platform_pos, 100, self.platform_speed)
-            
+            platform_info = self.platform_spawner.generatePlatform(self.prev_platform_pos, 100, self.platform_speed)
+            platform = platform_info["platform"]
+            platform_type = platform_info["platform_type"]            
             enemy = Enemy(platform.rect.topright)
             self.enemy_group.add(enemy)
             self.prev_platform_pos = platform.rect
             self.platform_group.add(platform)
 
             #* Temporary spawn logic: Spawn diamond when long platform is spawn and the random number is > 0.9
-            if platform.width == 600:
+            if platform_type == "long":
                 if random.uniform(0, 1) > 0.9:
                     self.collectibles_group.add(Diamond(platform.rect.left + 120, platform.rect.top - 200))
     
@@ -346,8 +347,6 @@ class MainGame(State):
             self.enemy_group.update(self.platform_speed)
             
             for enemy in self.enemy_group.sprites():
-                if enemy.getSlashed(self.player_sprite.slash_hitbox):
-                    self.score_by_player += self.enemy_kill_point
                 if enemy.handlePlayerCollision(self.player_sprite):               
                     self.player_sprite.die()
             

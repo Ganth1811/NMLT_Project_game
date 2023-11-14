@@ -58,12 +58,14 @@ class PlatformSpawner(object):
         platform_type = choice(platform_type_set)
         
         if platform_type == "long":
-            platform_width = 600
+            platform_width = 800
         else:
             platform_width = 300
         
-        return Platform(platform_x, platform_y, platform_width, 50)
-        
+        return {
+            "platform": Platform(platform_x, platform_y, platform_width, 50),
+            "platform_type": platform_type
+        }
         
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, Platform_topright):#, Platform_speed):
