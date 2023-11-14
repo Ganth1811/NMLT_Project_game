@@ -4,7 +4,7 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 import button as bt
 import sfx
 from player import player, bullets, Player
-from platforms import Platform, PlatformSpawner, Enemy
+from platforms import Platform, PlatformSpawner, Enemy, Diamond
 import random
 
 
@@ -242,6 +242,9 @@ class MainGame(State):
         
         #* enemy
         self.enemy_group = pygame.sprite.Group()
+
+        #* collectible
+        self.collectibles_group = pygame.sprite.Group()
         
         #* time
         self.start_time = pygame.time.get_ticks()
@@ -308,6 +311,11 @@ class MainGame(State):
             self.enemy_group.add(enemy)
             self.prev_platform_pos = platform.rect
             self.platform_group.add(platform)
+
+            #* Temporary spawn logic: Spawn diamond when long platform is spawn and the random number is > 0.9
+            if platform.width == 600:
+                if random.uniform(0, 1) > 0.9:
+                    self.collectibles_group.add(Diamond(platform.rect.left + 120, platform.rect.top - 200))
     
     def render(self):
         screen.fill('Black')
@@ -315,6 +323,7 @@ class MainGame(State):
         #screen.blit(self.ground_surface, (0, 500))
         self.platform_group.draw(screen)
         self.enemy_group.draw(screen)
+        self.collectibles_group.draw(screen)
         self.bullets_group.draw(screen)
         self.player_group.draw(screen)
         
@@ -350,6 +359,12 @@ class MainGame(State):
                 if bullet.handleEnemyCollision(self.enemy_group.sprites()):
                     self.score_by_player += self.enemy_kill_point
             
+            self.collectibles_group.update(self.platform_speed)
+            for collectible in self.collectibles_group.sprites():
+                if collectible.playerCollect(self.player_sprite):
+                    self.score_by_player += collectible.given_score
+            
+            self.render()
             # print(len(self.platform_group.sprites()))
             
 

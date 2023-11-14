@@ -122,13 +122,56 @@ class Enemy(pygame.sprite.Sprite):
             return True
         return False
     
-    def getSlashed(self, slash_hitbox):
-        if slash_hitbox is not None:
-            if self.rect.colliderect(slash_hitbox) and not self.is_shot:
-                self.shot()
-                return True
-        return False
 
-                
-            
+class Collectible(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y,):
+        super().__init__()
+
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+
+        self.anim_frame = 0
+        self.anim_list: list
+        self.image: pygame.Surface
+        self.rect: pygame.Rect
+        self.type: str
+        self.given_score: int
+    
+    def animateCollectible(self):
+        self.anim_frame += 0.2
+
+        if (self.anim_frame >= len(self.anim_list)):
+            self.anim_frame = 0
         
+        self.image = self.anim_list[int(self.anim_frame)]
+
+    def moveCollectible(self, speed):
+        self.rect.x -= speed
+
+    def update(self, speed):
+        self.moveCollectible(speed)
+        self.animateCollectible()
+        self.destroy()
+    
+    def playerCollect(self, player):
+        if self.rect.colliderect(player.rect):
+            self.kill()
+            return True
+        return False
+    
+    def destroy(self):
+        if self.rect.right < 0:
+            self.kill()
+            
+
+class Diamond(Collectible):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(pos_x, pos_y)
+
+        self.anim_list = [pygame.image.load(f"Sunny-land-files\\Graphical Assets\\sprites\\gem\\gem-{i}.png").convert_alpha() for i in range(1,6)]
+        self.anim_list = [pygame.transform.rotozoom(image, 0, 2) for image in self.anim_list]
+
+        self.image = self.anim_list[self.anim_frame]
+        self.rect = self.image.get_rect(center = (pos_x, pos_y))
+        self.type = "Diamond"
+        self.given_score = 100
