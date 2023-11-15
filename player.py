@@ -19,7 +19,7 @@ class Player(pygame.sprite.Sprite):
         self.player_anim_frame = 0
 
         #* import player sprites and scale it
-        self.player_run_anim = [pygame.image.load(f"Sunny-land-files\\Graphical Assets\\sprites\\player\\Run\\playerRun{i}.png").convert_alpha() for i in range(1,7)]
+        self.player_run_anim = [pygame.image.load(f"img\\Sprites\\player_run{i}.png").convert_alpha() for i in range(1,5)]
         self.player_run_anim = [pygame.transform.scale(image, (100, 100)) for image in self.player_run_anim]
 
         self.player_jump = pygame.transform.scale(pygame.image.load("Sunny-land-files\\Graphical Assets\\sprites\\player\\jump\\playerJump1.png").convert_alpha(), (100, 100))
@@ -65,7 +65,7 @@ class Player(pygame.sprite.Sprite):
     def animatePlayer(self):
         self.player_anim_frame += 0.2
 
-        if (self.player_anim_frame >= 6):
+        if (self.player_anim_frame >= 4):
             self.player_anim_frame = 0
 
         #* Check if player is above the ground level and is not on another platform

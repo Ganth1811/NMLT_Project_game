@@ -177,3 +177,34 @@ class Diamond(Collectible):
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
         self.type = "Diamond"
         self.given_score = 100
+        
+
+
+#* a very simple obstacle class
+class Obstacle(pygame.sprite.Sprite):
+    def __init__(self, x_pos, y_pos, image, speed):
+        super().__init__()
+        self.image = pygame.transform.scale(pygame.image.load(image), (50, 50)).convert_alpha()
+        self.rect = self.image.get_rect(midbottom = (x_pos, y_pos))
+        self.rect.width -= 4
+        self.rect.height -= 4
+        self.speed = speed
+    def moveObstacle(self):
+        self.rect.x -= self.speed + 0.1
+    
+    def handlePlayerCollision(self, player):
+        if self.rect.colliderect(player.rect):
+            player.die()
+    
+    def destroy(self):
+        if self.rect.right <= -1:
+            self.kill
+            del self
+    
+    def update(self, player):
+        self.moveObstacle()
+        self.handlePlayerCollision(player)
+        self.destroy()
+        
+        
+        
