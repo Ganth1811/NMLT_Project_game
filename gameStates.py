@@ -298,7 +298,7 @@ class MainGame(State):
         
     def generatePlatform(self):
         #* Increasing the speed by a constant each frame
-        self.platform_speed = self.platform_speed + 0.05 / 40
+        self.platform_speed = self.platform_speed + 0.05 / 60
         
         #* ensuring the speed does not exceed the maximum value
         if self.platform_speed >= 30:
@@ -320,11 +320,11 @@ class MainGame(State):
                 if random.uniform(0, 1) > 0.2:
                     self.collectibles_group.add(Diamond(platform.rect.left + 120, platform.rect.top - 10))
                 
-                if random.uniform(0, 1) > 0.5:
+                if random.uniform(0, 1) > 0:
                     enemy = Enemy(platform.rect.topright)
                     self.enemy_group.add(enemy)
                 else:
-                    obstacle = Obstacle((platform.rect.right - 800 / 2), platform.rect.top - 10, "img\\obstacles\\spike_ball.png", self.platform_speed)
+                    obstacle = Obstacle((platform.rect.right - 800 / 2), platform.rect.top - 5, "img\\obstacles\\spike_ball.png", self.platform_speed)
                     self.obstacle_group.add(obstacle)
                     
     def render(self):

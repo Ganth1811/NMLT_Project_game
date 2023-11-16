@@ -58,7 +58,7 @@ class PlatformSpawner(object):
         platform_type = choice(platform_type_set)
         
         if platform_type == "long":
-            platform_width = 800
+            platform_width = 900
         else:
             platform_width = 300
         
