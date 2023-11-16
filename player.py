@@ -57,6 +57,9 @@ class Player(pygame.sprite.Sprite):
         self.slash_frame = 0
         self.is_slashing = 0
         
+        
+        self.score = 0
+        
     #TODO: Get the player input 
     def getPlayerInput(self):
 
@@ -127,7 +130,7 @@ class Player(pygame.sprite.Sprite):
             self.die()
 
     #TODO: handle all the platform collision
-    def handleCollision(self, platforms):    
+    def handlePlatformCollision(self, platforms):    
         on_platform = False
         
         #* If exists at least one platform, check for the player collision with the platforms
@@ -164,10 +167,26 @@ class Player(pygame.sprite.Sprite):
                     
 
     #TODO: handle enemy collisions
-    def handleConllision(self, enemies):
-        for enemy in enemies:
-            if self.rect.colliderect(enemy.rect):
-                self.die()
+    def handleEnemyConllision(self, enemy):
+        if not enemy.is_shot:
+            self.die()
+            
+    def collectCollectible(self, collectible):
+        self.score += collectible.playerCollect()
+        
+    
+    def handleAllCollisions(self, colliables, platforms):
+        self.handlePlatformCollision(platforms)
+        
+        for colliable in colliables:
+            if self.rect.colliderect(colliable.rect):
+                if colliable.type == "enemy":
+                    self.handleEnemyConllision(colliable)
+                if colliable.type == "obstacle":
+                    self.die()
+                if colliable.type == "diamond":
+                    self.collectCollectible(colliable)
+    
     
     
     #TODO: kill the player, thus ending the game
@@ -204,28 +223,31 @@ class Bullets(pygame.sprite.Sprite):
 
     def moveBullet(self):
         self.rect.x += self.speed
-
-    def update(self):
-        self.destroy()
-        self.moveBullet()
-    
-    def destroy(self):
         if self.rect.left > st.SCREEN_WIDTH + 5 or self.rect.top < -5 or self.rect.bottom >= st.SCREEN_HEIGHT:
             self.kill()
 
-    def handlePlatformCollision(self, platforms):
-        for platform in platforms:
-            if self.rect.colliderect(platform.rect):
-                self.kill()
-                break
+    def update(self, colliables):
+        self.moveBullet()
+        self.handleAllCollisions(colliables)
 
-    def handleEnemyCollision(self, enemies):
-        for enemy in enemies:
-            if self.rect.colliderect(enemy.rect) and not enemy.is_shot:
-                enemy.shot()
-                self.kill()
-                return True
-        return False
+    def handlePlatformCollision(self, platform):
+        if self.rect.colliderect(platform.rect):
+            self.kill()
+
+    def handleAllCollisions(self, colliables):
+        for colliable in colliables:
+            if self.rect.colliderect(colliable.rect):
+                if colliable.type == "platform":
+                    self.handlePlatformCollision(colliable)
+                if colliable.type == "enemy":
+                    self.handleEnemyCollision(colliable)
+    
+
+    def handleEnemyCollision(self, enemy):
+        if not enemy.is_shot:
+            enemy.shot()
+            self.kill()
+
 
 bullets = pygame.sprite.Group()
 

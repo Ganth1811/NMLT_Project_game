@@ -321,7 +321,7 @@ class MainGame(State):
                 if random.uniform(0, 1) > 0.2:
                     self.collectibles_group.add(Diamond(platform.rect.left + 120, platform.rect.top - 10))
                 
-                if random.uniform(0, 1) > 0:
+                if random.uniform(0, 1) > 0.6:
                     enemy = Enemy(platform.rect.topright)
                     self.enemy_group.add(enemy)
                 else:
