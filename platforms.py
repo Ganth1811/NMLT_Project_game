@@ -6,7 +6,7 @@ pygame.init()
 class Platform(pygame.sprite.Sprite):
     def __init__(self, x_pos, y_pos, width, height):
         super().__init__()
-        
+        self.type = "platform"
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.width = width
@@ -70,7 +70,7 @@ class PlatformSpawner(object):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, Platform_topright):#, Platform_speed):
         super().__init__()
-
+        self.type = "enemy"
         #* initializing enemy spirte animations
         self.enemy_anim_frame = 0
 
@@ -102,28 +102,18 @@ class Enemy(pygame.sprite.Sprite):
 
     def moveEnemy(self, speed):
         self.rect.x -= speed + 0.1
-    
+        if self.rect.right < 0:
+            self.kill()
+        
     def shot(self):
         self.is_shot = True
         self.enemy_anim_frame = 0
         self.enemy_anim_list = self.enemy_death_anim
     
-
     def update(self, speed):     
-        self.destroy()
         self.animateEnemy()
         self.moveEnemy(speed)
-    
-    def destroy(self):
-        if self.rect.right < 0:
-            self.kill()
-            del self
-            
-    def handlePlayerCollision(self, player):
-        if self.rect.colliderect(player.rect) and not self.is_shot:
-            return True
-        return False
-    
+
 
 class Collectible(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y,):
@@ -155,11 +145,9 @@ class Collectible(pygame.sprite.Sprite):
         self.animateCollectible()
         self.destroy()
     
-    def playerCollect(self, player):
-        if self.rect.colliderect(player.rect):
-            self.kill()
-            return True
-        return False
+    def playerCollect(self):
+        self.kill()
+        return self.given_score
     
     def destroy(self):
         if self.rect.right < 0:
@@ -175,7 +163,7 @@ class Diamond(Collectible):
 
         self.image = self.anim_list[self.anim_frame]
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
-        self.type = "Diamond"
+        self.type = "diamond"
         self.given_score = 100
         
 
@@ -184,6 +172,7 @@ class Diamond(Collectible):
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, x_pos, y_pos, image, speed):
         super().__init__()
+        self.type = "obstacle"
         self.image = pygame.transform.scale(pygame.image.load(image), (50, 50)).convert_alpha()
         self.rect = self.image.get_rect(midbottom = (x_pos, y_pos))
         self.rect.width -= 4
