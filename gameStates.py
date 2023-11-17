@@ -337,6 +337,7 @@ class MainGame(State):
         self.platform_group.draw(screen)
         self.collectibles_group.draw(screen)
         self.bullets_group.draw(screen)
+        pygame.draw.rect(screen, "yellow", self.player_sprite.hitbox)
         self.player_group.draw(screen)
         
         pygame.draw.rect(screen, "White", self.score_border)
@@ -349,16 +350,21 @@ class MainGame(State):
             
             self.generatePlatform()
             self.platform_group.update(self.platform_speed)
-            self.obstacle_group.update(self.player_sprite)
+            self.obstacle_group.update()
             self.enemy_group.update(self.platform_speed)
+            self.player_group.update()
+
             self.colliables = self.obstacle_group.sprites() + self.enemy_group.sprites() + self.collectibles_group.sprites()
             
             self.player_sprite.handleAllCollisions(self.colliables, self.platform_group.sprites())
-            self.player_group.update()
             self.bullets_group.update(self.colliables)
             
             self.collectibles_group.update(self.platform_speed)
-            
+
+            for bullet in self.bullets_group.sprites():
+                bullet.handlePlatformCollision(self.platform_group.sprites())
+                if bullet is not None:
+                    self.player_sprite.score += bullet.handleEnemyCollision(self.enemy_group.sprites())
 
             self.calculateScore(self.run_time)
             self.render()

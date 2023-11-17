@@ -1,5 +1,4 @@
 import pygame
-import time
 import gameStates as gs
 from settings import SCREEN_HEIGHT, SCREEN_WIDTH
 
@@ -37,6 +36,7 @@ while 1:
 
     clock.tick(60)
     
+    print("Happy birthday bro, delete this in main.py")
     
     
     

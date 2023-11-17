@@ -90,6 +90,8 @@ class Enemy(pygame.sprite.Sprite):
         #self.speed = Platform_speed * 1.2
         self.platform_topright = Platform_topright
 
+        self.given_score = 20
+
     def animateEnemy(self):
         self.enemy_anim_frame += 0.2
 
@@ -159,21 +161,20 @@ class Diamond(Collectible):
         super().__init__(pos_x, pos_y)
 
         self.anim_list = [pygame.image.load(f"Sunny-land-files\\Graphical Assets\\sprites\\gem\\gem-{i}.png").convert_alpha() for i in range(1,6)]
-        self.anim_list = [pygame.transform.rotozoom(image, 0, 2) for image in self.anim_list]
+        self.anim_list = [pygame.transform.scale_by(image, 2) for image in self.anim_list]
 
         self.image = self.anim_list[self.anim_frame]
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
         self.type = "diamond"
-        self.given_score = 100
+        self.given_score = 5
         
-
 
 #* a very simple obstacle class
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, x_pos, y_pos, image, speed):
         super().__init__()
         self.type = "obstacle"
-        self.image = pygame.transform.scale(pygame.image.load(image), (50, 50)).convert_alpha()
+        self.image = pygame.transform.scale_by(pygame.image.load(image), 2).convert_alpha()
         self.rect = self.image.get_rect(midbottom = (x_pos, y_pos))
         self.rect.width -= 4
         self.rect.height -= 4
@@ -181,18 +182,13 @@ class Obstacle(pygame.sprite.Sprite):
     def moveObstacle(self):
         self.rect.x -= self.speed + 0.1
     
-    def handlePlayerCollision(self, player):
-        if self.rect.colliderect(player.rect):
-            player.die()
-    
     def destroy(self):
         if self.rect.right <= -1:
             self.kill
             del self
     
-    def update(self, player):
+    def update(self):
         self.moveObstacle()
-        self.handlePlayerCollision(player)
         self.destroy()
         
         
