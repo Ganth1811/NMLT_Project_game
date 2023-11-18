@@ -7,6 +7,7 @@ from player import player, bullets, Player
 from platforms import Obstacle, Platform, PlatformSpawner, Enemy, Diamond
 import random
 
+from math import ceil
 
 
 pygame.init()
@@ -222,6 +223,8 @@ class MainGame(State):
         self.background = pygame.transform.scale(pygame.image.load("Sunny-land-files\\Graphical Assets\\environment\\Background\\Background.jpg").convert_alpha(), (1280, 720))
         self.ground_surface = pygame.Surface((1280,300))
         self.ground_surface.fill('darkolivegreen1')
+        self.tiles = ceil(SCREEN_WIDTH / self.background.get_width()) + 1
+        self.scroll = 0
         
         #* background music
         self.bg_music = pygame.mixer_music.load("music\\bgm\\game_bg_music.mp3")
@@ -300,7 +303,8 @@ class MainGame(State):
         
     def generatePlatform(self):
         #* Increasing the speed by a constant each frame
-        self.platform_speed = self.platform_speed + 0.05 / 60
+        self.platform_speed = self.platform_speed + 0.05 / 40
+        print(self.platform_speed)
         
         #* ensuring the speed does not exceed the maximum value
         if self.platform_speed >= 30:
@@ -312,6 +316,7 @@ class MainGame(State):
             platform_info = self.platform_spawner.generatePlatform(self.prev_platform_pos, 100, self.platform_speed)
             platform = platform_info["platform"]
             platform_type = platform_info["platform_type"]            
+            platform_width = platform_info["platform_width"]
             
             self.prev_platform_pos = platform.rect
             self.platform_group.add(platform)
@@ -325,22 +330,35 @@ class MainGame(State):
                     enemy = Enemy(platform.rect.topright)
                     self.enemy_group.add(enemy)
                 else:
-                    obstacle = Obstacle((platform.rect.right - 800 / 2), platform.rect.top - 5, "img\\obstacles\\spike_ball.png", self.platform_speed)
+                    obstacle = Obstacle((platform.rect.right - platform_width / 2), platform.rect.top - 5, "img\\obstacles\\spike_ball.png", self.platform_speed)
                     self.obstacle_group.add(obstacle)
                     
     def render(self):
         screen.fill('Black')
-        screen.blit(self.background, (0, 0))
-        #screen.blit(self.ground_surface, (0, 500))
+        #screen.blit(self.background, (0, 0))
+        self.scrollBackground()
         self.obstacle_group.draw(screen)
         self.enemy_group.draw(screen)
         self.platform_group.draw(screen)
         self.collectibles_group.draw(screen)
         self.bullets_group.draw(screen)
+        pygame.draw.rect(screen, "yellow", self.player_sprite.hitbox)
         self.player_group.draw(screen)
         
         pygame.draw.rect(screen, "White", self.score_border)
         screen.blit(self.score_surf, (640 - 100, 50))
+    
+    
+    def scrollBackground(self):
+        if (-self.scroll > SCREEN_WIDTH):
+            self.scroll = 0
+        self.scroll -= (self.platform_speed - 9)
+
+        for i in range(0, self.tiles):
+            screen.blit(self.background , (i * SCREEN_WIDTH + self.scroll, 0))
+            
+        
+            
     
     def update(self):
         if not self.player_sprite.is_dead and not self.is_pause:
@@ -349,16 +367,21 @@ class MainGame(State):
             
             self.generatePlatform()
             self.platform_group.update(self.platform_speed)
-            self.obstacle_group.update(self.player_sprite)
+            self.obstacle_group.update()
             self.enemy_group.update(self.platform_speed)
+            self.player_group.update()
+
             self.colliables = self.obstacle_group.sprites() + self.enemy_group.sprites() + self.collectibles_group.sprites()
             
             self.player_sprite.handleAllCollisions(self.colliables, self.platform_group.sprites())
-            self.player_group.update()
             self.bullets_group.update(self.colliables)
             
             self.collectibles_group.update(self.platform_speed)
-            
+
+            for bullet in self.bullets_group.sprites():
+                bullet.handlePlatformCollision(self.platform_group.sprites())
+                if bullet is not None:
+                    self.player_sprite.score += bullet.handleEnemyCollision(self.enemy_group.sprites())
 
             self.calculateScore(self.run_time)
             self.render()

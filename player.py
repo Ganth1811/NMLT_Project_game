@@ -10,56 +10,56 @@ screen = pygame.display.set_mode((st.SCREEN_WIDTH, st.SCREEN_HEIGHT))
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-    
-        #* creating player sprite
-        self.image = pygame.transform.scale(pygame.image.load("Sunny-land-files\Graphical Assets\sprites\player\Run\playerRun1.png").convert_alpha(), (100,100))
-        self.rect = self.image.get_rect(midbottom = (150, 500))
+
+        self.player_position = (120, 500)
 
         #* initializing player spirte animations
         self.player_anim_frame = 0
 
-        #* import player sprites and scale it
-        
+        #* import player sprites and scale it    
         
         #* running
         self.player_run_anim = [pygame.image.load(f"img\\Sprites\\player_run{i}.png").convert_alpha() for i in range(1,5)]
-        self.player_run_anim = [pygame.transform.scale(image, (100, 100)) for image in self.player_run_anim]
+        self.player_run_anim = [pygame.transform.scale_by(image, 4) for image in self.player_run_anim]
 
         #* jumping
-        self.player_jump = pygame.transform.scale(pygame.image.load("img\\Sprites\\player_jump.png").convert_alpha(), (100, 100))
+        self.player_jump = pygame.image.load("img\\Sprites\\player_jump.png").convert_alpha()
         self.player_jump_anim = [self.player_jump]  + [pygame.image.load(f"img\\Sprites\\player_spin{i}.png").convert_alpha() for i in range(1,5)]
-        self.player_jump_anim = [pygame.transform.scale(image, (100, 100)) for image in self.player_jump_anim]
-        self.player_descend = pygame.transform.scale(pygame.image.load("img\\Sprites\\player_fall.png").convert_alpha(), (100, 100))
+        self.player_jump_anim = [pygame.transform.scale_by(image, 4) for image in self.player_jump_anim]
+        self.player_descend = pygame.transform.scale_by(pygame.image.load("img\\Sprites\\player_fall.png").convert_alpha(), 4)
         
         #* slashing
         self.player_slash_anim = [pygame.image.load(f"img\\Sprites\\player_attack{i}.png").convert_alpha() for i in range(1,5)]
-        self.player_slash_anim = [pygame.transform.scale(image, (120, 100)) for image in self.player_slash_anim]
-        
-        
-        
+        self.player_slash_anim = [pygame.transform.scale_by(image, 4) for image in self.player_slash_anim]
+
         self.image = self.player_run_anim[self.player_anim_frame]
-        self.rect = self.image.get_rect(midbottom = (150, 500))
+        self.rect = self.image.get_rect(bottomleft = self.player_position)
         self.previous_position = self.rect.copy()
         
         #* jumping related 
         self.gravity = 1
         self.vertical_velocity = 0
         self.is_colliding = False
-        self.jump_force = 18.5
+        self.jump_force = 20
         self.player_jump_frame = 0
 
         #* input related, see details in getPlayerInput()
         self.mouses_click = pygame.mouse.get_pressed()
         self.keys = pygame.key.get_pressed()
-        self.is_dead = False    
+        self.is_dead = False
         
         #* slash
         self.slash_frame = 0
         self.is_slashing = 0
         
-        
         self.score = 0
         
+        #* hitbox
+        self.hitbox = pygame.Rect(0, 0, 12 * 4, 22 * 4)
+        self.hitbox.bottomleft = (self.rect.left + 6 * 4, self.rect.bottom)
+        self.is_spinning = False
+        
+
     #TODO: Get the player input 
     def getPlayerInput(self):
 
@@ -73,7 +73,7 @@ class Player(pygame.sprite.Sprite):
         if self.mouses_click[0] and not self.last_click[0] and not self.is_slashing:
             bullets.add(Bullets(self.rect.right, self.rect.centery))
             self.is_slashing = True
-            print(self.is_slashing)
+            # print(self.is_slashing)
             #? There's an error that the player will shoot when you click start the game.
             #? I think it is related to the bug I told you (the sound duplicated one)
 
@@ -83,6 +83,10 @@ class Player(pygame.sprite.Sprite):
         if (self.player_jump_frame >= 5):
             self.player_jump_frame = 0
         self.image = self.player_jump_anim[int(self.player_jump_frame)]
+        
+        if self.player_jump_frame >= 1:
+            self.is_spinning = True
+            self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
 
     def animatePlayerSlash(self):
         self.slash_frame += 0.4
@@ -93,6 +97,7 @@ class Player(pygame.sprite.Sprite):
             return
         
         self.image = self.player_slash_anim[int(self.slash_frame)]
+        self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
         
 
     #TODO: animate the player 
@@ -103,15 +108,19 @@ class Player(pygame.sprite.Sprite):
             self.player_anim_frame = 0
 
         if self.is_slashing:
-            self.animatePlayerSlash()  
+            self.animatePlayerSlash()
+            self.is_spinning = False  
         #* Check if player is above the ground level and is not on another platform
         elif (self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity < 6):
             self.animatePlayerJump()
         elif(self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity > 7):
             self.image = self.player_descend
+            self.is_spinning = False
+            self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
         else:        
             self.player_jump_frame = 0
             self.image = self.player_run_anim[int(self.player_anim_frame)]
+        
 
     #TODO: make the player jump
     def makePlayerJump(self):
@@ -160,34 +169,37 @@ class Player(pygame.sprite.Sprite):
             if not on_platform:  
                 self.is_colliding = False
                     
-                    
                 #* Check if the player is pushed out of the screen then enter the game over
                 if (self.rect.right < -5):
                     self.die()
                     
 
     #TODO: handle enemy collisions
-    def handleEnemyConllision(self, enemy):
+    def handleEnemyCollision(self, enemy):
         if not enemy.is_shot:
             self.die()
-            
+
     def collectCollectible(self, collectible):
         self.score += collectible.playerCollect()
-        
-    
+
     def handleAllCollisions(self, colliables, platforms):
-        self.handlePlatformCollision(platforms)
-        
+        self.handlePlatformCollision(platforms)     
         for colliable in colliables:
-            if self.rect.colliderect(colliable.rect):
+            if self.hitbox.colliderect(colliable.rect):
                 if colliable.type == "enemy":
-                    self.handleEnemyConllision(colliable)
+                    self.handleEnemyCollision(colliable)
                 if colliable.type == "obstacle":
                     self.die()
                 if colliable.type == "diamond":
                     self.collectCollectible(colliable)
     
-    
+    def getHitbox(self):
+        if not self.is_spinning:
+            self.hitbox = pygame.Rect(0, 0, 12 * 4, 22 * 4)
+            self.hitbox.bottomleft = (self.rect.left + 6 * 4, self.rect.bottom)
+        else:
+            self.hitbox = pygame.Rect(0, 0, 17 * 4, 17 * 4)
+            self.hitbox.bottomleft = (self.rect.left, self.rect.bottom)
     
     #TODO: kill the player, thus ending the game
     def die(self):
@@ -200,11 +212,8 @@ class Player(pygame.sprite.Sprite):
         self.getPlayerInput()
         self.affectGravityOnPlayer()
         self.animatePlayer()
-        self.destroy()
-    
-    def destroy(self):
-        if self.rect.top >= st.SCREEN_HEIGHT + 5:
-            self.kill()
+        self.getHitbox()
+        
 
 
 
@@ -218,7 +227,6 @@ class Bullets(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect(midleft = (self.Player_right - 30, self.Player_centery))
 
-
         sfx.player_shoot.play()
 
     def moveBullet(self):
@@ -228,25 +236,19 @@ class Bullets(pygame.sprite.Sprite):
 
     def update(self, colliables):
         self.moveBullet()
-        self.handleAllCollisions(colliables)
 
-    def handlePlatformCollision(self, platform):
-        if self.rect.colliderect(platform.rect):
-            self.kill()
+    def handlePlatformCollision(self, platform_group):
+        for platform in platform_group:
+            if self.rect.colliderect(platform.rect):
+                self.kill()
 
-    def handleAllCollisions(self, colliables):
-        for colliable in colliables:
-            if self.rect.colliderect(colliable.rect):
-                if colliable.type == "platform":
-                    self.handlePlatformCollision(colliable)
-                if colliable.type == "enemy":
-                    self.handleEnemyCollision(colliable)
-    
-
-    def handleEnemyCollision(self, enemy):
-        if not enemy.is_shot:
-            enemy.shot()
-            self.kill()
+    def handleEnemyCollision(self, enemy_group):
+        for enemy in enemy_group:
+            if self.rect.colliderect(enemy.rect) and not enemy.is_shot:
+                enemy.shot()
+                self.kill()
+                return enemy.given_score
+        return 0
 
 
 bullets = pygame.sprite.Group()
