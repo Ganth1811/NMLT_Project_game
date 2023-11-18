@@ -12,10 +12,6 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
 
         self.player_position = (120, 500)
-    
-        #* creating player sprite
-        self.image = pygame.transform.scale(pygame.image.load("Sunny-land-files\Graphical Assets\sprites\player\Run\playerRun1.png").convert_alpha(), (100,100))
-        self.rect = self.image.get_rect(bottomleft = self.player_position)
 
         #* initializing player spirte animations
         self.player_anim_frame = 0
@@ -35,8 +31,7 @@ class Player(pygame.sprite.Sprite):
         #* slashing
         self.player_slash_anim = [pygame.image.load(f"img\\Sprites\\player_attack{i}.png").convert_alpha() for i in range(1,5)]
         self.player_slash_anim = [pygame.transform.scale_by(image, 4) for image in self.player_slash_anim]
-        
- 
+
         self.image = self.player_run_anim[self.player_anim_frame]
         self.rect = self.image.get_rect(bottomleft = self.player_position)
         self.previous_position = self.rect.copy()
@@ -174,7 +169,6 @@ class Player(pygame.sprite.Sprite):
             if not on_platform:  
                 self.is_colliding = False
                     
-                    
                 #* Check if the player is pushed out of the screen then enter the game over
                 if (self.rect.right < -5):
                     self.die()
@@ -184,14 +178,12 @@ class Player(pygame.sprite.Sprite):
     def handleEnemyCollision(self, enemy):
         if not enemy.is_shot:
             self.die()
-            
+
     def collectCollectible(self, collectible):
         self.score += collectible.playerCollect()
-        
-    
+
     def handleAllCollisions(self, colliables, platforms):
-        self.handlePlatformCollision(platforms)
-        
+        self.handlePlatformCollision(platforms)     
         for colliable in colliables:
             if self.hitbox.colliderect(colliable.rect):
                 if colliable.type == "enemy":
@@ -221,12 +213,7 @@ class Player(pygame.sprite.Sprite):
         self.affectGravityOnPlayer()
         self.animatePlayer()
         self.getHitbox()
-        self.destroy()
         
-    
-    def destroy(self):
-        if self.rect.top >= st.SCREEN_HEIGHT + 5:
-            self.kill()
 
 
 
