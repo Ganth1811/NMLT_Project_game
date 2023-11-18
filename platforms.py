@@ -45,7 +45,7 @@ class PlatformSpawner(object):
             prev_platform_pos.y += 200
         
         #* separate two platforms by a certain distance relative to their speed
-        platform_x = prev_platform_pos.right + platform_gap * (platform_speed / 5.0)
+        platform_x = prev_platform_pos.right + platform_gap * (platform_speed / 7.0)
         
         #* manipulate the platform y value according to the previous platform position
         if prev_platform_pos.bottom >= 500:
@@ -58,13 +58,14 @@ class PlatformSpawner(object):
         platform_type = choice(platform_type_set)
         
         if platform_type == "long":
-            platform_width = 900
+            platform_width = platform_speed * 70
         else:
-            platform_width = 300
+            platform_width = platform_speed * 30
         
         return {
             "platform": Platform(platform_x, platform_y, platform_width, 50),
-            "platform_type": platform_type
+            "platform_type": platform_type,
+            "platform_width": platform_width
         }
         
 class Enemy(pygame.sprite.Sprite):

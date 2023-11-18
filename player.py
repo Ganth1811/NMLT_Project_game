@@ -40,7 +40,7 @@ class Player(pygame.sprite.Sprite):
         self.gravity = 1
         self.vertical_velocity = 0
         self.is_colliding = False
-        self.jump_force = 18.5
+        self.jump_force = 20
         self.player_jump_frame = 0
 
         #* input related, see details in getPlayerInput()

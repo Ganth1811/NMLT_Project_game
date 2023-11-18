@@ -11,14 +11,14 @@ pygame.display.set_caption("Alpha 2.0")
 pygame.display.set_icon(pygame.image.load('img\\Other\\game_icon.png').convert_alpha())
 
 #setting the default state
-# current_state = gs.SplashScreen()
+#current_state = gs.SplashScreen()
 current_state = gs.TitleMenu()
 
 
 #* main game loop
 while 1: 
     #Getting the events and passing it to the current state so it can procress the events accordingly
-    events = pygame.event.get()
+    events = pygame.event.get() 
     current_state.processEvent(events)
     
     #Getting the next state of the game
@@ -35,13 +35,6 @@ while 1:
     pygame.display.update()
 
     clock.tick(60)
-    
-    print("Happy birthday bro, delete this in main.py")
-    
-    
-    
-    
-    
 
     
     
