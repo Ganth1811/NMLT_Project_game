@@ -1,3 +1,9 @@
 
 *.pyc
 *.pyc
+__pycache__/button.cpython-311.pyc
+__pycache__/gameStates.cpython-311.pyc
+__pycache__/platforms.cpython-311.pyc
+__pycache__/player.cpython-311.pyc
+__pycache__/settings.cpython-311.pyc
+__pycache__/sfx.cpython-311.pyc

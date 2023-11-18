@@ -16,8 +16,8 @@ class Player(pygame.sprite.Sprite):
         #* initializing player spirte animations
         self.player_anim_frame = 0
 
-        #* import player sprites and scale it    
-        
+        #* import player sprites and scale it
+
         #* running
         self.player_run_anim = [pygame.image.load(f"img\\Sprites\\player_run{i}.png").convert_alpha() for i in range(1,5)]
         self.player_run_anim = [pygame.transform.scale_by(image, 4) for image in self.player_run_anim]
@@ -27,7 +27,7 @@ class Player(pygame.sprite.Sprite):
         self.player_jump_anim = [self.player_jump]  + [pygame.image.load(f"img\\Sprites\\player_spin{i}.png").convert_alpha() for i in range(1,5)]
         self.player_jump_anim = [pygame.transform.scale_by(image, 4) for image in self.player_jump_anim]
         self.player_descend = pygame.transform.scale_by(pygame.image.load("img\\Sprites\\player_fall.png").convert_alpha(), 4)
-        
+
         #* slashing
         self.player_slash_anim = [pygame.image.load(f"img\\Sprites\\player_attack{i}.png").convert_alpha() for i in range(1,5)]
         self.player_slash_anim = [pygame.transform.scale_by(image, 4) for image in self.player_slash_anim]
@@ -35,32 +35,32 @@ class Player(pygame.sprite.Sprite):
         self.image = self.player_run_anim[self.player_anim_frame]
         self.rect = self.image.get_rect(bottomleft = self.player_position)
         self.previous_position = self.rect.copy()
-        
-        #* jumping related 
+
+        #* jumping related
         self.gravity = 1
         self.vertical_velocity = 0
         self.is_colliding = False
-        self.jump_force = 20
+        self.jump_force = 18
         self.player_jump_frame = 0
 
         #* input related, see details in getPlayerInput()
         self.mouses_click = pygame.mouse.get_pressed()
         self.keys = pygame.key.get_pressed()
         self.is_dead = False
-        
+
         #* slash
         self.slash_frame = 0
         self.is_slashing = 0
-        
+
         self.score = 0
-        
+
         #* hitbox
         self.hitbox = pygame.Rect(0, 0, 12 * 4, 22 * 4)
         self.hitbox.bottomleft = (self.rect.left + 6 * 4, self.rect.bottom)
         self.is_spinning = False
-        
 
-    #TODO: Get the player input 
+
+    #TODO: Get the player input
     def getPlayerInput(self):
 
         #* This code check if the mouse is pressed once, prevent multiple input in 1 press
@@ -83,24 +83,24 @@ class Player(pygame.sprite.Sprite):
         if (self.player_jump_frame >= 5):
             self.player_jump_frame = 0
         self.image = self.player_jump_anim[int(self.player_jump_frame)]
-        
+
         if self.player_jump_frame >= 1:
             self.is_spinning = True
             self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
 
     def animatePlayerSlash(self):
         self.slash_frame += 0.4
-        
+
         if (self.slash_frame >= 4):
             self.is_slashing = 0
             self.slash_frame = 0
             return
-        
+
         self.image = self.player_slash_anim[int(self.slash_frame)]
         self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
-        
 
-    #TODO: animate the player 
+
+    #TODO: animate the player
     def animatePlayer(self):
         self.player_anim_frame += 0.2
 
@@ -109,7 +109,7 @@ class Player(pygame.sprite.Sprite):
 
         if self.is_slashing:
             self.animatePlayerSlash()
-            self.is_spinning = False  
+            self.is_spinning = False
         #* Check if player is above the ground level and is not on another platform
         elif (self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity < 6):
             self.animatePlayerJump()
@@ -117,35 +117,35 @@ class Player(pygame.sprite.Sprite):
             self.image = self.player_descend
             self.is_spinning = False
             self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
-        else:        
+        else:
             self.player_jump_frame = 0
             self.image = self.player_run_anim[int(self.player_anim_frame)]
-        
+
 
     #TODO: make the player jump
     def makePlayerJump(self):
         self.vertical_velocity = -self.jump_force
         sfx.player_jump.play()
-        
+
     #TODO: pull the player down every frame by a constant amount
     def affectGravityOnPlayer(self):
-        self.vertical_velocity += self.gravity 
+        self.vertical_velocity += self.gravity
         if self.vertical_velocity > 20:
-            self.vertical_velocity = 20; 
+            self.vertical_velocity = 20;
         self.rect.y += self.vertical_velocity
-        
+
         #* If the player falls out of the map, kill them
         if self.rect.top >= 700:
             self.die()
 
     #TODO: handle all the platform collision
-    def handlePlatformCollision(self, platforms):    
+    def handlePlatformCollision(self, platforms):
         on_platform = False
-        
+
         #* If exists at least one platform, check for the player collision with the platforms
         if platforms is not None:
             for platform in platforms:
-                if self.rect.colliderect(platform.rect):  
+                if self.rect.colliderect(platform.rect):
                     #* check If the player entered the platform x on the last frame
                     if self.previous_pos.right > platform.previous_pos.left:
                         #* If the player successfully jumped on the platform
@@ -153,26 +153,26 @@ class Player(pygame.sprite.Sprite):
                             self.rect.bottom = platform.rect.top
                             on_platform = True
                             self.is_colliding = True
-                            self.vertical_velocity = 0    
-                        
-                        #? If the player was under a platform, they bong their head and falls down (this is nearly impossible to happen when there are no ground)    
+                            self.vertical_velocity = 0
+
+                        #? If the player was under a platform, they bong their head and falls down (this is nearly impossible to happen when there are no ground)
                         else:
                             self.is_colliding = False
-                            self.vertical_velocity = 1    
-                            
+                            self.vertical_velocity = 1
+
                         #* If the player failed to jump on the platform, they are pushed leftward
                     else:
                         self.rect.right = platform.rect.left
                         self.vertical_velocity = 1
-            
-            #* if the player is not on any platforms present then they are not colliding with any platforms           
-            if not on_platform:  
+
+            #* if the player is not on any platforms present then they are not colliding with any platforms
+            if not on_platform:
                 self.is_colliding = False
-                    
+
                 #* Check if the player is pushed out of the screen then enter the game over
                 if (self.rect.right < -5):
                     self.die()
-                    
+
 
     #TODO: handle enemy collisions
     def handleEnemyCollision(self, enemy):
@@ -183,7 +183,7 @@ class Player(pygame.sprite.Sprite):
         self.score += collectible.playerCollect()
 
     def handleAllCollisions(self, colliables, platforms):
-        self.handlePlatformCollision(platforms)     
+        self.handlePlatformCollision(platforms)
         for colliable in colliables:
             if self.hitbox.colliderect(colliable.rect):
                 if colliable.type == "enemy":
@@ -192,7 +192,7 @@ class Player(pygame.sprite.Sprite):
                     self.die()
                 if colliable.type == "diamond":
                     self.collectCollectible(colliable)
-    
+
     def getHitbox(self):
         if not self.is_spinning:
             self.hitbox = pygame.Rect(0, 0, 12 * 4, 22 * 4)
@@ -200,12 +200,12 @@ class Player(pygame.sprite.Sprite):
         else:
             self.hitbox = pygame.Rect(0, 0, 17 * 4, 17 * 4)
             self.hitbox.bottomleft = (self.rect.left, self.rect.bottom)
-    
+
     #TODO: kill the player, thus ending the game
     def die(self):
         self.is_dead = True
         # self.kill()
-    
+
     #TODO: update the state of the player
     def update(self):
         self.previous_pos = self.rect.copy()
@@ -213,7 +213,6 @@ class Player(pygame.sprite.Sprite):
         self.affectGravityOnPlayer()
         self.animatePlayer()
         self.getHitbox()
-        
 
 
 

@@ -10,14 +10,14 @@ hover_sound = pygame.mixer_music.load("music\\cirno.mp3")
 class Button(pygame.sprite.Sprite):
     def __init__(self, default_image, hovering_image, x_pos, y_pos):
         super().__init__()
-        
+
         self.image = default_image
         self.rect = self.image.get_rect(center = (x_pos, y_pos))
         self.default_image, self.hovering_image = default_image, hovering_image
         self.position = (x_pos, y_pos)
         self.hovered = False
-    
-    
+
+
     #TODO: Draw the button on the screen depending on the state (hover or static)
     def drawButton(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
@@ -25,24 +25,24 @@ class Button(pygame.sprite.Sprite):
             if not self.hovered:
                 self.hovered = True
                 sfx.button_hover.play()
-            
+
         else:
             self.image = self.default_image
             self.hovered = False
-        
-        
+
+
     #TODO: Check if the button is clicked
     def isClicked(self):
         return self.hovered
-    
-    
+
+
     #TODO: update the surface of the button
     def update(self):
         self.drawButton()
-        
-        
 
-#* Creating buttons      
+
+
+#* Creating buttons
 new_game_default = pygame.image.load("img\\Buttons\\NewGame_default.png").convert_alpha()
 new_game_hover = pygame.image.load("img\\Buttons\\NewGame_hover.png").convert_alpha()
 
