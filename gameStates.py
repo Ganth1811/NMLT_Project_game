@@ -241,7 +241,7 @@ class MainGame(State):
         self.platform_group.add(Platform(0, 500, 3000, 100)) #* initial platform
         self.platform_spawner = PlatformSpawner()
         self.prev_platform_pos = self.init_platform.rect
-        self.platform_speed = 10
+        self.platform_speed = 20
         
         #* enemy
         self.enemy_group = pygame.sprite.Group()
@@ -352,7 +352,7 @@ class MainGame(State):
     def scrollBackground(self):
         if (-self.scroll > SCREEN_WIDTH):
             self.scroll = 0
-        self.scroll -= (self.platform_speed )
+        self.scroll -= (self.platform_speed - 9)
 
         for i in range(0, self.tiles):
             screen.blit(self.background , (i * SCREEN_WIDTH + self.scroll, 0))

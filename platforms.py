@@ -180,6 +180,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect.width -= 4
         self.rect.height -= 4
         self.speed = speed
+        
     def moveObstacle(self):
         self.rect.x -= self.speed + 0.1
     
