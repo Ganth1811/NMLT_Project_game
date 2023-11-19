@@ -4,7 +4,7 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 import button as bt
 import sfx
 from player import player, bullets, Player
-from platforms import Obstacle, Platform, PlatformSpawner, Enemy, Diamond
+from platforms import Obstacle, Platform, PlatformSpawner, Enemy, Diamond, InvicibleCherry
 import random
 
 from math import ceil
@@ -260,14 +260,14 @@ class MainGame(State):
         self.is_pause = False
 
         #* score
-        self.score_border = pygame.Rect(SCREEN_WIDTH / 2 - 100, 30, 200, 100)
-        self.font = pygame.font.Font("font.ttf", 60)
+        self.score_frame = pygame.image.load("img\\Buttons\\score_frame.png")
+        self.font = pygame.font.Font("font2.otf", 50)
         self.score_surf = pygame.Surface((0, 0))
 
         self.score_by_playtime = 0
         self.score_by_player = 0
         self.total_score = 0
-        self.enemy_kill_point = 20
+        self.enemy_kill_point = 25
 
         #* collision
         self.colliables = []
@@ -276,9 +276,9 @@ class MainGame(State):
     def calculateScore(self, time):
         self.score_by_playtime = time
         self.total_score = self.player_sprite.score + self.score_by_playtime
-        self.score_surf = self.font.render(f"Score: {self.total_score}", 0, "Black")
-
-
+        self.score_surf = self.font.render(f"Score: {self.total_score:05d} ", 0, "Black")
+        
+    
     def processEvent(self, events):
         super().processEvent(events)
         if self.player_sprite.is_dead:
@@ -302,7 +302,7 @@ class MainGame(State):
     def generatePlatform(self):
         #* Increasing the speed by a constant each frame
         self.platform_speed = self.platform_speed + 0.05 / 40
-        print(self.platform_speed)
+        #print(self.platform_speed)
 
         #* ensuring the speed does not exceed the maximum value
         if self.platform_speed >= 30:
@@ -316,7 +316,7 @@ class MainGame(State):
             platform_type = platform_info["platform_type"]
             platform_width = platform_info["platform_width"]
 
-            self.prev_platform_pos = platform.rect
+            
             self.platform_group.add(platform)
 
             #* Temporary spawn logic: Spawn diamond when long platform is spawn and the random number is > 0.9
@@ -324,17 +324,45 @@ class MainGame(State):
                 # if random.uniform(0, 1) > 0.2:
                     # self.collectibles_group.add(Diamond(platform.rect.left + 120, platform.rect.top - 20))
 
+                
+                
                 if random.uniform(0, 1) > 0.6:
-                    enemy = Enemy(platform.rect.topright)
+                    enemy = Enemy(platform.rect.right, platform.rect.top)
                     self.enemy_group.add(enemy)
+                    self.enemy_group.add(Enemy(platform.rect.right - 200, platform.rect.top))
                     self.collectibles_group.add(platform.createDiamondPath(platform_type))
+                    if random.uniform(0, 1) > 0.5:
+                        self.collectibles_group.add(InvicibleCherry(platform.rect.right - platform_width / 2, platform.rect.top - 200))
+                    
+                    if random.uniform(0, 1) > 0.3:
+                        for i in range(platform.rect.left + 20 * int(self.platform_speed), platform.rect.right - 20 * int(self.platform_speed) + 1, 75):
+                            self.obstacle_group.add(Obstacle(i, platform.rect.top - 200, "img\\obstacles\\spike_ball.png"))    
+                    
                 else:
-                    obstacle = Obstacle((platform.rect.right - platform_width / 2), platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
-                    self.obstacle_group.add(obstacle)
-                    self.collectibles_group.add(obstacle.createDiamondPath(self.player_sprite, self.platform_speed))
+                    if platform.rect.top > self.prev_platform_pos.bottom:
+                        obstacle = Obstacle(platform.rect.left + 200, platform.rect.top - 200, "img\\obstacles\\spike_ball.png")
+                        self.obstacle_group.add(obstacle)
+                        self.obstacle_group.add(Obstacle(platform.rect.right - 200, platform.rect.top - 200, "img\\obstacles\\spike_ball.png"))
+                        self.obstacle_group.add(Obstacle(platform.rect.right - platform_width / 2, platform.rect.top - 5, "img\\obstacles\\spike_ball.png"))
+                        
+                    elif platform.rect.y < self.prev_platform_pos.y:
+                        self.obstacle_group.add(Obstacle(platform.rect.right - platform_width / 2 - 100, platform.rect.top - 150, "img\\obstacles\\spike_ball.png"))
+                        self.obstacle_group.add(Obstacle(platform.rect.right - platform_width / 2 + 100, platform.rect.top - 150, "img\\obstacles\\spike_ball.png"))
+                        self.collectibles_group.add(platform.createDiamondPath(platform_type))
+                        
+                        
+                    else:    
+                        #obstacle = Obstacle((platform.rect.right - 5), platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
+                        #self.obstacle_group.add(obstacle)
+                        #self.collectibles_group.add(obstacle.createDiamondPath(self.player_sprite, self.platform_speed))
+                        obstacle = Obstacle((platform.rect.right - platform_width / 2), platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
+                        self.obstacle_group.add(obstacle)
+                        self.collectibles_group.add(obstacle.createDiamondPath(self.player_sprite, self.platform_speed))
 
             else:
                 self.collectibles_group.add(platform.createDiamondPath(platform_type))
+                
+            self.prev_platform_pos = platform.rect
 
 
     def render(self):
@@ -346,13 +374,14 @@ class MainGame(State):
         self.platform_group.draw(screen)
         self.collectibles_group.draw(screen)
         self.bullets_group.draw(screen)
-        pygame.draw.rect(screen, "yellow", self.player_sprite.hitbox)
+        if self.player_sprite.invicible_time > 0:
+            pygame.draw.rect(screen, "blue", self.player_sprite.hitbox)
         self.player_group.draw(screen)
-
-        pygame.draw.rect(screen, "White", self.score_border)
-        screen.blit(self.score_surf, (640 - 100, 50))
-
-
+        
+        screen.blit(self.score_frame, (640 - 200- 20, 10))
+        screen.blit(self.score_surf, (640 - 155 - 20, 60))
+    
+    
     def scrollBackground(self):
         if (-self.scroll > SCREEN_WIDTH):
             self.scroll = 0

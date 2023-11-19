@@ -53,10 +53,6 @@ class PlatformSpawner(object):
         pass
 
     def generatePlatform(self, prev_platform_pos: pygame.Rect, platform_gap, platform_speed):
-
-        #* spawn the platform after 2.5s to prevent lag from continuous spawning
-        # self.current_time = pygame.time.get_ticks()
-        # if self.current_time - self.last_spawn_time >= self.spawn_delay:
         if prev_platform_pos.top <= 200:
             prev_platform_pos.y += 200
 
@@ -65,13 +61,13 @@ class PlatformSpawner(object):
 
         #* manipulate the platform y value according to the previous platform position
         if prev_platform_pos.bottom >= 500:
-            platform_y = randint(prev_platform_pos.top - 50, prev_platform_pos.bottom - 30)
+            platform_y = choice([prev_platform_pos.top - 50 - 25, prev_platform_pos.y - 25, prev_platform_pos.top])
+            
         else:
-            platform_y = randint(prev_platform_pos.top - 50, prev_platform_pos.bottom + 100)
+            platform_y = choice([prev_platform_pos.top - 50, prev_platform_pos.bottom + 100, prev_platform_pos.bottom + 100, prev_platform_pos.bottom + 100, prev_platform_pos.top])
 
         #* get a random platform type and spawn it
-        platform_type_set = ["long", "long", "long", "short"]
-        platform_type = choice(platform_type_set)
+        platform_type = choice(["long", "long", "long", "short"])
 
         if platform_type == "long":
             platform_width = platform_speed * 70
@@ -85,7 +81,7 @@ class PlatformSpawner(object):
         }
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, Platform_topright):#, Platform_speed):
+    def __init__(self, platform_x, platform_y):
         super().__init__()
         self.type = "enemy"
         #* initializing enemy spirte animations
@@ -100,12 +96,14 @@ class Enemy(pygame.sprite.Sprite):
 
         self.enemy_anim_list = self.enemy_run_anim
 
+        self.x_pos = platform_x
+        self.y_pos = platform_y
         self.image = self.enemy_anim_list[self.enemy_anim_frame]
-        self.rect = self.image.get_rect(bottomright = Platform_topright)
+        self.rect = self.image.get_rect(bottomright = (self.x_pos, self.y_pos))
 
         self.is_shot = False
         #self.speed = Platform_speed * 1.2
-        self.platform_topright = Platform_topright
+        #self.platform_topright = Platform_topright
 
         self.given_score = 20
 
@@ -230,3 +228,17 @@ class Obstacle(pygame.sprite.Sprite):
             diamond_list.append(Diamond(pos_x, pos_y))
 
         return diamond_list
+    
+    
+class InvicibleCherry(Collectible):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(pos_x, pos_y)
+
+        self.type = "cherry"
+        self.anim_list = [pygame.image.load(f"img\\collectibles\\cherry-{i}.png").convert_alpha() for i in range(1,8)]
+        self.anim_list = [pygame.transform.scale_by(image, 3) for image in self.anim_list]
+        self.given_score = 0
+        self.image = self.anim_list[self.anim_frame]
+        self.rect = self.image.get_rect(center = (pos_x, pos_y))
+        self.sound = sfx.player_collect_cherry
+        

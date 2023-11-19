@@ -59,6 +59,11 @@ class Player(pygame.sprite.Sprite):
         self.hitbox.bottomleft = (self.rect.left + 6 * 4, self.rect.bottom)
         self.is_spinning = False
 
+        #* special power
+        self.invicible_time = 0
+        self.i_frame = 0
+        
+
 
     #TODO: Get the player input
     def getPlayerInput(self):
@@ -176,8 +181,17 @@ class Player(pygame.sprite.Sprite):
 
     #TODO: handle enemy collisions
     def handleEnemyCollision(self, enemy):
-        if not enemy.is_shot:
-            self.die()
+        
+        if self.invicible_time == 0:
+            if not enemy.is_shot:
+                self.die()
+        else:
+            enemy.shot()
+
+    def becomeInvincible(self):
+        self.invicible_time = 60 * 10
+        self.i_frame = 30
+        
 
     def collectCollectible(self, collectible):
         self.score += collectible.playerCollect()
@@ -191,6 +205,9 @@ class Player(pygame.sprite.Sprite):
                 if colliable.type == "obstacle":
                     self.die()
                 if colliable.type == "diamond":
+                    self.collectCollectible(colliable)
+                if colliable.type == "cherry":
+                    self.becomeInvincible()
                     self.collectCollectible(colliable)
 
     def getHitbox(self):
@@ -206,6 +223,23 @@ class Player(pygame.sprite.Sprite):
         self.is_dead = True
         # self.kill()
 
+    def decreaseIframe(self):
+        self.invicible_time -= 1
+        if self.invicible_time <= 0:
+            self.invicible_time = 0    
+        #print(int(self.i_frame/60))
+        
+    def takeDamage(self):
+        self.i_frame -= 1
+        if self.i_frame <= 0:
+            self.i_frame = 0
+        if self.i_frame % 3 == 0:
+            self.image.set_alpha(255)
+        else:
+            self.image.set_alpha(0)
+        print(int(self.i_frame))
+        
+
     #TODO: update the state of the player
     def update(self):
         self.previous_pos = self.rect.copy()
@@ -213,7 +247,9 @@ class Player(pygame.sprite.Sprite):
         self.affectGravityOnPlayer()
         self.animatePlayer()
         self.getHitbox()
-
+        self.decreaseIframe()
+        self.takeDamage()
+        
 
 
 class Bullets(pygame.sprite.Sprite):

@@ -2,8 +2,12 @@ import pygame
 import gameStates as gs
 from settings import SCREEN_HEIGHT, SCREEN_WIDTH
 
+ 
+#! changes in the player: added invincible frame (player doesn not take dmg when in this state)
+#! changes in platforms: added an item that gives player invincibility, also some other obstacles spawn type
 
-#setup before running
+
+#setup before running          
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
@@ -22,6 +26,7 @@ while 1:
     current_state.processEvent(events)
 
     #Getting the next state of the game
+    
     next_state = current_state.processEvent(events)
 
     #if there is a next state switch to it
