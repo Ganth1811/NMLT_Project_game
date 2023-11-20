@@ -14,9 +14,10 @@ class Platform(pygame.sprite.Sprite):
         self.width = width
         self.height = height
 
-        self.image = pygame.Surface((self.width, self.height))
+        init_image = pygame.transform.scale_by(pygame.image.load("img\\Bg\\platform.png").convert_alpha(), height / 16)
+
+        self.image = init_image.subsurface(0, 0, self.width, self.height)
         self.rect = self.image.get_rect(topleft =  (self.x_pos, self.y_pos))
-        self.image.fill('RED')
 
         self.previous_pos = self.rect.copy()
 
@@ -46,39 +47,33 @@ class Platform(pygame.sprite.Sprite):
         return diamond_list
 
 
-class PlatformSpawner(object):
-    def __init__(self):
-        # self.last_spawn_time = pygame.time.get_ticks()
-        # self.spawn_delay = 2500
-        pass
+def generatePlatform(prev_platform_pos: pygame.Rect, platform_gap, platform_speed):
+    if prev_platform_pos.top <= 200:
+        prev_platform_pos.y += 200
 
-    def generatePlatform(self, prev_platform_pos: pygame.Rect, platform_gap, platform_speed):
-        if prev_platform_pos.top <= 200:
-            prev_platform_pos.y += 200
+    #* separate two platforms by a certain distance relative to their speed
+    platform_x = prev_platform_pos.right + platform_gap * (platform_speed / 7.0)
 
-        #* separate two platforms by a certain distance relative to their speed
-        platform_x = prev_platform_pos.right + platform_gap * (platform_speed / 7.0)
+    #* manipulate the platform y value according to the previous platform position
+    if prev_platform_pos.bottom >= 500:
+        platform_y = choice([prev_platform_pos.top - 50 - 25, prev_platform_pos.y - 25, prev_platform_pos.top])
+        
+    else:
+        platform_y = choice([prev_platform_pos.top - 50, prev_platform_pos.bottom + 100, prev_platform_pos.bottom + 100, prev_platform_pos.bottom + 100, prev_platform_pos.top])
 
-        #* manipulate the platform y value according to the previous platform position
-        if prev_platform_pos.bottom >= 500:
-            platform_y = choice([prev_platform_pos.top - 50 - 25, prev_platform_pos.y - 25, prev_platform_pos.top])
-            
-        else:
-            platform_y = choice([prev_platform_pos.top - 50, prev_platform_pos.bottom + 100, prev_platform_pos.bottom + 100, prev_platform_pos.bottom + 100, prev_platform_pos.top])
+    #* get a random platform type and spawn it
+    platform_type = choice(["long"] * 3 + ["short"] * 1)
 
-        #* get a random platform type and spawn it
-        platform_type = choice(["long", "long", "long", "short"])
+    if platform_type == "long":
+        platform_width = platform_speed * 70
+    else:
+        platform_width = platform_speed * 30
 
-        if platform_type == "long":
-            platform_width = platform_speed * 70
-        else:
-            platform_width = platform_speed * 30
-
-        return {
-            "platform": Platform(platform_x, platform_y, platform_width, 50),
-            "platform_type": platform_type,
-            "platform_width": platform_width
-        }
+    return {
+        "platform": Platform(platform_x, platform_y, platform_width, 64),
+        "platform_type": platform_type,
+        "platform_width": platform_width
+    }
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, platform_x, platform_y):
@@ -126,6 +121,7 @@ class Enemy(pygame.sprite.Sprite):
         self.is_shot = True
         self.enemy_anim_frame = 0
         self.enemy_anim_list = self.enemy_death_anim
+        return self.given_score
 
     def update(self, speed):
         self.animateEnemy()
@@ -186,6 +182,18 @@ class Diamond(Collectible):
         self.given_score = 5
         self.sound = sfx.player_collect_diamond
 
+class InvicibleCherry(Collectible):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(pos_x, pos_y)
+
+        self.type = "cherry"
+        self.anim_list = [pygame.image.load(f"img\\collectibles\\cherry-{i}.png").convert_alpha() for i in range(1,8)]
+        self.anim_list = [pygame.transform.scale_by(image, 3) for image in self.anim_list]
+        self.given_score = 0
+        self.image = self.anim_list[self.anim_frame]
+        self.rect = self.image.get_rect(center = (pos_x, pos_y))
+        self.sound = sfx.player_collect_cherry
+
 #* a very simple obstacle class
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, x_pos, y_pos, image):
@@ -229,16 +237,4 @@ class Obstacle(pygame.sprite.Sprite):
 
         return diamond_list
     
-    
-class InvicibleCherry(Collectible):
-    def __init__(self, pos_x, pos_y):
-        super().__init__(pos_x, pos_y)
-
-        self.type = "cherry"
-        self.anim_list = [pygame.image.load(f"img\\collectibles\\cherry-{i}.png").convert_alpha() for i in range(1,8)]
-        self.anim_list = [pygame.transform.scale_by(image, 3) for image in self.anim_list]
-        self.given_score = 0
-        self.image = self.anim_list[self.anim_frame]
-        self.rect = self.image.get_rect(center = (pos_x, pos_y))
-        self.sound = sfx.player_collect_cherry
         

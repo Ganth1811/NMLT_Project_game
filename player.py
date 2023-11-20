@@ -181,12 +181,13 @@ class Player(pygame.sprite.Sprite):
 
     #TODO: handle enemy collisions
     def handleEnemyCollision(self, enemy):
-        
-        if self.invicible_time == 0:
-            if not enemy.is_shot:
-                self.die()
-        else:
-            enemy.shot()
+        if self.hitbox.colliderect(enemy.rect):
+            if self.invicible_time == 0:
+                if not enemy.is_shot:
+                    self.die()
+            else:
+                return enemy.shot()
+        return 0
 
     def becomeInvincible(self):
         self.invicible_time = 60 * 10
@@ -200,8 +201,6 @@ class Player(pygame.sprite.Sprite):
         self.handlePlatformCollision(platforms)
         for colliable in colliables:
             if self.hitbox.colliderect(colliable.rect):
-                if colliable.type == "enemy":
-                    self.handleEnemyCollision(colliable)
                 if colliable.type == "obstacle":
                     self.die()
                 if colliable.type == "diamond":
@@ -237,7 +236,7 @@ class Player(pygame.sprite.Sprite):
             self.image.set_alpha(255)
         else:
             self.image.set_alpha(0)
-        print(int(self.i_frame))
+        # print(int(self.i_frame))
         
 
     #TODO: update the state of the player
@@ -280,9 +279,8 @@ class Bullets(pygame.sprite.Sprite):
     def handleEnemyCollision(self, enemy_group):
         for enemy in enemy_group:
             if self.rect.colliderect(enemy.rect) and not enemy.is_shot:
-                enemy.shot()
                 self.kill()
-                return enemy.given_score
+                return enemy.shot()
         return 0
 
 

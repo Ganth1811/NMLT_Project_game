@@ -4,9 +4,8 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 import button as bt
 import sfx
 from player import player, bullets, Player
-from platforms import Obstacle, Platform, PlatformSpawner, Enemy, Diamond, InvicibleCherry
+from platforms import Obstacle, Platform, generatePlatform, Enemy, Diamond, InvicibleCherry
 import random
-
 from math import ceil
 
 
@@ -237,7 +236,6 @@ class MainGame(State):
         self.platform_group = pygame.sprite.Group()
         self.init_platform = Platform(100, 500, 1200, 100)
         self.platform_group.add(Platform(0, 500, 3000, 100)) #* initial platform
-        self.platform_spawner = PlatformSpawner()
         self.prev_platform_pos = self.init_platform.rect
         self.platform_speed = 10
 
@@ -267,7 +265,7 @@ class MainGame(State):
         self.score_by_playtime = 0
         self.score_by_player = 0
         self.total_score = 0
-        self.enemy_kill_point = 25
+        self.difficulty = 1
 
         #* collision
         self.colliables = []
@@ -275,6 +273,7 @@ class MainGame(State):
     #TODO: Calculate the score and add it to a surface
     def calculateScore(self, time):
         self.score_by_playtime = time
+        self.difficulty = int((self.platform_speed - 9) / 21 * 4) + 1
         self.total_score = self.player_sprite.score + self.score_by_playtime
         self.score_surf = self.font.render(f"Score: {self.total_score:05d} ", 0, "Black")
         
@@ -284,7 +283,7 @@ class MainGame(State):
         if self.player_sprite.is_dead:
             pygame.mixer_music.unload()
             sfx.player_die.play()
-            return GameOver(self.total_score)
+            return GameOver(self.total_score, self.difficulty)
 
         for event in events:
             #* Pausing the game
@@ -302,7 +301,7 @@ class MainGame(State):
     def generatePlatform(self):
         #* Increasing the speed by a constant each frame
         self.platform_speed = self.platform_speed + 0.05 / 40
-        #print(self.platform_speed)
+        print(self.platform_speed)
 
         #* ensuring the speed does not exceed the maximum value
         if self.platform_speed >= 30:
@@ -311,7 +310,7 @@ class MainGame(State):
         #* spawn a platform
         #* Spawn a new platform when the last platform reach SCREEN_WIDTH + 50
         if self.platform_group.sprites()[-1].rect.right <= SCREEN_WIDTH + 50:
-            platform_info = self.platform_spawner.generatePlatform(self.prev_platform_pos, 100, self.platform_speed)
+            platform_info = generatePlatform(self.prev_platform_pos, 100, self.platform_speed)
             platform = platform_info["platform"]
             platform_type = platform_info["platform_type"]
             platform_width = platform_info["platform_width"]
@@ -406,7 +405,7 @@ class MainGame(State):
             self.bullets_group.update(self.colliables)
             self.collectibles_group.update(self.platform_speed)
 
-            self.colliables = self.obstacle_group.sprites() + self.enemy_group.sprites() + self.collectibles_group.sprites()
+            self.colliables = self.obstacle_group.sprites() + self.collectibles_group.sprites()
             self.player_sprite.handleAllCollisions(self.colliables, self.platform_group.sprites())
 
             for bullet in self.bullets_group.sprites():
@@ -414,17 +413,21 @@ class MainGame(State):
                 if bullet is not None:
                     self.player_sprite.score += bullet.handleEnemyCollision(self.enemy_group.sprites())
 
+            for enemy in self.enemy_group.sprites():
+                self.player_sprite.score += self.player_sprite.handleEnemyCollision(enemy)
+
             self.calculateScore(self.run_time)
             self.render()
 
 
 class GameOver(State):
-    def __init__(self, score):
+    def __init__(self, score, difficulty):
         super(State, self).__init__()
         self.is_transitioned = False
         self.transition_counter = 0
 
         self.score = score
+        self.difficulty = difficulty
 
     #TODO: Transition to the game over screen
     def transition(self):
@@ -447,7 +450,7 @@ class GameOver(State):
 
         for event in events:
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_r:
                     return MainGame()
 
     #TODO: displaying text
@@ -456,8 +459,8 @@ class GameOver(State):
         font = pygame.font.Font("font.ttf", 35)
 
         text = font.render(f"GAME OVER", 0, 'White')
-        text_score = font.render(f"Your score: {self.score}", 0, 'White')
-        text2 = font.render(f"press space to play again", 0, 'White')
+        text_score = font.render(f"Your score: {self.score} - Difficulty: {self.difficulty}", 0, 'White')
+        text2 = font.render(f"Press R to play again", 0, 'White')
 
         screen.blit(text, text.get_rect(center = (SCREEN_WIDTH / 2, 300)))
         screen.blit(text_score, text_score.get_rect(center = ((SCREEN_WIDTH / 2, 400))))
@@ -465,9 +468,6 @@ class GameOver(State):
 
     def update(self):
         self.transition()
-
-
-
 
 
 #* I was so tired so I used chatGPT to generate this function ;) so still don't really understand wtf it does
