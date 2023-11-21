@@ -219,10 +219,15 @@ class MainGame(State):
         #* background and other visual objects
         self.background = pygame.transform.scale(pygame.image.load("Sunny-land-files\\Graphical Assets\\environment\\Background\\Background.jpg").convert_alpha(), (1280, 720))
         self.ground_surface = pygame.Surface((1280,300))
-        self.ground_surface.fill('darkolivegreen1')
+        self.ground_surface.fill('white')
         self.tiles = ceil(SCREEN_WIDTH / self.background.get_width()) + 1
-        self.scroll = 0
-
+        self.scrolls = [2, 1, 1.4, 1.3, 1.2]
+        self.bg = pygame.transform.scale(pygame.image.load("img\\Bg\\sky.png").convert_alpha(), (1280, 720))
+        self.background_layers = [pygame.image.load(f"img\\Bg\\layer_{i}.png").convert_alpha() for i in range(1, 6)]
+        self.background_layers = [pygame.transform.scale(image, (1280, 720)) for image in self.background_layers]
+        
+        
+        
         #* background music
         self.bg_music = pygame.mixer_music.load("music\\bgm\\game_bg_music.mp3")
         pygame.mixer_music.play(-1)
@@ -363,11 +368,21 @@ class MainGame(State):
                 
             self.prev_platform_pos = platform.rect
 
+    def showBackground(self):
+        screen.blit(self.bg, (0 ,0))
+        
+        self.scrollBackground(self.background_layers[0], 0, 2)
+        self.scrollBackground(self.background_layers[1], 1, 1)
+        self.scrollBackground(self.background_layers[2], 2, 1.4)
+        self.scrollBackground(self.background_layers[3], 3, 2.3)
+        self.scrollBackground(self.background_layers[4], 4, 3)
+
 
     def render(self):
         screen.fill('Black')
+        self.showBackground()
         #screen.blit(self.background, (0, 0))
-        self.scrollBackground()
+        #self.scrollBackground()
         self.obstacle_group.draw(screen)
         self.enemy_group.draw(screen)
         self.platform_group.draw(screen)
@@ -381,13 +396,13 @@ class MainGame(State):
         screen.blit(self.score_surf, (640 - 155 - 20, 60))
     
     
-    def scrollBackground(self):
-        if (-self.scroll > SCREEN_WIDTH):
-            self.scroll = 0
-        self.scroll -= (self.platform_speed - 9)
+    def scrollBackground(self, layer, index, speed):
+        if (self.scrolls[index] > SCREEN_WIDTH):
+            self.scrolls[index] = 0
+        self.scrolls[index] += (self.platform_speed - 9) * speed
 
-        for i in range(0, self.tiles):
-            screen.blit(self.background , (i * SCREEN_WIDTH + self.scroll, 0))
+        for i in range(0, ceil(SCREEN_WIDTH / layer.get_width()) + 1 ):
+            screen.blit(layer, (i * SCREEN_WIDTH - (self.scrolls[index]), 0))
 
 
 
