@@ -44,10 +44,10 @@ class Button(pygame.sprite.Sprite):
 
 
 #* Creating buttons
-new_game_button = Button(ButtonImg.new_game_default, ButtonImg.new_game_hover, 640, 400)
+new_game_button = Button(ButtonImg.new_game_default, ButtonImg.new_game_hover, 640 - 270, 400)
 #high_score_button = Button(ButtonImg.high_score_default, ButtonImg.high_score_hover, 640, 520)
-option_button = Button(ButtonImg.option_default, ButtonImg.option_hover, 640, 520)
-quit_game_button = Button(ButtonImg.quit_game_default, ButtonImg.quit_game_hover, 640, 640)
+option_button = Button(ButtonImg.option_default, ButtonImg.option_hover, 640 - 270, 520)
+quit_game_button = Button(ButtonImg.quit_game_default, ButtonImg.quit_game_hover, 640 - 270, 640)
 
 resume_button = Button(ButtonImg.resume_default, ButtonImg.resume_hover, 640, 400)
 restart_button = Button(ButtonImg.restart_default, ButtonImg.restart_hover, 640, 520)

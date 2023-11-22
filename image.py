@@ -34,12 +34,17 @@ class SplashScreenImg():
 	splash_screen = pygame.image.load("img\\Other\\splash_screen.png").convert_alpha()
 
 class TitleMenuImg():
-	pass
+	text_quest_of = [pygame.image.load(f"img\\mainmenutext\\frame_{i:02d}_delay-0.1s.png") for i in range(0, 20)]
+	text_quest_of = [pygame.transform.scale_by(img, 1.5) for img in text_quest_of]
+	text_athelard = [pygame.image.load(f"img\\mainmenutext2\\frame_{i:02d}_delay-0.1s.png") for i in range(0, 20)]
+	text_athelard = [pygame.transform.scale_by(img, 1.5) for img in text_athelard]
 	#TODO: Wait for new menu background
 
 class MainGameImg():
 	bg = pygame.image.load("img\\Bg\\sky.png").convert_alpha()
 	bg_layers = [pygame.image.load(f"img\\Bg\\layer_{i}.png").convert_alpha() for i in range(1, 6)]
+	for i in range(0, 5):
+		bg_layers[i].set_alpha(150)
 	score_frame = pygame.image.load("img\\Buttons\\score_frame.png")
 
 #* main.py

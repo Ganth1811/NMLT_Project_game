@@ -44,7 +44,7 @@ while 1:
     #print(clock.get_fps())
     pygame.display.update()
 
-    clock.tick(30)
+    clock.tick(60)
 
 
 

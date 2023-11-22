@@ -70,10 +70,14 @@ class TitleMenu(State):
         super(State, self).__init__()
 
 
-        self.background = pygame.image.load("img\\Bg\\main_menu_bg.png").convert_alpha()
+        self.background = pygame.image.load("img\\Bg\\bg.jpg").convert_alpha()
+        self.text_quest_of = TitleMenuImg.text_quest_of
+        self.text_athelard = TitleMenuImg.text_athelard
+        self.text_timer = 0
+        self.particle_group = []
 
-        # self.bg_music = pygame.mixer_music.load("music\\bgm\\stage_theme.mp3")
-        # pygame.mixer_music.play(-1)
+        self.bg_music = pygame.mixer_music.load("music\\bgm\\stage_theme.mp3")
+        pygame.mixer_music.play(-1)
 
         #* initialize the button objects
         self.buttons = self.createButtons()
@@ -130,6 +134,20 @@ class TitleMenu(State):
         screen.blit(self.background, (0, 0))
         self.buttons["button_group"].update()
         self.buttons["button_group"].draw(screen)
+        
+        self.text_timer += 0.5
+        if self.text_timer >= 18:
+            self.text_timer = 0
+            
+        screen.blit(self.text_quest_of[int(self.text_timer)], (130, 50))
+        screen.blit(self.text_athelard[int(self.text_timer)], (115, 170))
+        
+        if self.text_timer % 5 == 0:
+            self.particle_group.append(Particle())
+            
+        for particle in self.particle_group:
+            if particle is not None:
+                particle.update()
 
     def update(self, dt):
         self.render()
@@ -370,11 +388,11 @@ class MainGame(State):
     def showBackground(self, dt):
         screen.blit(self.bg, (0 ,0))
         
-        self.scrollBackground(self.background_layers[0], 0, 2, dt)
-        self.scrollBackground(self.background_layers[1], 1, 1, dt)
-        self.scrollBackground(self.background_layers[2], 2, 1.4, dt)
-        self.scrollBackground(self.background_layers[3], 3, 2.3, dt)
-        self.scrollBackground(self.background_layers[4], 4, 3, dt)
+        self.scrollBackground(self.background_layers[0], 0, 0.8, dt)
+        self.scrollBackground(self.background_layers[1], 1, 0.1, dt)
+        self.scrollBackground(self.background_layers[2], 2, 0.6, dt)
+        self.scrollBackground(self.background_layers[3], 3, 0.9, dt)
+        self.scrollBackground(self.background_layers[4], 4, 0.4, dt)
 
 
     def render(self, dt):
@@ -516,3 +534,20 @@ def fade_transition(fade_surface, FADE_SPEED = 5, FADE_DELAY = 6000):
         # Exit the loop after the fade-in and fade-out are complete
         if elapsed_time > FADE_DELAY + 255 * FADE_SPEED:
             break
+        
+        
+class Particle():
+    def __init__(self):
+        self.rect = pygame.Rect(-1, random.randint(50, 700), 5, 5)
+        self.speed = random.randint(1, 3)
+        self.remove = False
+        self.radius = random.randint(2, 5)
+
+    
+    
+    def update(self):
+        self.rect.x += self.speed
+        pygame.draw.circle(screen,pygame.Color('Red'), (self.rect.x, self.rect.y), self.radius)
+        if self.rect.x > SCREEN_WIDTH:
+            self.remove= True
+            
