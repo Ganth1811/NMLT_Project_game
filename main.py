@@ -1,6 +1,8 @@
 import pygame
 import gameStates as gs
 from settings import SCREEN_HEIGHT, SCREEN_WIDTH
+from time import time
+
 
  
 #! changes in the player: added invincible frame (player doesn not take dmg when in this state)
@@ -17,7 +19,7 @@ pygame.display.set_icon(pygame.image.load('img\\Other\\game_icon.png').convert_a
 #setting the default state
 #current_state = gs.SplashScreen()
 current_state = gs.TitleMenu()
-
+last_time = time()
 
 #* main game loop
 while 1:
@@ -34,7 +36,10 @@ while 1:
         current_state = next_state
 
     #Update the current state (meaning handling everything in that state)
-    current_state.update()
+    current_time = time()
+    dt = current_time - last_time
+    last_time = current_time
+    current_state.update(dt)
 
     #print(clock.get_fps())
     pygame.display.update()

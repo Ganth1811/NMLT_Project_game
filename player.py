@@ -1,11 +1,11 @@
 import pygame
 import sfx
-import settings as st
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT
+from image import PlayerImg, BulletImg
 
 pygame.init()
 
-
-screen = pygame.display.set_mode((st.SCREEN_WIDTH, st.SCREEN_HEIGHT))
+# screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -16,21 +16,15 @@ class Player(pygame.sprite.Sprite):
         #* initializing player spirte animations
         self.player_anim_frame = 0
 
-        #* import player sprites and scale it
-
         #* running
-        self.player_run_anim = [pygame.image.load(f"img\\Sprites\\player_run{i}.png").convert_alpha() for i in range(1,5)]
-        self.player_run_anim = [pygame.transform.scale_by(image, 4) for image in self.player_run_anim]
+        self.player_run_anim = [pygame.transform.scale_by(image, 4) for image in PlayerImg.run_anim]
 
         #* jumping
-        self.player_jump = pygame.image.load("img\\Sprites\\player_jump.png").convert_alpha()
-        self.player_jump_anim = [self.player_jump]  + [pygame.image.load(f"img\\Sprites\\player_spin{i}.png").convert_alpha() for i in range(1,5)]
-        self.player_jump_anim = [pygame.transform.scale_by(image, 4) for image in self.player_jump_anim]
-        self.player_descend = pygame.transform.scale_by(pygame.image.load("img\\Sprites\\player_fall.png").convert_alpha(), 4)
+        self.player_jump_anim = [pygame.transform.scale_by(image, 4) for image in PlayerImg.jump_anim]
+        self.player_descend = pygame.transform.scale_by(PlayerImg.descend, 4)
 
         #* slashing
-        self.player_slash_anim = [pygame.image.load(f"img\\Sprites\\player_attack{i}.png").convert_alpha() for i in range(1,5)]
-        self.player_slash_anim = [pygame.transform.scale_by(image, 4) for image in self.player_slash_anim]
+        self.player_slash_anim = [pygame.transform.scale_by(image, 4) for image in PlayerImg.slash_anim]
 
         self.image = self.player_run_anim[self.player_anim_frame]
         self.rect = self.image.get_rect(bottomleft = self.player_position)
@@ -62,8 +56,8 @@ class Player(pygame.sprite.Sprite):
         #* special power
         self.invicible_time = 0
         self.i_frame = 0
+        self.shockwave = None
         
-
 
     #TODO: Get the player input
     def getPlayerInput(self):
@@ -106,8 +100,8 @@ class Player(pygame.sprite.Sprite):
 
 
     #TODO: animate the player
-    def animatePlayer(self):
-        self.player_anim_frame += 0.2
+    def animatePlayer(self, dt):
+        self.player_anim_frame += 0.2 * dt * 60
 
         if (self.player_anim_frame >= 4):
             self.player_anim_frame = 0
@@ -203,11 +197,14 @@ class Player(pygame.sprite.Sprite):
             if self.hitbox.colliderect(colliable.rect):
                 if colliable.type == "obstacle":
                     self.die()
-                if colliable.type == "diamond":
+                elif colliable.type == "diamond":
                     self.collectCollectible(colliable)
-                if colliable.type == "cherry":
+                elif colliable.type == "cherry":
                     self.becomeInvincible()
                     self.collectCollectible(colliable)
+                elif colliable.type == "removehostile":
+                    self.collectCollectible(colliable)
+                    self.shockwave = colliable.shockwave
 
     def getHitbox(self):
         if not self.is_spinning:
@@ -240,15 +237,14 @@ class Player(pygame.sprite.Sprite):
         
 
     #TODO: update the state of the player
-    def update(self):
+    def update(self, dt):
         self.previous_pos = self.rect.copy()
         self.getPlayerInput()
         self.affectGravityOnPlayer()
-        self.animatePlayer()
+        self.animatePlayer(dt)
         self.getHitbox()
         self.decreaseIframe()
         self.takeDamage()
-        
 
 
 class Bullets(pygame.sprite.Sprite):
@@ -257,7 +253,7 @@ class Bullets(pygame.sprite.Sprite):
 
         self.Player_right, self.Player_centery = Player_right, Player_centery
         self.speed = 15
-        self.image = pygame.transform.scale(pygame.image.load("img\\Sprites\\slash.png"), (110, 100)).convert_alpha()
+        self.image = pygame.transform.scale(BulletImg.bullet, (110, 100))
 
         self.rect = self.image.get_rect(midleft = (self.Player_right - 30, self.Player_centery))
 
@@ -265,10 +261,10 @@ class Bullets(pygame.sprite.Sprite):
 
     def moveBullet(self):
         self.rect.x += self.speed
-        if self.rect.left > st.SCREEN_WIDTH + 5 or self.rect.top < -5 or self.rect.bottom >= st.SCREEN_HEIGHT:
+        if self.rect.left > SCREEN_WIDTH + 5 or self.rect.top < -5 or self.rect.bottom >= SCREEN_HEIGHT:
             self.kill()
 
-    def update(self, colliables):
+    def update(self):
         self.moveBullet()
 
     def handlePlatformCollision(self, platform_group):

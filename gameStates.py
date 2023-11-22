@@ -4,10 +4,10 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 import button as bt
 import sfx
 from player import player, bullets, Player
-from platforms import Obstacle, Platform, generatePlatform, Enemy, Diamond, InvicibleCherry
+from platforms import Obstacle, Platform, generatePlatform, Enemy, Diamond, InvicibleCherry, RemoveHostile
 import random
 from math import ceil
-
+from image import SplashScreenImg, TitleMenuImg, MainGameImg
 
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -40,7 +40,7 @@ class State(object):
 class SplashScreen(State):
     def __init__(self):
         super(State, self).__init__()
-        self.splash_screen = pygame.image.load("img\\Other\\splash_screen.png").convert_alpha()
+        self.splash_screen = SplashScreenImg.splash_screen
         self.fade = False
         self.alpha = 0
         self.bg_music = pygame.mixer_music.load("music\\bgm\\stage_theme.mp3")
@@ -131,7 +131,7 @@ class TitleMenu(State):
         self.buttons["button_group"].update()
         self.buttons["button_group"].draw(screen)
 
-    def update(self):
+    def update(self, dt):
         self.render()
 
 
@@ -222,19 +222,16 @@ class MainGame(State):
         self.ground_surface.fill('white')
         self.tiles = ceil(SCREEN_WIDTH / self.background.get_width()) + 1
         self.scrolls = [2, 1, 1.4, 1.3, 1.2]
-        self.bg = pygame.transform.scale(pygame.image.load("img\\Bg\\sky.png").convert_alpha(), (1280, 720))
-        self.background_layers = [pygame.image.load(f"img\\Bg\\layer_{i}.png").convert_alpha() for i in range(1, 6)]
-        self.background_layers = [pygame.transform.scale(image, (1280, 720)) for image in self.background_layers]
-        
-        
+        self.bg = pygame.transform.scale(MainGameImg.bg, (1280, 720))
+        self.background_layers = [pygame.transform.scale(image, (1280, 720)) for image in MainGameImg.bg_layers]
         
         #* background music
         self.bg_music = pygame.mixer_music.load("music\\bgm\\game_bg_music.mp3")
         pygame.mixer_music.play(-1)
 
         #* player and bullets
-        self.player_group = pygame.sprite.Group(Player())
-        self.player_sprite: Player = self.player_group.sprites()[0]
+        self.player_group = pygame.sprite.GroupSingle(Player())
+        self.player_sprite = self.player_group.sprites()[0]
         self.bullets_group = bullets
 
         #* platforms
@@ -263,7 +260,7 @@ class MainGame(State):
         self.is_pause = False
 
         #* score
-        self.score_frame = pygame.image.load("img\\Buttons\\score_frame.png")
+        self.score_frame = MainGameImg.score_frame
         self.font = pygame.font.Font("font2.otf", 50)
         self.score_surf = pygame.Surface((0, 0))
 
@@ -306,7 +303,7 @@ class MainGame(State):
     def generatePlatform(self):
         #* Increasing the speed by a constant each frame
         self.platform_speed = self.platform_speed + 0.05 / 40
-        print(self.platform_speed)
+        # print(self.platform_speed)
 
         #* ensuring the speed does not exceed the maximum value
         if self.platform_speed >= 30:
@@ -365,6 +362,8 @@ class MainGame(State):
 
             else:
                 self.collectibles_group.add(platform.createDiamondPath(platform_type))
+                if random.uniform(0, 1) > 0.1:
+                    self.collectibles_group.add(RemoveHostile(platform.rect.centerx, platform.rect.top - 50))
                 
             self.prev_platform_pos = platform.rect
 
@@ -381,8 +380,6 @@ class MainGame(State):
     def render(self):
         screen.fill('Black')
         self.showBackground()
-        #screen.blit(self.background, (0, 0))
-        #self.scrollBackground()
         self.obstacle_group.draw(screen)
         self.enemy_group.draw(screen)
         self.platform_group.draw(screen)
@@ -394,6 +391,9 @@ class MainGame(State):
         
         screen.blit(self.score_frame, (640 - 200- 20, 10))
         screen.blit(self.score_surf, (640 - 155 - 20, 60))
+
+        if self.player_sprite.shockwave is not None and not self.player_sprite.shockwave.over:
+                self.player_sprite.shockwave.drawShockwave(screen)
     
     
     def scrollBackground(self, layer, index, speed):
@@ -405,9 +405,7 @@ class MainGame(State):
             screen.blit(layer, (i * SCREEN_WIDTH - (self.scrolls[index]), 0))
 
 
-
-
-    def update(self):
+    def update(self, dt):
         if not self.player_sprite.is_dead and not self.is_pause:
             #* getting the second elapsed since MainGame ran as score
             self.run_time = self.previous_run_time + int((pygame.time.get_ticks() - self.start_time) / 1000)
@@ -416,8 +414,8 @@ class MainGame(State):
             self.platform_group.update(self.platform_speed)
             self.obstacle_group.update(self.platform_speed)
             self.enemy_group.update(self.platform_speed)
-            self.player_group.update()
-            self.bullets_group.update(self.colliables)
+            self.player_group.update(dt)
+            self.bullets_group.update()
             self.collectibles_group.update(self.platform_speed)
 
             self.colliables = self.obstacle_group.sprites() + self.collectibles_group.sprites()
@@ -430,6 +428,11 @@ class MainGame(State):
 
             for enemy in self.enemy_group.sprites():
                 self.player_sprite.score += self.player_sprite.handleEnemyCollision(enemy)
+            
+            if self.player_sprite.shockwave is not None: 
+                self.player_sprite.shockwave.clearHostile(self.obstacle_group.sprites() + self.enemy_group.sprites())
+                if self.player_sprite.shockwave.over:
+                    self.player_sprite.shockwave = None
 
             self.calculateScore(self.run_time)
             self.render()

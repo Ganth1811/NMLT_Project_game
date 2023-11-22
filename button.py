@@ -1,6 +1,7 @@
 import pygame
 import settings as st
 import sfx
+from image import ButtonImg
 
 pygame.init()
 
@@ -43,32 +44,11 @@ class Button(pygame.sprite.Sprite):
 
 
 #* Creating buttons
-new_game_default = pygame.image.load("img\\Buttons\\NewGame_default.png").convert_alpha()
-new_game_hover = pygame.image.load("img\\Buttons\\NewGame_hover.png").convert_alpha()
+new_game_button = Button(ButtonImg.new_game_default, ButtonImg.new_game_hover, 640, 400)
+#high_score_button = Button(ButtonImg.high_score_default, ButtonImg.high_score_hover, 640, 520)
+option_button = Button(ButtonImg.option_default, ButtonImg.option_hover, 640, 520)
+quit_game_button = Button(ButtonImg.quit_game_default, ButtonImg.quit_game_hover, 640, 640)
 
-resume_default = pygame.image.load("img\\Buttons\\Resume_default.png").convert_alpha()
-resume_hover = pygame.image.load("img\\Buttons\\Resume_hover.png").convert_alpha()
-
-high_score_default = pygame.image.load("img\\Buttons\\HighScore_default.png").convert_alpha()
-high_score_hover = pygame.image.load("img\\Buttons\\HighScore_hover.png").convert_alpha()
-
-quit_game_default = pygame.image.load("img\\Buttons\\QuitGame_default.png").convert_alpha()
-quit_game_hover = pygame.image.load("img\\Buttons\\QuitGame_hover.png").convert_alpha()
-
-option_default = pygame.image.load("img\\Buttons\\Option_default.png").convert_alpha()
-option_hover = pygame.image.load("img\\Buttons\\Option_hover.png").convert_alpha()
-
-restart_default = pygame.image.load("img\\Buttons\\Restart_default.png").convert_alpha()
-restart_hover = pygame.image.load("img\\Buttons\\Restart_hover.png").convert_alpha()
-
-main_menu_default = pygame.image.load("img\\Buttons\\MainMenu_default.png").convert_alpha()
-main_menu_hover = pygame.image.load("img\\Buttons\\MainMenu_hover.png").convert_alpha()
-
-new_game_button = Button(new_game_default, new_game_hover, 640, 400)
-#high_score_button = Button(high_score_default, high_score_hover, 640, 520)
-option_button = Button(option_default, option_hover, 640, 520)
-quit_game_button = Button(quit_game_default, quit_game_hover, 640, 640)
-
-resume_button = Button(resume_default, resume_hover, 640, 400)
-restart_button = Button(restart_default, restart_hover, 640, 520)
-main_menu_button = Button(main_menu_default, main_menu_hover, 640, 640)
+resume_button = Button(ButtonImg.resume_default, ButtonImg.resume_hover, 640, 400)
+restart_button = Button(ButtonImg.restart_default, ButtonImg.restart_hover, 640, 520)
+main_menu_button = Button(ButtonImg.main_menu_default, ButtonImg.main_menu_hover, 640, 640)

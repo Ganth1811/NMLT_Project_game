@@ -1,7 +1,9 @@
 import pygame
 from random import randint, choice
-from math import sin, cos, pi
+from math import sin, cos, pi, sqrt
+from settings import SCREEN_DIAGONAL, SCREEN_WIDTH
 import sfx
+from image import PlatformImg, EnemyImg, CollectibleImg, ObstacleImg
 
 pygame.init()
 
@@ -14,7 +16,7 @@ class Platform(pygame.sprite.Sprite):
         self.width = width
         self.height = height
 
-        init_image = pygame.transform.scale_by(pygame.image.load("img\\Bg\\platform.png").convert_alpha(), height / 16)
+        init_image = pygame.transform.scale_by(PlatformImg.platform, height / 16)
 
         self.image = init_image.subsurface(0, 0, self.width, self.height)
         self.rect = self.image.get_rect(topleft =  (self.x_pos, self.y_pos))
@@ -83,11 +85,8 @@ class Enemy(pygame.sprite.Sprite):
         self.enemy_anim_frame = 0
 
         #* import player enemy and scale it
-        self.enemy_run_anim = [pygame.image.load(f"Sunny-land-files\\Graphical Assets\\sprites\\Enemy\\enemyRun{i}.png").convert_alpha() for i in range(1,7)]
-        self.enemy_run_anim = [pygame.transform.rotozoom(image, 0, 2) for image in self.enemy_run_anim]
-
-        self.enemy_death_anim = [pygame.image.load(f"Sunny-land-files\\Graphical Assets\\sprites\\enemy-death\\enemy-death-{i}.png").convert_alpha() for i in range(1,7)]
-        self.enemy_death_anim = [pygame.transform.rotozoom(image, 0, 2) for image in self.enemy_death_anim]
+        self.enemy_run_anim = [pygame.transform.scale_by(image, 2) for image in EnemyImg.run_anim]
+        self.enemy_death_anim = [pygame.transform.scale_by(image, 2) for image in EnemyImg.death_anim]
 
         self.enemy_anim_list = self.enemy_run_anim
 
@@ -173,9 +172,7 @@ class Diamond(Collectible):
     def __init__(self, pos_x, pos_y):
         super().__init__(pos_x, pos_y)
 
-        self.anim_list = [pygame.image.load(f"Sunny-land-files\\Graphical Assets\\sprites\\gem\\gem-{i}.png").convert_alpha() for i in range(1,6)]
-        self.anim_list = [pygame.transform.scale_by(image, 2) for image in self.anim_list]
-
+        self.anim_list = [pygame.transform.scale_by(image, 2) for image in CollectibleImg.diamond_anim]
         self.image = self.anim_list[self.anim_frame]
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
         self.type = "diamond"
@@ -187,12 +184,49 @@ class InvicibleCherry(Collectible):
         super().__init__(pos_x, pos_y)
 
         self.type = "cherry"
-        self.anim_list = [pygame.image.load(f"img\\collectibles\\cherry-{i}.png").convert_alpha() for i in range(1,8)]
-        self.anim_list = [pygame.transform.scale_by(image, 3) for image in self.anim_list]
+        self.anim_list = [pygame.transform.scale_by(image, 3) for image in CollectibleImg.cherry_anim]
         self.given_score = 0
         self.image = self.anim_list[self.anim_frame]
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
         self.sound = sfx.player_collect_cherry
+
+class RemoveHostile(Collectible):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(pos_x, pos_y)
+
+        self.type = "removehostile"
+        self.anim_list = [pygame.Surface((20, 20))]
+        self.given_score = 0
+        self.image = self.anim_list[self.anim_frame]
+        self.image.fill('red')
+        self.rect = self.image.get_rect(center = (pos_x, pos_y))
+        self.sound = sfx.player_collect_cherry
+        self.shockwave = None
+    
+    def playerCollect(self):
+        self.sound.play()
+        self.shockwave = Shockwave(self.rect.centerx, self.rect.centery)
+        self.kill()
+        return self.given_score
+
+class Shockwave():
+    def __init__(self, pos_x, pos_y):
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.radius = 5
+        self.width = 10
+        self.over = False
+    
+    def drawShockwave(self, screen):
+        pygame.draw.circle(screen, 'darkgray', (self.pos_x, self.pos_y), self.radius, self.width)
+        self.radius += 25
+        self.over = self.radius > SCREEN_DIAGONAL
+    
+    def clearHostile(self, hostiles):
+        for hostile in hostiles:
+            distance = ((hostile.rect.x - self.pos_x)**2 + (hostile.rect.y - self.pos_y)**2) ** (1/2)
+            if distance <= self.radius and hostile.rect.left < SCREEN_WIDTH:
+                hostile.kill()
 
 #* a very simple obstacle class
 class Obstacle(pygame.sprite.Sprite):
@@ -222,9 +256,9 @@ class Obstacle(pygame.sprite.Sprite):
         jump_force = player.jump_force
         diamond_list = []
 
-        # v_peak = v0 + gt <=> t = (v_peak - v0)/g, v_peak = 0, v0 = jump_force
+        #* v_peak = v0 + gt <=> t = (v_peak - v0)/g, v_peak = 0, v0 = jump_force
         time_max_height = -jump_force / gravity
-        # peak_y = h_max = h0 + v0t + 1/2*gt^2, h0 = 0, v0 = jump_force, t = time_max_height
+        #* peak_y = h_max = h0 + v0t + 1/2*gt^2, h0 = 0, v0 = jump_force, t = time_max_height
         peak_y = jump_force * time_max_height + 1/2 * gravity * time_max_height**2
         peak_x = time_max_height * speed
         step_angle = pi / (number - 1)
