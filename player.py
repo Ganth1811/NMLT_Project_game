@@ -1,6 +1,6 @@
 import pygame
 import sfx
-from settings import SCREEN_WIDTH, SCREEN_HEIGHT
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT, TARGET_FRAMERATE
 from image import PlayerImg, BulletImg
 
 pygame.init()
@@ -76,8 +76,8 @@ class Player(pygame.sprite.Sprite):
             #? There's an error that the player will shoot when you click start the game.
             #? I think it is related to the bug I told you (the sound duplicated one)
 
-    def animatePlayerJump(self):
-        self.player_jump_frame += 0.2
+    def animatePlayerJump(self, dt):
+        self.player_jump_frame += 0.2 * dt * TARGET_FRAMERATE
 
         if (self.player_jump_frame >= 5):
             self.player_jump_frame = 0
@@ -87,8 +87,8 @@ class Player(pygame.sprite.Sprite):
             self.is_spinning = True
             self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
 
-    def animatePlayerSlash(self):
-        self.slash_frame += 0.4
+    def animatePlayerSlash(self, dt):
+        self.slash_frame += 0.4 * dt * TARGET_FRAMERATE
 
         if (self.slash_frame >= 4):
             self.is_slashing = 0
@@ -101,17 +101,17 @@ class Player(pygame.sprite.Sprite):
 
     #TODO: animate the player
     def animatePlayer(self, dt):
-        self.player_anim_frame += 0.2 * dt * 60
+        self.player_anim_frame += 0.2 * dt * TARGET_FRAMERATE
 
         if (self.player_anim_frame >= 4):
             self.player_anim_frame = 0
 
         if self.is_slashing:
-            self.animatePlayerSlash()
+            self.animatePlayerSlash(dt)
             self.is_spinning = False
         #* Check if player is above the ground level and is not on another platform
         elif (self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity < 6):
-            self.animatePlayerJump()
+            self.animatePlayerJump(dt)
         elif(self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity > 7):
             self.image = self.player_descend
             self.is_spinning = False
@@ -122,16 +122,16 @@ class Player(pygame.sprite.Sprite):
 
 
     #TODO: make the player jump
-    def makePlayerJump(self):
+    def makePlayerJump(self,):
         self.vertical_velocity = -self.jump_force
         sfx.player_jump.play()
 
     #TODO: pull the player down every frame by a constant amount
-    def affectGravityOnPlayer(self):
-        self.vertical_velocity += self.gravity
+    def affectGravityOnPlayer(self, dt):
+        self.vertical_velocity += self.gravity * dt * TARGET_FRAMERATE
         if self.vertical_velocity > 20:
             self.vertical_velocity = 20;
-        self.rect.y += self.vertical_velocity
+        self.rect.y += self.vertical_velocity * dt * TARGET_FRAMERATE
 
         #* If the player falls out of the map, kill them
         if self.rect.top >= 700:
@@ -219,14 +219,14 @@ class Player(pygame.sprite.Sprite):
         self.is_dead = True
         # self.kill()
 
-    def decreaseIframe(self):
-        self.invicible_time -= 1
+    def decreaseIframe(self, dt):
+        self.invicible_time -= 1 * dt * TARGET_FRAMERATE
         if self.invicible_time <= 0:
             self.invicible_time = 0    
         #print(int(self.i_frame/60))
         
-    def takeDamage(self):
-        self.i_frame -= 1
+    def takeDamage(self, dt):
+        self.i_frame -= 1 * dt * TARGET_FRAMERATE
         if self.i_frame <= 0:
             self.i_frame = 0
         if self.i_frame % 3 == 0:
@@ -240,11 +240,11 @@ class Player(pygame.sprite.Sprite):
     def update(self, dt):
         self.previous_pos = self.rect.copy()
         self.getPlayerInput()
-        self.affectGravityOnPlayer()
+        self.affectGravityOnPlayer(dt)
         self.animatePlayer(dt)
         self.getHitbox()
-        self.decreaseIframe()
-        self.takeDamage()
+        self.decreaseIframe(dt)
+        self.takeDamage(dt)
 
 
 class Bullets(pygame.sprite.Sprite):
@@ -259,13 +259,13 @@ class Bullets(pygame.sprite.Sprite):
 
         sfx.player_shoot.play()
 
-    def moveBullet(self):
-        self.rect.x += self.speed
+    def moveBullet(self, dt):
+        self.rect.x += self.speed * dt * TARGET_FRAMERATE
         if self.rect.left > SCREEN_WIDTH + 5 or self.rect.top < -5 or self.rect.bottom >= SCREEN_HEIGHT:
             self.kill()
 
-    def update(self):
-        self.moveBullet()
+    def update(self, dt):
+        self.moveBullet(dt)
 
     def handlePlatformCollision(self, platform_group):
         for platform in platform_group:

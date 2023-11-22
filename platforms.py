@@ -1,7 +1,7 @@
 import pygame
 from random import randint, choice
 from math import sin, cos, pi, sqrt
-from settings import SCREEN_DIAGONAL, SCREEN_WIDTH
+from settings import SCREEN_DIAGONAL, SCREEN_WIDTH, TARGET_FRAMERATE
 import sfx
 from image import PlatformImg, EnemyImg, CollectibleImg, ObstacleImg
 
@@ -24,15 +24,15 @@ class Platform(pygame.sprite.Sprite):
         self.previous_pos = self.rect.copy()
 
     #TODO: move the platform leftward by a given speed
-    def movePlatform(self, speed):
-        self.rect.x -= speed
+    def movePlatform(self, speed, dt):
+        self.rect.x -= speed * dt * TARGET_FRAMERATE
         if self.rect.right <= -5:
             self.kill()
             del self
     #TODO: update the state of the platform
-    def update(self, speed):
+    def update(self, speed, dt):
         self.previous_pos = self.rect.copy()
-        self.movePlatform(speed)
+        self.movePlatform(speed, dt)
 
     def createDiamondPath(self, platform_type):
         diamond_list = []
@@ -101,8 +101,8 @@ class Enemy(pygame.sprite.Sprite):
 
         self.given_score = 20
 
-    def animateEnemy(self):
-        self.enemy_anim_frame += 0.2
+    def animateEnemy(self, dt):
+        self.enemy_anim_frame += 0.2 * dt * TARGET_FRAMERATE
 
         if (self.enemy_anim_frame >= 6):
             if self.is_shot:
@@ -111,8 +111,8 @@ class Enemy(pygame.sprite.Sprite):
 
         self.image = self.enemy_anim_list[int(self.enemy_anim_frame)]
 
-    def moveEnemy(self, speed):
-        self.rect.x -= speed + 0.1
+    def moveEnemy(self, speed, dt):
+        self.rect.x -= (speed + 0.1) * dt * TARGET_FRAMERATE
         if self.rect.right < 0:
             self.kill()
 
@@ -122,9 +122,9 @@ class Enemy(pygame.sprite.Sprite):
         self.enemy_anim_list = self.enemy_death_anim
         return self.given_score
 
-    def update(self, speed):
-        self.animateEnemy()
-        self.moveEnemy(speed)
+    def update(self, speed, dt):
+        self.animateEnemy(dt)
+        self.moveEnemy(speed, dt)
 
 
 class Collectible(pygame.sprite.Sprite):
@@ -142,20 +142,20 @@ class Collectible(pygame.sprite.Sprite):
         self.given_score: int
         self.sound: pygame.mixer.Sound
 
-    def animateCollectible(self):
-        self.anim_frame += 0.2
+    def animateCollectible(self, dt):
+        self.anim_frame += 0.2 * dt * TARGET_FRAMERATE
 
         if (self.anim_frame >= len(self.anim_list)):
             self.anim_frame = 0
 
         self.image = self.anim_list[int(self.anim_frame)]
 
-    def moveCollectible(self, speed):
-        self.rect.x -= speed
+    def moveCollectible(self, speed, dt):
+        self.rect.x -= speed * dt * TARGET_FRAMERATE
 
-    def update(self, speed):
-        self.moveCollectible(speed)
-        self.animateCollectible()
+    def update(self, speed, dt):
+        self.moveCollectible(speed, dt)
+        self.animateCollectible(dt)
         self.destroy()
 
     def playerCollect(self):
@@ -217,9 +217,9 @@ class Shockwave():
         self.width = 10
         self.over = False
     
-    def drawShockwave(self, screen):
+    def drawShockwave(self, screen, dt):
         pygame.draw.circle(screen, 'darkgray', (self.pos_x, self.pos_y), self.radius, self.width)
-        self.radius += 25
+        self.radius += 25 * dt * TARGET_FRAMERATE
         self.over = self.radius > SCREEN_DIAGONAL
     
     def clearHostile(self, hostiles):
@@ -238,16 +238,16 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect.width -= 4
         self.rect.height -= 4
 
-    def moveObstacle(self, platform_speed):
-        self.rect.x -= platform_speed
+    def moveObstacle(self, platform_speed, dt):
+        self.rect.x -= platform_speed * dt * TARGET_FRAMERATE
 
     def destroy(self):
         if self.rect.right <= -1:
             self.kill
             del self
 
-    def update(self, platform_speed):
-        self.moveObstacle(platform_speed)
+    def update(self, platform_speed, dt):
+        self.moveObstacle(platform_speed, dt)
         self.destroy()
 
 

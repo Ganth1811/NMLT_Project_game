@@ -1,6 +1,6 @@
 import pygame
 from sys import exit
-from settings import SCREEN_WIDTH, SCREEN_HEIGHT
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT, TARGET_FRAMERATE
 import button as bt
 import sfx
 from player import player, bullets, Player
@@ -31,7 +31,7 @@ class State(object):
         pass
 
     #TODO: update the state, basically mean doing everything in the state
-    def update(self):
+    def update(self, dt):
         pass
 
 
@@ -59,7 +59,7 @@ class SplashScreen(State):
             self.fade = True
 
 
-    def update(self):
+    def update(self, dt):
         self.render()
 
 
@@ -208,7 +208,7 @@ class PauseMenu(State):
         self.buttons["button_group"].update()
         self.buttons["button_group"].draw(screen)
 
-    def update(self):
+    def update(self, dt):
         self.render()
 
 
@@ -367,19 +367,19 @@ class MainGame(State):
                 
             self.prev_platform_pos = platform.rect
 
-    def showBackground(self):
+    def showBackground(self, dt):
         screen.blit(self.bg, (0 ,0))
         
-        self.scrollBackground(self.background_layers[0], 0, 2)
-        self.scrollBackground(self.background_layers[1], 1, 1)
-        self.scrollBackground(self.background_layers[2], 2, 1.4)
-        self.scrollBackground(self.background_layers[3], 3, 2.3)
-        self.scrollBackground(self.background_layers[4], 4, 3)
+        self.scrollBackground(self.background_layers[0], 0, 2, dt)
+        self.scrollBackground(self.background_layers[1], 1, 1, dt)
+        self.scrollBackground(self.background_layers[2], 2, 1.4, dt)
+        self.scrollBackground(self.background_layers[3], 3, 2.3, dt)
+        self.scrollBackground(self.background_layers[4], 4, 3, dt)
 
 
-    def render(self):
+    def render(self, dt):
         screen.fill('Black')
-        self.showBackground()
+        self.showBackground(dt)
         self.obstacle_group.draw(screen)
         self.enemy_group.draw(screen)
         self.platform_group.draw(screen)
@@ -393,13 +393,13 @@ class MainGame(State):
         screen.blit(self.score_surf, (640 - 155 - 20, 60))
 
         if self.player_sprite.shockwave is not None and not self.player_sprite.shockwave.over:
-                self.player_sprite.shockwave.drawShockwave(screen)
+                self.player_sprite.shockwave.drawShockwave(screen, dt)
     
     
-    def scrollBackground(self, layer, index, speed):
+    def scrollBackground(self, layer, index, speed, dt):
         if (self.scrolls[index] > SCREEN_WIDTH):
             self.scrolls[index] = 0
-        self.scrolls[index] += (self.platform_speed - 9) * speed
+        self.scrolls[index] += (self.platform_speed - 9) * speed * dt * TARGET_FRAMERATE
 
         for i in range(0, ceil(SCREEN_WIDTH / layer.get_width()) + 1 ):
             screen.blit(layer, (i * SCREEN_WIDTH - (self.scrolls[index]), 0))
@@ -411,12 +411,12 @@ class MainGame(State):
             self.run_time = self.previous_run_time + int((pygame.time.get_ticks() - self.start_time) / 1000)
 
             self.generatePlatform()
-            self.platform_group.update(self.platform_speed)
-            self.obstacle_group.update(self.platform_speed)
-            self.enemy_group.update(self.platform_speed)
+            self.platform_group.update(self.platform_speed, dt)
+            self.obstacle_group.update(self.platform_speed, dt)
+            self.enemy_group.update(self.platform_speed, dt)
             self.player_group.update(dt)
-            self.bullets_group.update()
-            self.collectibles_group.update(self.platform_speed)
+            self.bullets_group.update(dt)
+            self.collectibles_group.update(self.platform_speed, dt)
 
             self.colliables = self.obstacle_group.sprites() + self.collectibles_group.sprites()
             self.player_sprite.handleAllCollisions(self.colliables, self.platform_group.sprites())
@@ -435,7 +435,7 @@ class MainGame(State):
                     self.player_sprite.shockwave = None
 
             self.calculateScore(self.run_time)
-            self.render()
+            self.render(dt)
 
 
 class GameOver(State):
@@ -448,14 +448,11 @@ class GameOver(State):
         self.difficulty = difficulty
 
     #TODO: Transition to the game over screen
-    def transition(self):
+    def transition(self, dt):
         if not self.is_transitioned:
-
-            #? Some logic stuff that I don't realy know how to explain
-            #? basically spawn 6 rectangles coming from 2 edges of the screen interchangably and then move them
             if self.transition_counter <= SCREEN_WIDTH:
                 for transition_index in range(0, 6, 2):
-                    self.transition_counter += 15
+                    self.transition_counter += 15 * dt * TARGET_FRAMERATE
                     pygame.draw.rect(screen, 'black', (0, transition_index * 120, self.transition_counter, SCREEN_HEIGHT / 6))
                     pygame.draw.rect(screen, 'black', (SCREEN_WIDTH - self.transition_counter, (transition_index + 1) * 120, SCREEN_WIDTH, SCREEN_HEIGHT / 6))
 
@@ -484,8 +481,8 @@ class GameOver(State):
         screen.blit(text_score, text_score.get_rect(center = ((SCREEN_WIDTH / 2, 400))))
         screen.blit(text2, text2.get_rect(center = ((SCREEN_WIDTH / 2, 500))))
 
-    def update(self):
-        self.transition()
+    def update(self, dt):
+        self.transition(dt)
 
 
 #* I was so tired so I used chatGPT to generate this function ;) so still don't really understand wtf it does
