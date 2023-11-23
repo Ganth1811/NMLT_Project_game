@@ -45,7 +45,7 @@ class Player(pygame.sprite.Sprite):
         #* slash
         self.slash_frame = 0
         self.is_slashing = 0
-
+        self.bullet_group = pygame.sprite.Group()
         self.score = 0
 
         #* hitbox
@@ -57,6 +57,8 @@ class Player(pygame.sprite.Sprite):
         self.invicible_time = 0
         self.i_frame = 0
         self.shockwave = None
+        self.multipler_time = 0
+        self.current_multipler = 1
         
 
     #TODO: Get the player input
@@ -70,7 +72,7 @@ class Player(pygame.sprite.Sprite):
         if (self.keys[pygame.K_SPACE] and self.is_colliding):
             self.makePlayerJump()
         if self.mouses_click[0] and not self.last_click[0] and not self.is_slashing:
-            bullets.add(Bullets(self.rect.right, self.rect.centery))
+            self.bullet_group.add(Bullet(self.rect.right, self.rect.centery))
             self.is_slashing = True
             # print(self.is_slashing)
             #? There's an error that the player will shoot when you click start the game.
@@ -130,7 +132,7 @@ class Player(pygame.sprite.Sprite):
     def affectGravityOnPlayer(self, dt):
         self.vertical_velocity += self.gravity * dt * TARGET_FRAMERATE
         if self.vertical_velocity > 20:
-            self.vertical_velocity = 20;
+            self.vertical_velocity = 20
         self.rect.y += self.vertical_velocity * dt * TARGET_FRAMERATE
 
         #* If the player falls out of the map, kill them
@@ -189,7 +191,7 @@ class Player(pygame.sprite.Sprite):
         
 
     def collectCollectible(self, collectible):
-        self.score += collectible.playerCollect()
+        self.score += collectible.playerCollect() * self.current_multipler
 
     def handleAllCollisions(self, colliables, platforms):
         self.handlePlatformCollision(platforms)
@@ -205,6 +207,10 @@ class Player(pygame.sprite.Sprite):
                 elif colliable.type == "removehostile":
                     self.collectCollectible(colliable)
                     self.shockwave = colliable.shockwave
+                elif colliable.type == "multipler":
+                    self.collectCollectible(colliable)
+                    self.multipler_time = colliable.effect_time * TARGET_FRAMERATE
+                    self.current_multipler = colliable.multipler
 
     def getHitbox(self):
         if not self.is_spinning:
@@ -219,10 +225,18 @@ class Player(pygame.sprite.Sprite):
         self.is_dead = True
         # self.kill()
 
-    def decreaseIframe(self, dt):
-        self.invicible_time -= 1 * dt * TARGET_FRAMERATE
+
+    def countdown(self, dt):
+        elapsed_time = 1 * dt * TARGET_FRAMERATE
+
+        self.invicible_time -= elapsed_time
         if self.invicible_time <= 0:
-            self.invicible_time = 0    
+            self.invicible_time = 0
+
+        self.multipler_time -= elapsed_time
+        if self.multipler_time <= 0:
+            self.multipler_time = 0
+            self.current_multipler = 1
         #print(int(self.i_frame/60))
         
     def takeDamage(self, dt):
@@ -234,6 +248,7 @@ class Player(pygame.sprite.Sprite):
         else:
             self.image.set_alpha(0)
         # print(int(self.i_frame))
+            
         
 
     #TODO: update the state of the player
@@ -243,11 +258,11 @@ class Player(pygame.sprite.Sprite):
         self.affectGravityOnPlayer(dt)
         self.animatePlayer(dt)
         self.getHitbox()
-        self.decreaseIframe(dt)
+        self.countdown(dt)
         self.takeDamage(dt)
 
 
-class Bullets(pygame.sprite.Sprite):
+class Bullet(pygame.sprite.Sprite):
     def __init__(self, Player_right, Player_centery):
         super().__init__()
 
@@ -271,6 +286,7 @@ class Bullets(pygame.sprite.Sprite):
         for platform in platform_group:
             if self.rect.colliderect(platform.rect):
                 self.kill()
+                break
 
     def handleEnemyCollision(self, enemy_group):
         for enemy in enemy_group:
@@ -278,8 +294,3 @@ class Bullets(pygame.sprite.Sprite):
                 self.kill()
                 return enemy.shot()
         return 0
-
-
-bullets = pygame.sprite.Group()
-
-player = pygame.sprite.GroupSingle()

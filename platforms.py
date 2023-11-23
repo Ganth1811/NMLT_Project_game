@@ -228,6 +228,22 @@ class Shockwave():
             if distance <= self.radius and hostile.rect.left < SCREEN_WIDTH:
                 hostile.kill()
 
+class Multipler(Collectible):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(pos_x, pos_y)
+
+        self.anim_frame = 0
+        self.anim_list = [pygame.Surface((20, 20))]
+        self.image = self.anim_list[self.anim_frame]
+        self.image.fill('darkgreen')
+        self.rect = self.image.get_rect(center = (pos_x, pos_y))
+        self.type = "multipler"
+        self.given_score = 0
+        self.sound = sfx.player_collect_cherry
+        self.multipler = 2
+        self.effect_time = 10
+
+
 #* a very simple obstacle class
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, x_pos, y_pos, image):

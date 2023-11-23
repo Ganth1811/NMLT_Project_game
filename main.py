@@ -40,7 +40,7 @@ while 1:
     dt = current_time - last_time
     last_time = current_time
     current_state.update(dt)
-
+ 
     #print(clock.get_fps())
     pygame.display.update()
 
