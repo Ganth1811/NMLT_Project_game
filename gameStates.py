@@ -4,7 +4,7 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT, TARGET_FRAMERATE, MAX_SPEED, s
 import button as bt
 import sfx
 from player import Player
-from platforms import Obstacle, Platform, generatePlatform, Enemy, Diamond, InvicibleCherry, RemoveHostile, Multiplier
+from platforms import Obstacle, Platform, generatePlatform, Enemy, InvicibleCherry, RemoveHostile, Multiplier
 import random
 from math import ceil
 from image import SplashScreenImg, TitleMenuImg, MainGameImg
@@ -73,7 +73,7 @@ class TitleMenu(State):
         self.text_timer = 0
         self.particle_group = []
 
-        self.bg_music = pygame.mixer_music.load("music\\bgm\\stage_theme.mp3")
+        self.bg_music = pygame.mixer_music.load("music\\bgm\\menu_theme.mp3")
         pygame.mixer_music.play(-1)
 
         #* initialize the button objects
@@ -269,6 +269,9 @@ class MainGame(State):
         self.run_time = 0
         self.spawn_delay = 400
         self.time_before = 0
+        self.is_day = True
+        self.day_counter = 0
+        self.background_counter = 0
 
         #* pausing mechanism
         self.is_pause = False
@@ -485,17 +488,59 @@ class MainGame(State):
             self.prev_platform_pos = platform.rect
 
     def showBackground(self, dt):
-        screen.blit(self.bg, (0 ,0))
         
-        #self.scrollBackground(self.background_layers[0], 0, 0.8, dt)
+        
+        self.scrollBackground(self.background_layers[0], 0, 0.8, dt)
         self.scrollBackground(self.background_layers[1], 1, 0.1, dt)
         self.scrollBackground(self.background_layers[2], 2, 0.6, dt)
         self.scrollBackground(self.background_layers[3], 3, 0.9, dt)
         self.scrollBackground(self.background_layers[4], 4, 0.4, dt)
 
 
+    
+    def cycleDayAndNight(self, dt):
+        
+        if self.is_day:
+            self.day_counter += (1 * dt * TARGET_FRAMERATE) / 30
+            if self.day_counter >= 100:
+                self.is_day = False
+        else:
+            self.day_counter -= (1 * dt * TARGET_FRAMERATE) / 30
+            if self.day_counter <= 0:
+                self.is_day = True
+        
+        
+        blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        blur.set_alpha(self.day_counter)
+        screen.blit(blur, (0, 0))
+        print(self.day_counter)
+        
+    
+    def darkenBackground(self, dt):
+        
+        if self.is_day:
+            self.background_counter += (1 * dt * TARGET_FRAMERATE) / 25
+                
+        else:
+            self.background_counter -= (1 * dt * TARGET_FRAMERATE) / 25
+
+        
+        
+        blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        blur.set_alpha(self.day_counter)
+        screen.blit(blur, (0, 0))
+        print(self.day_counter)
+        
+
+
+
     def render(self, dt):
         screen.fill('Black')
+        screen.blit(self.bg, (0 ,0))
+        self.darkenBackground(dt)
+        
+        
+        
         self.showBackground(dt)
         
         self.platform_group.draw(screen)
@@ -505,9 +550,7 @@ class MainGame(State):
         self.player_group.draw(screen)
         
         
-        # blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-        # blur.set_alpha(100)
-        # screen.blit(blur, (0, 0))
+        self.cycleDayAndNight(dt)
         
         
         self.collectibles_group.draw(screen)
@@ -543,7 +586,6 @@ class MainGame(State):
                 score.high_score = self.total_score
                 with open('score.high_score.txt', 'w') as file:
                     file.write(str(self.total_score))
-            print(score.high_score)
 
             self.generateGameObjects()
             self.platform_group.update(self.platform_speed, dt)
