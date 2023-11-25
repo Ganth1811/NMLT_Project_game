@@ -1,5 +1,5 @@
 import pygame
-from random import randint, choice
+from random import choice
 from math import sin, cos, pi, sqrt
 from settings import SCREEN_DIAGONAL, SCREEN_WIDTH, TARGET_FRAMERATE
 import sfx
@@ -50,24 +50,24 @@ class Platform(pygame.sprite.Sprite):
 
 
 def generatePlatform(prev_platform_pos: pygame.Rect, platform_gap, platform_speed):
-    if prev_platform_pos.top <= 200:
-        prev_platform_pos.y += 200
-
     #* separate two platforms by a certain distance relative to their speed
     platform_x = prev_platform_pos.right + platform_gap * (platform_speed / 7.0)
 
     #* manipulate the platform y value according to the previous platform position
     if prev_platform_pos.bottom >= 500:
-        platform_y = choice([prev_platform_pos.top - 50 - 25, prev_platform_pos.y - 25, prev_platform_pos.top])
-        
+        platform_y = choice([prev_platform_pos.top - 25] * 2 + [prev_platform_pos.top])
+    
+    elif prev_platform_pos.top <= 200:
+        platform_y = choice([prev_platform_pos.top + 75] * 2 + [prev_platform_pos.top])
+    
     else:
-        platform_y = choice([prev_platform_pos.top - 50, prev_platform_pos.bottom + 100, prev_platform_pos.bottom + 100, prev_platform_pos.bottom + 100, prev_platform_pos.top])
+        platform_y = choice([prev_platform_pos.top - 50] + [prev_platform_pos.bottom + 100] * 3 +  [prev_platform_pos.top] * 2)
 
     #* get a random platform type and spawn it
     platform_type = choice(["long"] * 3 + ["short"] * 1)
 
     if platform_type == "long":
-        platform_width = platform_speed * 70
+        platform_width = platform_speed * 80
     else:
         platform_width = platform_speed * 30
 
@@ -228,7 +228,7 @@ class Shockwave():
             if distance <= self.radius and hostile.rect.left < SCREEN_WIDTH:
                 hostile.kill()
 
-class Multipler(Collectible):
+class Multiplier(Collectible):
     def __init__(self, pos_x, pos_y):
         super().__init__(pos_x, pos_y)
 

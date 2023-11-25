@@ -59,6 +59,9 @@ class Player(pygame.sprite.Sprite):
         self.shockwave = None
         self.multipler_time = 0
         self.current_multipler = 1
+        self.multiplier_cd = 0
+        self.invincible_cd = 0
+        self.shock_wave_cd = 0
         
 
     #TODO: Get the player input
@@ -204,13 +207,16 @@ class Player(pygame.sprite.Sprite):
                 elif colliable.type == "cherry":
                     self.becomeInvincible()
                     self.collectCollectible(colliable)
+                    self.invincible_cd = self.invicible_time + TARGET_FRAMERATE * 15
                 elif colliable.type == "removehostile":
                     self.collectCollectible(colliable)
                     self.shockwave = colliable.shockwave
+                    self.shock_wave_cd = TARGET_FRAMERATE * 20
                 elif colliable.type == "multipler":
                     self.collectCollectible(colliable)
                     self.multipler_time = colliable.effect_time * TARGET_FRAMERATE
                     self.current_multipler = colliable.multipler
+                    self.multiplier_cd = self.multipler_time + TARGET_FRAMERATE * 15
 
     def getHitbox(self):
         if not self.is_spinning:
@@ -228,7 +234,20 @@ class Player(pygame.sprite.Sprite):
 
     def countdown(self, dt):
         elapsed_time = 1 * dt * TARGET_FRAMERATE
-
+        
+        self.shock_wave_cd -= elapsed_time 
+        self.multiplier_cd -= elapsed_time
+        self.invincible_cd -= elapsed_time 
+        
+        if self.shock_wave_cd <= 0:
+            self.shock_wave_cd = 0
+            
+        if self.multiplier_cd <= 0:
+            self.multiplier_cd = 0
+            
+        if self.invincible_cd <= 0:
+            self.invincible_cd = 0
+        
         self.invicible_time -= elapsed_time
         if self.invicible_time <= 0:
             self.invicible_time = 0
@@ -240,7 +259,7 @@ class Player(pygame.sprite.Sprite):
         #print(int(self.i_frame/60))
         
     def takeDamage(self, dt):
-        self.i_frame -= 1 * dt * TARGET_FRAMERATE
+        self.i_frame -= 1
         if self.i_frame <= 0:
             self.i_frame = 0
         if self.i_frame % 3 == 0:

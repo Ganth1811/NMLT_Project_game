@@ -4,9 +4,9 @@ from settings import SCREEN_HEIGHT, SCREEN_WIDTH
 from time import time
 
 
- 
+
 #! changes in the player: added invincible frame (player doesn not take dmg when in this state)
-#! changes in platforms: added an item that gives player invincibility, also some other obstacles spawn type
+#! changes in platforms: added   an item that gives player invincibility, also some other obstacles spawn type
 
 
 #setup before running          
@@ -40,7 +40,7 @@ while 1:
     dt = current_time - last_time
     last_time = current_time
     current_state.update(dt)
- 
+
     #print(clock.get_fps())
     pygame.display.update()
 

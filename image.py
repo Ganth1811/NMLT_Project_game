@@ -17,7 +17,8 @@ class CollectibleImg():
 	cherry_anim = [pygame.image.load(f"img\\collectibles\\cherry-{i}.png").convert_alpha() for i in range(1,8)]
 
 class ObstacleImg():
-	pass
+	#obstacle_1 = pygame.image.load("img\\")
+    pass
 
 #* player.py
 class PlayerImg():
