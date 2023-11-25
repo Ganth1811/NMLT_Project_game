@@ -6,7 +6,7 @@ from time import time
 
 
 #! changes in the player: added invincible frame (player doesn not take dmg when in this state)
-#! changes in platforms: added   an item that gives player invincibility, also some other obstacles spawn type
+#! changes in platforms: added an item that gives player invincibility, also some other obstacles spawn type
 
 
 #setup before running          

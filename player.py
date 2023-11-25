@@ -57,8 +57,8 @@ class Player(pygame.sprite.Sprite):
         self.invicible_time = 0
         self.i_frame = 0
         self.shockwave = None
-        self.multipler_time = 0
-        self.current_multipler = 1
+        self.multiplier_time = 0
+        self.current_multiplier = 1
         self.multiplier_cd = 0
         self.invincible_cd = 0
         self.shock_wave_cd = 0
@@ -194,7 +194,7 @@ class Player(pygame.sprite.Sprite):
         
 
     def collectCollectible(self, collectible):
-        self.score += collectible.playerCollect() * self.current_multipler
+        self.score += collectible.playerCollect() * self.current_multiplier
 
     def handleAllCollisions(self, colliables, platforms):
         self.handlePlatformCollision(platforms)
@@ -202,7 +202,7 @@ class Player(pygame.sprite.Sprite):
             if self.hitbox.colliderect(colliable.rect):
                 if colliable.type == "obstacle":
                     self.die()
-                elif colliable.type == "diamond":
+                elif colliable.type == "coin":
                     self.collectCollectible(colliable)
                 elif colliable.type == "cherry":
                     self.becomeInvincible()
@@ -212,11 +212,11 @@ class Player(pygame.sprite.Sprite):
                     self.collectCollectible(colliable)
                     self.shockwave = colliable.shockwave
                     self.shock_wave_cd = TARGET_FRAMERATE * 20
-                elif colliable.type == "multipler":
+                elif colliable.type == "multiplier":
                     self.collectCollectible(colliable)
-                    self.multipler_time = colliable.effect_time * TARGET_FRAMERATE
-                    self.current_multipler = colliable.multipler
-                    self.multiplier_cd = self.multipler_time + TARGET_FRAMERATE * 15
+                    self.multiplier_time = colliable.effect_time * TARGET_FRAMERATE
+                    self.current_multiplier = colliable.multiplier
+                    self.multiplier_cd = self.multiplier_time + TARGET_FRAMERATE * 15
 
     def getHitbox(self):
         if not self.is_spinning:
@@ -252,10 +252,10 @@ class Player(pygame.sprite.Sprite):
         if self.invicible_time <= 0:
             self.invicible_time = 0
 
-        self.multipler_time -= elapsed_time
-        if self.multipler_time <= 0:
-            self.multipler_time = 0
-            self.current_multipler = 1
+        self.multiplier_time -= elapsed_time
+        if self.multiplier_time <= 0:
+            self.multiplier_time = 0
+            self.current_multiplier = 1
         #print(int(self.i_frame/60))
         
     def takeDamage(self, dt):

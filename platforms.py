@@ -34,8 +34,8 @@ class Platform(pygame.sprite.Sprite):
         self.previous_pos = self.rect.copy()
         self.movePlatform(speed, dt)
 
-    def createDiamondPath(self, platform_type):
-        diamond_list = []
+    def createCoinPath(self, platform_type):
+        coin_list = []
 
         if platform_type == "long":
             num = 10
@@ -44,9 +44,9 @@ class Platform(pygame.sprite.Sprite):
 
         step = self.width / num
         for i in range(1, num):
-            diamond_list.append(Diamond(self.rect.left + step * i, self.rect.top - 20))
+            coin_list.append(Coin(self.rect.left + step * i, self.rect.top - 20))
 
-        return diamond_list
+        return coin_list
 
 
 def generatePlatform(prev_platform_pos: pygame.Rect, platform_gap, platform_speed):
@@ -168,23 +168,23 @@ class Collectible(pygame.sprite.Sprite):
             self.kill()
 
 
-class Diamond(Collectible):
+class Coin(Collectible):
     def __init__(self, pos_x, pos_y):
         super().__init__(pos_x, pos_y)
 
-        self.anim_list = [pygame.transform.scale_by(image, 2) for image in CollectibleImg.diamond_anim]
+        self.anim_list = CollectibleImg.coin_anim
         self.image = self.anim_list[self.anim_frame]
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
-        self.type = "diamond"
+        self.type = "coin"
         self.given_score = 5
-        self.sound = sfx.player_collect_diamond
+        self.sound = sfx.player_collect_coin
 
 class InvicibleCherry(Collectible):
     def __init__(self, pos_x, pos_y):
         super().__init__(pos_x, pos_y)
 
         self.type = "cherry"
-        self.anim_list = [pygame.transform.scale_by(image, 3) for image in CollectibleImg.cherry_anim]
+        self.anim_list = CollectibleImg.invicibility_anim
         self.given_score = 0
         self.image = self.anim_list[self.anim_frame]
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
@@ -195,10 +195,9 @@ class RemoveHostile(Collectible):
         super().__init__(pos_x, pos_y)
 
         self.type = "removehostile"
-        self.anim_list = [pygame.Surface((20, 20))]
+        self.anim_list = CollectibleImg.rainbow_orb_anim
         self.given_score = 0
         self.image = self.anim_list[self.anim_frame]
-        self.image.fill('red')
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
         self.sound = sfx.player_collect_cherry
         self.shockwave = None
@@ -233,14 +232,13 @@ class Multiplier(Collectible):
         super().__init__(pos_x, pos_y)
 
         self.anim_frame = 0
-        self.anim_list = [pygame.Surface((20, 20))]
+        self.anim_list = CollectibleImg.multiplier_anim
         self.image = self.anim_list[self.anim_frame]
-        self.image.fill('darkgreen')
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
-        self.type = "multipler"
+        self.type = "multiplier"
         self.given_score = 0
         self.sound = sfx.player_collect_cherry
-        self.multipler = 2
+        self.multiplier = 2
         self.effect_time = 10
 
 
@@ -267,10 +265,10 @@ class Obstacle(pygame.sprite.Sprite):
         self.destroy()
 
 
-    def createDiamondPath(self, player, speed, number = 9):
+    def createCoinPath(self, player, speed, number = 9):
         gravity = -player.gravity
         jump_force = player.jump_force
-        diamond_list = []
+        coin_list = []
 
         #* v_peak = v0 + gt <=> t = (v_peak - v0)/g, v_peak = 0, v0 = jump_force
         time_max_height = -jump_force / gravity
@@ -283,8 +281,8 @@ class Obstacle(pygame.sprite.Sprite):
             angle = step_angle * i
             pos_x = peak_x * cos(angle) + self.rect.centerx
             pos_y = -(peak_y * sin(angle)) + self.rect.centery
-            diamond_list.append(Diamond(pos_x, pos_y))
+            coin_list.append(Coin(pos_x, pos_y))
 
-        return diamond_list
+        return coin_list
     
         

@@ -1,6 +1,6 @@
 import pygame
 from sys import exit
-from settings import SCREEN_WIDTH, SCREEN_HEIGHT, TARGET_FRAMERATE, MAX_SPEED, score
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT, TARGET_FRAMERATE, MAX_SPEED, Score
 import button as bt
 import sfx
 from player import Player
@@ -294,7 +294,7 @@ class MainGame(State):
         time_elapsed = time - self.time_before
         if time_elapsed >= 1:
             self.time_before = time
-            self.score_by_playtime += time_elapsed * self.player_sprite.current_multipler
+            self.score_by_playtime += time_elapsed * self.player_sprite.current_multiplier
 
         self.difficulty = int((self.platform_speed - 9) / (MAX_SPEED - 9) * 4) + 1
         self.total_score = self.player_sprite.score + self.score_by_playtime
@@ -350,15 +350,15 @@ class MainGame(State):
                 if self.difficulty < 2:
                     if random.uniform(0, 1) <= 0.3:
                         self.enemy_group.add(Enemy(platform.rect.right - 100, platform.rect.top))
-                        self.collectibles_group.add(platform.createDiamondPath(platform_type))                     
-                        
+                        self.collectibles_group.add(platform.createCoinPath(platform_type))             
+
                     elif random.uniform(0, 1) <= 0.7:
                         obstacle = Obstacle(platform.rect.centerx, platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
                         self.obstacle_group.add(obstacle)
-                        self.collectibles_group.add(obstacle.createDiamondPath(self.player_sprite, self.platform_speed))
+                        self.collectibles_group.add(obstacle.createCoinPath(self.player_sprite, self.platform_speed))
                         
                     else:
-                        self.collectibles_group.add(platform.createDiamondPath(platform_type))
+                        self.collectibles_group.add(platform.createCoinPath(platform_type))
                 
                 #* medium difficulty
                 elif self.difficulty < 4:
@@ -367,7 +367,7 @@ class MainGame(State):
                         #* spawn two enemies in the middle and the end of the platform respectively
                         self.enemy_group.add(Enemy(platform.rect.centerx, platform.rect.top))
                         self.enemy_group.add(Enemy(platform.rect.right - 100, platform.rect.top))
-                        self.collectibles_group.add(platform.createDiamondPath(platform_type))
+                        self.collectibles_group.add(platform.createCoinPath(platform_type))
                         
                         #* a row of obstacles on top prevent the player from jumping
                         if random.uniform(0, 1) > 0.3:
@@ -383,12 +383,12 @@ class MainGame(State):
                             
                             #* spawn the Multiplier
                             if random.uniform(0, 1) <= 0.31 and self.player_sprite.multiplier_cd == 0:
-                                self.collectibles_group.add(Multiplier(platform.rect.centerx - 10, platform.rect.top - 200))
+                                self.collectibles_group.add(Multiplier(platform.rect.centerx - 10, platform.rect.top - 300))
                             
                             #* an obstacle in the middle
                             obstacle = Obstacle(platform.rect.centerx, platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
                             self.obstacle_group.add(obstacle)
-                            self.collectibles_group.add(obstacle.createDiamondPath(self.player_sprite, self.platform_speed))
+                            self.collectibles_group.add(obstacle.createCoinPath(self.player_sprite, self.platform_speed))
                         
                         #* a group of three zic-zac obstacles
                         elif platform.rect.top >= self.prev_platform_pos.bottom:
@@ -396,7 +396,7 @@ class MainGame(State):
                             
                             obstacle = Obstacle(platform.rect.left + 500, platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
                             self.obstacle_group.add(obstacle)
-                            self.collectibles_group.add(obstacle.createDiamondPath(self.player_sprite, self.platform_speed))
+                            self.collectibles_group.add(obstacle.createCoinPath(self.player_sprite, self.platform_speed))
                             
                             self.obstacle_group.add(Obstacle(platform.rect.left + 500 + 300, platform.rect.top - 200, "img\\obstacles\\spike_ball.png"))
                         
@@ -407,16 +407,16 @@ class MainGame(State):
                             
                             obstacle = Obstacle(platform.rect.left + 500, platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
                             self.obstacle_group.add(obstacle)
-                            self.collectibles_group.add(obstacle.createDiamondPath(self.player_sprite, self.platform_speed))
+                            self.collectibles_group.add(obstacle.createCoinPath(self.player_sprite, self.platform_speed))
                             
-                            self.collectibles_group.add(platform.createDiamondPath(platform_type))
+                            self.collectibles_group.add(platform.createCoinPath(platform_type))
                             
                             #* spawn the inviciblle potion
                             if random.uniform(0, 1) <= 0.25 and self.player_sprite.invincible_cd == 0:
                                 self.collectibles_group.add(InvicibleCherry(platform.rect.centerx - 100 , platform.rect.top - 200))
                             
                     else:
-                        self.collectibles_group.add(platform.createDiamondPath(platform_type))
+                        self.collectibles_group.add(platform.createCoinPath(platform_type))
 
                     
                 
@@ -427,7 +427,7 @@ class MainGame(State):
                         #* spawn two enemies in the middle and the end of the platform respectively
                         self.enemy_group.add(Enemy(platform.rect.centerx + 10, platform.rect.top))
                         self.enemy_group.add(Enemy(platform.rect.right - 100, platform.rect.top))
-                        self.collectibles_group.add(platform.createDiamondPath(platform_type))
+                        self.collectibles_group.add(platform.createCoinPath(platform_type))
                         
                         #* a row of obstacles on top prevent the player from jumping
                         for i in range(platform.rect.left + 20 * int(self.platform_speed), platform.rect.right - 20 * int(self.platform_speed) + 1, 75):
@@ -442,7 +442,7 @@ class MainGame(State):
                             #* an obstacle in the middle
                             obstacle = Obstacle(platform.rect.centerx, platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
                             self.obstacle_group.add(obstacle)
-                            self.collectibles_group.add(obstacle.createDiamondPath(self.player_sprite, self.platform_speed))
+                            self.collectibles_group.add(obstacle.createCoinPath(self.player_sprite, self.platform_speed))
                             
                             #* spawn the Multiplier
                             if random.uniform(0, 1) <= 0.31 and self.player_sprite.multiplier_cd == 0:
@@ -456,7 +456,7 @@ class MainGame(State):
                             #* low
                             obstacle = Obstacle(platform.rect.left + 500, platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
                             self.obstacle_group.add(obstacle)
-                            self.collectibles_group.add(obstacle.createDiamondPath(self.player_sprite, self.platform_speed))
+                            self.collectibles_group.add(obstacle.createCoinPath(self.player_sprite, self.platform_speed))
                             
                             #* high
                             self.obstacle_group.add(Obstacle(platform.rect.left + 500 + 300, platform.rect.top - 210, "img\\obstacles\\spike_ball.png"))
@@ -465,7 +465,7 @@ class MainGame(State):
                                 #* low
                                 obstacle = Obstacle(platform.rect.left + 1150, platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
                                 self.obstacle_group.add(obstacle)
-                                self.collectibles_group.add(obstacle.createDiamondPath(self.player_sprite, self.platform_speed))
+                                self.collectibles_group.add(obstacle.createCoinPath(self.player_sprite, self.platform_speed))
                                 
                                 #* high
                                 self.obstacle_group.add(Obstacle(platform.rect.left + 1200 + 300, platform.rect.top - 210, "img\\obstacles\\spike_ball.png"))
@@ -483,7 +483,7 @@ class MainGame(State):
                             self.collectibles_group.add(RemoveHostile(platform.rect.right + 100, platform.rect.top - 200))
                         
             else:
-                self.collectibles_group.add(platform.createDiamondPath(platform_type)) 
+                self.collectibles_group.add(platform.createCoinPath(platform_type)) 
             
             self.prev_platform_pos = platform.rect
 
@@ -582,10 +582,6 @@ class MainGame(State):
         if not self.player_sprite.is_dead and not self.is_pause:
             #* getting the second elapsed since MainGame ran as score
             self.run_time = self.previous_run_time + int((pygame.time.get_ticks() - self.start_time) / 1000)
-            if self.total_score > score.high_score:
-                score.high_score = self.total_score
-                with open('score.high_score.txt', 'w') as file:
-                    file.write(str(self.total_score))
 
             self.generateGameObjects()
             self.platform_group.update(self.platform_speed, dt)
@@ -602,10 +598,10 @@ class MainGame(State):
             for bullet in self.bullet_group.sprites():
                 bullet.handlePlatformCollision(self.platform_group.sprites())
                 if bullet is not None:
-                    self.player_sprite.score += bullet.handleEnemyCollision(self.enemy_group.sprites()) * self.player_sprite.current_multipler
+                    self.player_sprite.score += bullet.handleEnemyCollision(self.enemy_group.sprites()) * self.player_sprite.current_multiplier
 
             for enemy in self.enemy_group.sprites():
-                self.player_sprite.score += self.player_sprite.handleEnemyCollision(enemy) * self.player_sprite.current_multipler
+                self.player_sprite.score += self.player_sprite.handleEnemyCollision(enemy) * self.player_sprite.current_multiplier
             
             if self.player_sprite.shockwave is not None: 
                 self.player_sprite.shockwave.clearHostile(self.obstacle_group.sprites() + self.enemy_group.sprites())
@@ -615,10 +611,6 @@ class MainGame(State):
             self.calculateScore(self.run_time)
             self.render(dt)
 
-            
-            
-                    
-            
 
 class GameOver(State):
     
@@ -629,6 +621,12 @@ class GameOver(State):
 
         self.score = score
         self.difficulty = difficulty
+
+        if self.score > Score.high_score:
+            Score.high_score = self.score
+            with open('high_score.txt', 'w') as file:
+                file.write(str(self.score))
+            print(Score.high_score)
 
     #TODO: Transition to the game over screen
     def transition(self, dt):
@@ -659,7 +657,7 @@ class GameOver(State):
         text = font.render(f"GAME OVER", 0, 'White')
         text_score = font.render(f"Your score: {self.score} - Difficulty: {self.difficulty}", 0, 'White')
         text2 = font.render(f"Press R to play again", 0, 'White')
-        text_high_score = font.render(f"Highest score: {score.high_score}", 0, 'White')
+        text_high_score = font.render(f"Highest score: {Score.high_score}", 0, 'White')
 
         screen.blit(text, text.get_rect(center = (SCREEN_WIDTH / 2, 300)))
         screen.blit(text_score, text_score.get_rect(center = ((SCREEN_WIDTH / 2, 400))))
@@ -668,6 +666,8 @@ class GameOver(State):
 
     def update(self, dt):
         self.transition(dt)
+
+        
 
 
 #* I was so tired so I used chatGPT to generate this function ;) so still don't really understand wtf it does
