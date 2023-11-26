@@ -15,16 +15,23 @@ class PlatformImg():
 	platform = loadImg("img\\Bg\\platform.png")
 
 class EnemyImg():
-	run_anim = [scaleImg(loadImg(f"Sunny-land-files\\Graphical Assets\\sprites\\Enemy\\enemyRun{i}.png"), 2) for i in range(1,7)]
-	death_anim = [scaleImg(loadImg(f"Sunny-land-files\\Graphical Assets\\sprites\\enemy-death\\enemy-death-{i}.png"), 2) for i in range(1,7)]
+	death_anim = [scaleImg(loadImg(f"img\\obstacles\\enemy-death-{i}.png"), 2) for i in range(1,7)]
+
+	enemy1_sprites = loadImg("img\\obstacles\\enemy1.png")
+	enemy1_run = []
+	for i in range(8):
+		enemy1_run.append(scaleImg(pygame.transform.flip(enemy1_sprites.subsurface((48*i, 0), (25, 20)), 1, 0), 4))
+	
+	enemy2_sprites = loadImg("img\\obstacles\\enemy2.png")
+	enemy2_run = []
+	for i in range(8):
+		enemy2_run.append(scaleImg(pygame.transform.flip(enemy2_sprites.subsurface((64*i, 0), (27, 24)), 1, 0), 4))
 
 class CollectibleImg():
 	coin_sprites = loadImg("img\\collectibles\\coin_sprites.png")
 	coin_anim = []
 	for i in range(8):
 		coin_anim.append(coin_sprites.subsurface((32*i+5, 5), (22, 22)))
-
-	print(1)
 
 	multiplier_sprites = loadImg("img\\collectibles\\multiplier_sprites.png")
 	multiplier_anim = []

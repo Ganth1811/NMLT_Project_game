@@ -4,7 +4,7 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT, TARGET_FRAMERATE, MAX_SPEED, S
 import button as bt
 import sfx
 from player import Player
-from platforms import Obstacle, Platform, generatePlatform, Enemy, InvicibleCherry, RemoveHostile, Multiplier
+from gameObject import Obstacle, Platform, generatePlatform, Enemy, InvicibleCherry, RemoveHostile, Multiplier
 import random
 from math import ceil
 from image import SplashScreenImg, TitleMenuImg, MainGameImg
@@ -230,10 +230,6 @@ class MainGame(State):
         super(State, self).__init__()
 
         #* background and other visual objects
-        self.background = pygame.transform.scale(pygame.image.load("Sunny-land-files\\Graphical Assets\\environment\\Background\\Background.jpg").convert_alpha(), (1280, 720))
-        self.ground_surface = pygame.Surface((1280,300))
-        self.ground_surface.fill('white')
-        self.tiles = ceil(SCREEN_WIDTH / self.background.get_width()) + 1
         self.scrolls = [2, 1, 1.4, 1.3, 1.2]
         self.bg = pygame.transform.scale(MainGameImg.bg, (1280, 720))
         self.background_layers = [pygame.transform.scale(image, (1280, 720)) for image in MainGameImg.bg_layers]
@@ -296,7 +292,7 @@ class MainGame(State):
             self.time_before = time
             self.score_by_playtime += time_elapsed * self.player_sprite.current_multiplier
 
-        self.difficulty = int((self.platform_speed - 9) / (MAX_SPEED - 9) * 4) + 1
+        self.difficulty = ceil((self.platform_speed - 10) / (MAX_SPEED - 10) * 5)
         self.total_score = self.player_sprite.score + self.score_by_playtime
         self.score_surf = self.font.render(f"Score: {int(self.total_score):05d} ", 0, "Black")
         
