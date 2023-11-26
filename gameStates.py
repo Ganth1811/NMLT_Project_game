@@ -353,7 +353,7 @@ class MainGame(State):
                         self.collectibles_group.add(platform.createCoinPath(platform_type))             
 
                     elif random.uniform(0, 1) <= 0.7:
-                        obstacle = Obstacle(platform.rect.centerx, platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
+                        obstacle = Obstacle(platform.rect.centerx, platform.rect.top - 5)
                         self.obstacle_group.add(obstacle)
                         self.collectibles_group.add(obstacle.createCoinPath(self.player_sprite, self.platform_speed))
                         
@@ -372,40 +372,40 @@ class MainGame(State):
                         #* a row of obstacles on top prevent the player from jumping
                         if random.uniform(0, 1) > 0.3:
                             for i in range(platform.rect.left + 20 * int(self.platform_speed), platform.rect.right - 20 * int(self.platform_speed) + 1, 75):
-                                self.obstacle_group.add(Obstacle(i, platform.rect.top - 200, "img\\obstacles\\spike_ball.png"))    
+                                self.obstacle_group.add(Obstacle(i, platform.rect.top - 200))    
                                 
                     # *obstacles
                     elif random.uniform(0, 1) <= 0.9:
                         if platform.rect.top < self.prev_platform_pos.top:
                             #* an obstacle high up at the end of the platform, prevent the player from jumping early
                             if random.uniform(0, 1) > 0.5:
-                                self.obstacle_group.add(Obstacle(platform.rect.right - 100, platform.rect.top - 200, "img\\obstacles\\spike_ball.png"))
+                                self.obstacle_group.add(Obstacle(platform.rect.right - 100, platform.rect.top - 200))
                             
                             #* spawn the Multiplier
                             if random.uniform(0, 1) <= 0.31 and self.player_sprite.multiplier_cd == 0:
-                                self.collectibles_group.add(Multiplier(platform.rect.centerx - 10, platform.rect.top - 300))
+                                self.collectibles_group.add(Multiplier(platform.rect.centerx - 10, platform.rect.top - 200))
                             
                             #* an obstacle in the middle
-                            obstacle = Obstacle(platform.rect.centerx, platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
+                            obstacle = Obstacle(platform.rect.centerx, platform.rect.top - 5)
                             self.obstacle_group.add(obstacle)
                             self.collectibles_group.add(obstacle.createCoinPath(self.player_sprite, self.platform_speed))
                         
                         #* a group of three zic-zac obstacles
                         elif platform.rect.top >= self.prev_platform_pos.bottom:
-                            self.obstacle_group.add(Obstacle(platform.rect.left + 200, platform.rect.top - 200, "img\\obstacles\\spike_ball.png"))
+                            self.obstacle_group.add(Obstacle(platform.rect.left + 200, platform.rect.top - 200))
                             
-                            obstacle = Obstacle(platform.rect.left + 500, platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
+                            obstacle = Obstacle(platform.rect.left + 500, platform.rect.top - 5)
                             self.obstacle_group.add(obstacle)
                             self.collectibles_group.add(obstacle.createCoinPath(self.player_sprite, self.platform_speed))
                             
-                            self.obstacle_group.add(Obstacle(platform.rect.left + 500 + 300, platform.rect.top - 200, "img\\obstacles\\spike_ball.png"))
+                            self.obstacle_group.add(Obstacle(platform.rect.left + 500 + 300, platform.rect.top - 200))
                         
                         
                         else:
                             #* an obstacle in the left of the platform prevents early jumping
-                            self.obstacle_group.add(Obstacle(platform.rect.left, platform.rect.top - 5, "img\\obstacles\\spike_ball.png"))
+                            self.obstacle_group.add(Obstacle(platform.rect.left, platform.rect.top - 5))
                             
-                            obstacle = Obstacle(platform.rect.left + 500, platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
+                            obstacle = Obstacle(platform.rect.left + 500, platform.rect.top - 5)
                             self.obstacle_group.add(obstacle)
                             self.collectibles_group.add(obstacle.createCoinPath(self.player_sprite, self.platform_speed))
                             
@@ -431,16 +431,16 @@ class MainGame(State):
                         
                         #* a row of obstacles on top prevent the player from jumping
                         for i in range(platform.rect.left + 20 * int(self.platform_speed), platform.rect.right - 20 * int(self.platform_speed) + 1, 75):
-                            self.obstacle_group.add(Obstacle(i, platform.rect.top - 200, "img\\obstacles\\spike_ball.png"))    
+                            self.obstacle_group.add(Obstacle(i, platform.rect.top - 200))    
                         
                     else:
                         if platform.rect.top <= self.prev_platform_pos.top:
                             #* an obstacle high up at the end of the platform, prevent the player from jumping early
                             if random.uniform(0, 1) > 0.1:
-                                self.obstacle_group.add( Obstacle(platform.rect.right - 100, platform.rect.top - 200, "img\\obstacles\\spike_ball.png"))
+                                self.obstacle_group.add(Obstacle(platform.rect.right - 100, platform.rect.top - 200))
                             
                             #* an obstacle in the middle
-                            obstacle = Obstacle(platform.rect.centerx, platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
+                            obstacle = Obstacle(platform.rect.centerx, platform.rect.top - 5)
                             self.obstacle_group.add(obstacle)
                             self.collectibles_group.add(obstacle.createCoinPath(self.player_sprite, self.platform_speed))
                             
@@ -451,28 +451,28 @@ class MainGame(State):
                         #* a group of five zic-zac obstacles
                         if platform.rect.top >= self.prev_platform_pos.bottom:
                             #* high
-                            self.obstacle_group.add(Obstacle(platform.rect.left + 200, platform.rect.top - 210, "img\\obstacles\\spike_ball.png"))
+                            self.obstacle_group.add(Obstacle(platform.rect.left + 200, platform.rect.top - 210))
                             
                             #* low
-                            obstacle = Obstacle(platform.rect.left + 500, platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
+                            obstacle = Obstacle(platform.rect.left + 500, platform.rect.top - 5)
                             self.obstacle_group.add(obstacle)
                             self.collectibles_group.add(obstacle.createCoinPath(self.player_sprite, self.platform_speed))
                             
                             #* high
-                            self.obstacle_group.add(Obstacle(platform.rect.left + 500 + 300, platform.rect.top - 210, "img\\obstacles\\spike_ball.png"))
+                            self.obstacle_group.add(Obstacle(platform.rect.left + 500 + 300, platform.rect.top - 210))
                             
                             if self.difficulty == 5:
                                 #* low
-                                obstacle = Obstacle(platform.rect.left + 1150, platform.rect.top - 5, "img\\obstacles\\spike_ball.png")
+                                obstacle = Obstacle(platform.rect.left + 1150, platform.rect.top - 5)
                                 self.obstacle_group.add(obstacle)
                                 self.collectibles_group.add(obstacle.createCoinPath(self.player_sprite, self.platform_speed))
                                 
                                 #* high
-                                self.obstacle_group.add(Obstacle(platform.rect.left + 1200 + 300, platform.rect.top - 210, "img\\obstacles\\spike_ball.png"))
+                                self.obstacle_group.add(Obstacle(platform.rect.left + 1200 + 300, platform.rect.top - 210))
                         
                         #* an obstacle at the start of the platform prevents early jumping
                         else: 
-                            self.obstacle_group.add(Obstacle(platform.rect.left, platform.rect.top - 10, "img\\obstacles\\spike_ball.png")) 
+                            self.obstacle_group.add(Obstacle(platform.rect.left, platform.rect.top - 10)) 
                             
                             #* spawn the inviciblle potion
                             if random.uniform(0, 1) <= 0.25 and self.player_sprite.invincible_cd == 0:
@@ -483,7 +483,7 @@ class MainGame(State):
                             self.collectibles_group.add(RemoveHostile(platform.rect.right + 100, platform.rect.top - 200))
                         
             else:
-                self.collectibles_group.add(platform.createCoinPath(platform_type)) 
+                self.collectibles_group.add(platform.createCoinPath(platform_type))
             
             self.prev_platform_pos = platform.rect
 
@@ -513,7 +513,7 @@ class MainGame(State):
         blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         blur.set_alpha(self.day_counter)
         screen.blit(blur, (0, 0))
-        print(self.day_counter)
+        # print(self.day_counter)
         
     
     def darkenBackground(self, dt):
@@ -529,7 +529,7 @@ class MainGame(State):
         blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         blur.set_alpha(self.day_counter)
         screen.blit(blur, (0, 0))
-        print(self.day_counter)
+        # print(self.day_counter)
         
 
 
@@ -539,27 +539,22 @@ class MainGame(State):
         screen.blit(self.bg, (0 ,0))
         self.darkenBackground(dt)
         
-        
-        
         self.showBackground(dt)
         
         self.platform_group.draw(screen)
         
         if self.player_sprite.invicible_time > 0:
             pygame.draw.rect(screen, "blue", self.player_sprite.hitbox)
-        self.player_group.draw(screen)
-        
-        
+        self.player_group.draw(screen)   
+ 
         self.cycleDayAndNight(dt)
-        
         
         self.collectibles_group.draw(screen)
         self.bullet_group.draw(screen)
         self.obstacle_group.draw(screen)
         self.enemy_group.draw(screen)
         
-        
-        
+
         screen.blit(self.score_frame, (640 - 200- 20, 10))
         screen.blit(self.score_surf, (640 - 155 - 20, 60))
 

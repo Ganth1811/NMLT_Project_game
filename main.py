@@ -2,6 +2,7 @@ import pygame
 import gameStates as gs
 from settings import SCREEN_HEIGHT, SCREEN_WIDTH
 from time import time
+from image import MainImg
 
 
 
@@ -13,8 +14,8 @@ from time import time
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
-pygame.display.set_caption("Beta 1.0")
-pygame.display.set_icon(pygame.image.load('img\\Other\\game_icon.png').convert_alpha())
+pygame.display.set_caption("Quest of the Atheland (Beta 2.0)")
+pygame.display.set_icon(MainImg.game_icon)
 
 #setting the default state
 #current_state = gs.SplashScreen()

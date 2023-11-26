@@ -84,9 +84,9 @@ class Enemy(pygame.sprite.Sprite):
         #* initializing enemy spirte animations
         self.enemy_anim_frame = 0
 
-        #* import player enemy and scale it
-        self.enemy_run_anim = [pygame.transform.scale_by(image, 2) for image in EnemyImg.run_anim]
-        self.enemy_death_anim = [pygame.transform.scale_by(image, 2) for image in EnemyImg.death_anim]
+        #* import player enemy
+        self.enemy_run_anim = EnemyImg.run_anim
+        self.enemy_death_anim = EnemyImg.death_anim
 
         self.enemy_anim_list = self.enemy_run_anim
 
@@ -244,10 +244,10 @@ class Multiplier(Collectible):
 
 #* a very simple obstacle class
 class Obstacle(pygame.sprite.Sprite):
-    def __init__(self, x_pos, y_pos, image):
+    def __init__(self, x_pos, y_pos):
         super().__init__()
         self.type = "obstacle"
-        self.image = pygame.transform.scale_by(pygame.image.load(image), 2).convert_alpha()
+        self.image = ObstacleImg.obstacle_1
         self.rect = self.image.get_rect(midbottom = (x_pos, y_pos))
         self.rect.width -= 4
         self.rect.height -= 4

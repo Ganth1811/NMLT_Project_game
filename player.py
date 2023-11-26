@@ -17,14 +17,14 @@ class Player(pygame.sprite.Sprite):
         self.player_anim_frame = 0
 
         #* running
-        self.player_run_anim = [pygame.transform.scale_by(image, 4) for image in PlayerImg.run_anim]
+        self.player_run_anim = PlayerImg.run_anim
 
         #* jumping
-        self.player_jump_anim = [pygame.transform.scale_by(image, 4) for image in PlayerImg.jump_anim]
-        self.player_descend = pygame.transform.scale_by(PlayerImg.descend, 4)
+        self.player_jump_anim = PlayerImg.jump_anim
+        self.player_descend = PlayerImg.descend
 
         #* slashing
-        self.player_slash_anim = [pygame.transform.scale_by(image, 4) for image in PlayerImg.slash_anim]
+        self.player_slash_anim = PlayerImg.slash_anim
 
         self.image = self.player_run_anim[self.player_anim_frame]
         self.rect = self.image.get_rect(bottomleft = self.player_position)
@@ -51,7 +51,6 @@ class Player(pygame.sprite.Sprite):
         #* hitbox
         self.hitbox = pygame.Rect(0, 0, 12 * 4, 22 * 4)
         self.hitbox.bottomleft = (self.rect.left + 6 * 4, self.rect.bottom)
-        self.is_spinning = False
 
         #* special power
         self.invicible_time = 0
@@ -89,7 +88,6 @@ class Player(pygame.sprite.Sprite):
         self.image = self.player_jump_anim[int(self.player_jump_frame)]
 
         if self.player_jump_frame >= 1:
-            self.is_spinning = True
             self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
 
     def animatePlayerSlash(self, dt):
@@ -113,13 +111,11 @@ class Player(pygame.sprite.Sprite):
 
         if self.is_slashing:
             self.animatePlayerSlash(dt)
-            self.is_spinning = False
         #* Check if player is above the ground level and is not on another platform
         elif (self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity < 6):
             self.animatePlayerJump(dt)
         elif(self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity > 7):
             self.image = self.player_descend
-            self.is_spinning = False
             self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
         else:
             self.player_jump_frame = 0
@@ -219,7 +215,7 @@ class Player(pygame.sprite.Sprite):
                     self.multiplier_cd = self.multiplier_time + TARGET_FRAMERATE * 15
 
     def getHitbox(self):
-        if not self.is_spinning:
+        if not self.image in PlayerImg.jump_anim[1:]:
             self.hitbox = pygame.Rect(0, 0, 12 * 4, 22 * 4)
             self.hitbox.bottomleft = (self.rect.left + 6 * 4, self.rect.bottom)
         else:
@@ -287,7 +283,7 @@ class Bullet(pygame.sprite.Sprite):
 
         self.Player_right, self.Player_centery = Player_right, Player_centery
         self.speed = 15
-        self.image = pygame.transform.scale(BulletImg.bullet, (110, 100))
+        self.image = BulletImg.bullet
 
         self.rect = self.image.get_rect(midleft = (self.Player_right - 30, self.Player_centery))
 
