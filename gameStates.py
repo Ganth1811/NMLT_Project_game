@@ -1,6 +1,7 @@
 import pygame
 from sys import exit
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, TARGET_FRAMERATE, INIT_SPEED, MAX_SPEED, Score
+import settings as st
 import button as bt
 import sfx
 from player import Player
@@ -39,9 +40,9 @@ class SplashScreen(State):
         self.splash_screen = SplashScreenImg.splash_screen
         self.fade = False
         self.alpha = 0
-        self.bg_music = pygame.mixer_music.load("music\\bgm\\menu_theme.mp3")
         self.clock = pygame.time.Clock()
-        pygame.mixer_music.play(-1)
+
+        sfx.SoundConfig.loadMenuTheme()
 
     def processEvent(self, events):
         super().processEvent(events)
@@ -63,15 +64,14 @@ class TitleMenu(State):
     def __init__(self):
         super(State, self).__init__()
 
-
-        self.background = pygame.image.load("img\\Bg\\bg.jpg").convert_alpha()
+        self.background = TitleMenuImg.background
         self.text_quest_of = TitleMenuImg.text_quest_of
         self.text_athelard = TitleMenuImg.text_athelard
         self.text_timer = 0
         self.particle_group = []
 
-        self.bg_music = pygame.mixer_music.load("music\\bgm\\menu_theme.mp3")
-        pygame.mixer_music.play(-1)
+        sfx.SoundConfig.loadMenuTheme()
+        sfx.SoundConfig.muteSound()
 
         #* initialize the button objects
         self.buttons = self.createButtons()
@@ -81,12 +81,16 @@ class TitleMenu(State):
         new_game_button = bt.new_game_button
         option_button = bt.option_button
         quit_game_button = bt.quit_game_button
+        how_to_play_button = bt.how_to_play_button
+        mute_button = bt.mute_button
 
         #* creating the buttons dictionary to detect which button is being pressed
         button_names = {
             "new_game": new_game_button,
             "option": option_button,
-            "quit_game": quit_game_button
+            "quit_game": quit_game_button,
+            "how_to_play": how_to_play_button,
+            "mute": mute_button
         }
 
         #* creating the button group to draw the buttons
@@ -98,7 +102,6 @@ class TitleMenu(State):
             "button_names": button_names,
             "button_group": button_group
         }
-
 
     def processEvent(self, events):
         super().processEvent(events)
@@ -123,10 +126,16 @@ class TitleMenu(State):
                         elif button_name == "quit_game":
                             pygame.quit()
                             exit()
+                        elif button_name == "mute":
+                            if st.is_muted:
+                                st.is_muted = False
+                            else:
+                                st.is_muted = True
+                            sfx.SoundConfig.muteSound()
+                            
 
     def render(self):
         screen.blit(self.background, (0, 0))
-        self.buttons["button_group"].update()
         self.buttons["button_group"].draw(screen)
         
         self.text_timer += 0.5
@@ -145,6 +154,7 @@ class TitleMenu(State):
 
     def update(self, dt):
         self.render()
+        self.buttons["button_group"].update()
 
 class PauseMenu(State):
     def __init__(self, previous_state):
@@ -167,12 +177,14 @@ class PauseMenu(State):
         resume_button = bt.resume_button
         restart_button = bt.restart_button
         main_menu_button = bt.main_menu_button
+        mute_button = bt.mute_button
 
         #* creating the buttons dictionary to detect which button is being pressed
         button_names = {
             "resume": resume_button,
             "restart": restart_button,
-            "main_menu": main_menu_button
+            "main_menu": main_menu_button,
+            "mute": mute_button
         }
 
         #* creating the button group to draw the buttons
@@ -215,12 +227,20 @@ class PauseMenu(State):
                         elif button_name == "main_menu":
                             return TitleMenu()
 
+                        elif button_name == "mute":
+                            if st.is_muted:
+                                st.is_muted = False
+                            else:
+                                st.is_muted = True
+                            sfx.SoundConfig.muteSound()
+
+
     def render(self):
-        self.buttons["button_group"].update()
         self.buttons["button_group"].draw(screen)
 
     def update(self, dt):
         self.render()
+        self.buttons["button_group"].update()
 
 class MainGame(State):
     def __init__(self):
@@ -232,8 +252,7 @@ class MainGame(State):
         self.background_layers = [pygame.transform.scale(image, (1280, 720)) for image in MainGameImg.bg_layers]
         
         #* background music
-        self.bg_music = pygame.mixer_music.load("music\\bgm\\game_bg_music.mp3")
-        pygame.mixer_music.play(-1)
+        sfx.SoundConfig.loadBgMusic()
 
         #* player and bullets
         self.player_group = pygame.sprite.GroupSingle(Player())
@@ -278,9 +297,6 @@ class MainGame(State):
         self.score_by_player = 0
         self.total_score = 0
         self.difficulty = 1
-
-        #* collision
-        self.colliables = []
 
     #TODO: Calculate the score and add it to a surface
     def calculateScore(self, time):
@@ -495,10 +511,6 @@ class MainGame(State):
             if self.day_counter <= 0:
                 self.is_day = True
         
-        
-        
-         
-        
         blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         blur.set_alpha(self.day_counter)
         screen.blit(blur, (0, 0))
@@ -543,9 +555,7 @@ class MainGame(State):
         screen.blit(self.score_surf, (640 - 155 - 20, 60))
 
         if self.player_sprite.shockwave is not None and not self.player_sprite.shockwave.over:
-            self.player_sprite.shockwave.drawShockwave(screen, dt)
-        
-        
+            self.player_sprite.shockwave.drawShockwave(screen, dt)     
     
     
     def scrollBackground(self, layer, index, speed, dt):
@@ -556,6 +566,22 @@ class MainGame(State):
         for i in range(0, ceil(SCREEN_WIDTH / layer.get_width()) + 1 ):
             screen.blit(layer, (i * SCREEN_WIDTH - (self.scrolls[index]), 0))
 
+    def handleGameEvent(self):
+        colliables = self.obstacle_group.sprites() + self.collectibles_group.sprites()
+        self.player_sprite.handleAllCollisions(colliables, self.platform_group.sprites())
+
+        for bullet in self.bullet_group.sprites():
+            bullet.handlePlatformCollision(self.platform_group.sprites())
+            if bullet is not None:
+                self.player_sprite.score += bullet.handleEnemyCollision(self.enemy_group.sprites()) * self.player_sprite.current_multiplier
+
+        for enemy in self.enemy_group.sprites():
+            self.player_sprite.score += self.player_sprite.handleEnemyCollision(enemy) * self.player_sprite.current_multiplier
+        
+        if self.player_sprite.shockwave is not None: 
+            self.player_sprite.shockwave.clearHostile(self.obstacle_group.sprites() + self.enemy_group.sprites())
+            if self.player_sprite.shockwave.over:
+                self.player_sprite.shockwave = None
 
     def update(self, dt):
         if not self.player_sprite.is_dead and not self.is_pause:
@@ -570,23 +596,7 @@ class MainGame(State):
             self.bullet_group.update(dt)
             self.collectibles_group.update(self.platform_speed, dt)
 
-            self.colliables = self.obstacle_group.sprites() + self.collectibles_group.sprites()
-            self.player_sprite.handleAllCollisions(self.colliables, self.platform_group.sprites())
-            self.bullet_group = self.player_sprite.bullet_group
-
-            for bullet in self.bullet_group.sprites():
-                bullet.handlePlatformCollision(self.platform_group.sprites())
-                if bullet is not None:
-                    self.player_sprite.score += bullet.handleEnemyCollision(self.enemy_group.sprites()) * self.player_sprite.current_multiplier
-
-            for enemy in self.enemy_group.sprites():
-                self.player_sprite.score += self.player_sprite.handleEnemyCollision(enemy) * self.player_sprite.current_multiplier
-            
-            if self.player_sprite.shockwave is not None: 
-                self.player_sprite.shockwave.clearHostile(self.obstacle_group.sprites() + self.enemy_group.sprites())
-                if self.player_sprite.shockwave.over:
-                    self.player_sprite.shockwave = None
-
+            self.handleGameEvent()
             self.calculateScore(self.run_time)
             self.render(dt)
 
@@ -601,10 +611,12 @@ class GameOver(State):
         self.score = score
         self.difficulty = difficulty
 
+        self.buttons = self.createButtons()
+
     #TODO: Transition to the game over screen
     def transition(self, dt):
         if not self.is_transitioned:
-            if self.transition_counter <= SCREEN_WIDTH:
+            if self.transition_counter <= SCREEN_WIDTH + 20 * dt * TARGET_FRAMERATE:
                 for transition_index in range(0, 6, 2):
                     self.transition_counter += 15 * dt * TARGET_FRAMERATE
                     pygame.draw.rect(screen, 'black', (0, transition_index * 120, self.transition_counter + 100, SCREEN_HEIGHT / 6))
@@ -612,7 +624,26 @@ class GameOver(State):
 
             else:
                 self.is_transitioned = True
-                self.render()
+    
+    def createButtons(self):
+        restart_button = bt.restart_button
+        main_menu_button = bt.main_menu_button
+
+        #* creating the buttons dictionary to detect which button is being pressed
+        button_names = {
+            "restart": restart_button,
+            "main_menu": main_menu_button,
+        }
+
+        #* creating the button group to draw the buttons
+        button_group = pygame.sprite.Group()
+        button_group.add(button_names.values())
+
+        #* return both of the button types
+        return {
+            "button_names": button_names,
+            "button_group": button_group
+        }
 
     def processEvent(self, events):
         super().processEvent(events)
@@ -621,24 +652,41 @@ class GameOver(State):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     return MainGame()
+                
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for button_name, button in self.buttons["button_names"].items():
+                    if button.isClicked():
+                        sfx.button_pressed.play()
+
+                        if button_name == "restart":
+                            return MainGame()
+
+                        elif button_name == "main_menu":
+                            return TitleMenu()
 
     #TODO: displaying text
     def render(self):
         #! This is just temporary
+        pygame.draw.rect(screen, 'black', (0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
         font = pygame.font.Font("font.ttf", 35)
 
-        text = font.render(f"GAME OVER", 0, 'White')
+        text_game_over = font.render(f"GAME OVER", 0, 'White')
         text_score = font.render(f"Your score: {self.score} - Difficulty: {self.difficulty}", 0, 'White')
-        text2 = font.render(f"Press R to play again", 0, 'White')
+        text2 = font.render(f"Press R or click Restart to play again", 0, 'White')
         text_high_score = font.render(f"Highest score: {0}", 0, 'White')
 
-        screen.blit(text, text.get_rect(center = (SCREEN_WIDTH / 2, 300)))
-        screen.blit(text_score, text_score.get_rect(center = ((SCREEN_WIDTH / 2, 400))))
-        screen.blit(text_high_score, text_high_score.get_rect(center = ((SCREEN_WIDTH / 2, 500))))
-        screen.blit(text2, text2.get_rect(center = ((SCREEN_WIDTH / 2, 600))))
+        screen.blit(text_game_over, text_game_over.get_rect(center = (SCREEN_WIDTH / 2, 100)))
+        screen.blit(text_score, text_score.get_rect(center = ((SCREEN_WIDTH / 2, 200))))
+        screen.blit(text_high_score, text_high_score.get_rect(center = ((SCREEN_WIDTH / 2, 300))))
+        screen.blit(text2, text2.get_rect(center = ((SCREEN_WIDTH / 2, 400))))
+
+        self.buttons["button_group"].draw(screen)
 
     def update(self, dt):
         self.transition(dt)
+        if self.is_transitioned:
+            self.render()
+            self.buttons["button_group"].update()
 
 
 #* I was so tired so I used chatGPT to generate this function ;) so still don't really understand wtf it does
@@ -681,12 +729,8 @@ class Particle():
         self.remove = False
         self.radius = random.randint(2, 5)
         self.radius = random.randint(2, 5)
-
-    
         self.radius = random.randint(2, 5) 
 
-    
-    
     def update(self):
         self.rect.x += self.speed
         pygame.draw.circle(screen,pygame.Color('Red'), (self.rect.x, self.rect.y), self.radius)

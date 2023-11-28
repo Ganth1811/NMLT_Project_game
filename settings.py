@@ -8,6 +8,8 @@ TARGET_FRAMERATE = 60
 INIT_SPEED = 10
 MAX_SPEED = 23
 
+is_muted = False
+
 class Score:
     high_score_list = []
     with open("high_score.txt", 'r') as f:

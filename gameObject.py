@@ -263,7 +263,7 @@ class Emerald(Collectible):
         self.anim_list = CollectibleImg.multiplier_anim
         self.image = self.anim_list[self.anim_frame]
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
-        self.type = "multiplier"
+        self.type = "emerald"
         self.given_score = 0
         self.sound = sfx.player_collect_cherry
         self.multiplier = 2

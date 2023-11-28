@@ -198,17 +198,21 @@ class Player(pygame.sprite.Sprite):
             if self.hitbox.colliderect(colliable.rect):
                 if colliable.type == "obstacle":
                     self.die()
+
                 elif colliable.type == "coin":
                     self.collectCollectible(colliable)
+
                 elif colliable.type == "potion":
                     self.becomeInvincible()
                     self.collectCollectible(colliable)
                     self.invincible_cd = self.invicible_time + TARGET_FRAMERATE * 15
-                elif colliable.type == "removehostile":
+
+                elif colliable.type == "orb":
                     self.collectCollectible(colliable)
                     self.shockwave = colliable.shockwave
                     self.shock_wave_cd = TARGET_FRAMERATE * 20
-                elif colliable.type == "multiplier":
+
+                elif colliable.type == "emerald":
                     self.collectCollectible(colliable)
                     self.multiplier_time = colliable.effect_time * TARGET_FRAMERATE
                     self.current_multiplier = colliable.multiplier

@@ -1,4 +1,5 @@
 import pygame
+import settings as st
 pygame.init()
 
 button_hover = pygame.mixer.Sound("music\\sfx\\button_hover.mp3")
@@ -11,3 +12,25 @@ player_collect_cherry = pygame.mixer.Sound("music\\sfx\\invicible.mp3")
 
 player_shoot.set_volume(0.2)
 player_collect_coin.set_volume(2.5)
+sound_list = [button_hover, button_pressed, player_jump, player_die, player_shoot, player_collect_coin, player_collect_cherry]
+init_volume = [sound.get_volume() for sound in sound_list]
+
+class SoundConfig():
+    def muteSound():
+        if st.is_muted:
+            pygame.mixer.music.set_volume(0)
+            for i in range(len(sound_list)):
+                sound_list[i].set_volume(0) 
+                
+        else:
+            pygame.mixer.music.set_volume(1)
+            for i in range(len(sound_list)):
+                sound_list[i].set_volume(init_volume[i])
+
+    def loadMenuTheme():
+        pygame.mixer_music.load("music\\bgm\\menu_theme.mp3")
+        pygame.mixer_music.play(-1)
+    
+    def loadBgMusic():
+        pygame.mixer_music.load("music\\bgm\\game_bg_music.mp3")
+        pygame.mixer_music.play(-1)
