@@ -200,7 +200,7 @@ class Player(pygame.sprite.Sprite):
                     self.die()
                 elif colliable.type == "coin":
                     self.collectCollectible(colliable)
-                elif colliable.type == "cherry":
+                elif colliable.type == "potion":
                     self.becomeInvincible()
                     self.collectCollectible(colliable)
                     self.invincible_cd = self.invicible_time + TARGET_FRAMERATE * 15

@@ -19,7 +19,7 @@ pygame.display.set_icon(MainImg.game_icon)
 
 #setting the default state
 #current_state = gs.SplashScreen()
-current_state = gs.TitleMenu()
+current_state = gs.TitleMenu() 
 last_time = time()
 
 #* main game loop
@@ -27,11 +27,10 @@ while 1:
     #Getting the events and passing it to the current state so it can procress the events accordingly
     events = pygame.event.get()
     current_state.processEvent(events)
-
+ 
     #Getting the next state of the game
     
     next_state = current_state.processEvent(events)
-
     #if there is a next state switch to it
     if next_state is not None:
         current_state = next_state

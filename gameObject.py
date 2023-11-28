@@ -1,6 +1,6 @@
 import pygame
 from random import choice
-from math import sin, cos, pi, sqrt
+from math import sin, cos, pi
 from settings import SCREEN_DIAGONAL, SCREEN_WIDTH, TARGET_FRAMERATE
 import sfx
 from image import PlatformImg, EnemyImg, CollectibleImg, ObstacleImg
@@ -28,73 +28,59 @@ class Platform(pygame.sprite.Sprite):
         self.rect.x -= speed * dt * TARGET_FRAMERATE
         if self.rect.right <= -5:
             self.kill()
-            del self
+
     #TODO: update the state of the platform
     def update(self, speed, dt):
         self.previous_pos = self.rect.copy()
         self.movePlatform(speed, dt)
 
-    def createCoinPath(self, platform_type):
-        coin_list = []
+    def generatePlatform(prev_platform_pos: pygame.Rect, platform_gap: int, platform_speed: float):
+        #* separate two platforms by a certain distance relative to their speed
+        platform_x = prev_platform_pos.right + platform_gap * (platform_speed / 7.0)
+
+        #* manipulate the platform y value according to the previous platform position
+        if prev_platform_pos.bottom >= 500:
+            platform_y = choice([prev_platform_pos.top - 25] * 2 + [prev_platform_pos.top])
+        
+        elif prev_platform_pos.top <= 200:
+            platform_y = choice([prev_platform_pos.top + 75] * 2 + [prev_platform_pos.top])
+        
+        else:
+            platform_y = choice([prev_platform_pos.top - 50] + [prev_platform_pos.bottom + 100] * 3 +  [prev_platform_pos.top] * 2)
+
+        #* get a random platform type and spawn it
+        platform_type = choice(["long"] * 3 + ["short"] * 1)
 
         if platform_type == "long":
-            num = 10
-        elif platform_type == "short":
-            num = 5
+            platform_width = platform_speed * 80
+        else:
+            platform_width = platform_speed * 30
 
-        step = self.width / num
-        for i in range(1, num):
-            coin_list.append(Coin(self.rect.left + step * i, self.rect.top - 20))
-
-        return coin_list
-
-
-def generatePlatform(prev_platform_pos: pygame.Rect, platform_gap, platform_speed):
-    #* separate two platforms by a certain distance relative to their speed
-    platform_x = prev_platform_pos.right + platform_gap * (platform_speed / 7.0)
-
-    #* manipulate the platform y value according to the previous platform position
-    if prev_platform_pos.bottom >= 500:
-        platform_y = choice([prev_platform_pos.top - 25] * 2 + [prev_platform_pos.top])
-    
-    elif prev_platform_pos.top <= 200:
-        platform_y = choice([prev_platform_pos.top + 75] * 2 + [prev_platform_pos.top])
-    
-    else:
-        platform_y = choice([prev_platform_pos.top - 50] + [prev_platform_pos.bottom + 100] * 3 +  [prev_platform_pos.top] * 2)
-
-    #* get a random platform type and spawn it
-    platform_type = choice(["long"] * 3 + ["short"] * 1)
-
-    if platform_type == "long":
-        platform_width = platform_speed * 80
-    else:
-        platform_width = platform_speed * 30
-
-    return {
-        "platform": Platform(platform_x, platform_y, platform_width, 64),
-        "platform_type": platform_type,
-        "platform_width": platform_width
-    }
+        return {
+            "platform": Platform(platform_x, platform_y, platform_width, 64),
+            "platform_type": platform_type,
+            "platform_width": platform_width
+        }
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, platform_x, platform_y):
         super().__init__()
         self.type = "enemy"
         #* initializing enemy spirte animations
-        self.enemy_anim_frame = 0
+        self.anim_frame = 0
 
         #* import player enemy
 
         
-        self.enemy_run_anim = choice([EnemyImg.enemy1_run, EnemyImg.enemy2_run])
-        self.enemy_death_anim = EnemyImg.death_anim
+        self.run_anim = choice([EnemyImg.enemy1_run, EnemyImg.enemy2_run])
+        self.death_anim = EnemyImg.death_anim
 
-        self.enemy_anim_list = self.enemy_run_anim
+        self.anim_list = self.run_anim
+        self.len_anim_list = len(self.anim_list)
 
         self.x_pos = platform_x
         self.y_pos = platform_y
-        self.image = self.enemy_anim_list[self.enemy_anim_frame]
+        self.image = self.anim_list[self.anim_frame]
         self.rect = self.image.get_rect(bottomright = (self.x_pos, self.y_pos))
 
         self.is_shot = False
@@ -104,14 +90,15 @@ class Enemy(pygame.sprite.Sprite):
         self.given_score = 20
 
     def animateEnemy(self, dt):
-        self.enemy_anim_frame += 0.2 * dt * TARGET_FRAMERATE
+        self.len_anim_list = len(self.anim_list)
+        self.anim_frame += 0.2 * dt * TARGET_FRAMERATE
 
-        if (self.enemy_anim_frame >= 6):
+        if (self.anim_frame >= self.len_anim_list):
             if self.is_shot:
                 self.kill()
-            self.enemy_anim_frame = 0
+            self.anim_frame = 0
 
-        self.image = self.enemy_anim_list[int(self.enemy_anim_frame)]
+        self.image = self.anim_list[int(self.anim_frame)]
 
     def moveEnemy(self, speed, dt):
         self.rect.x -= (speed + 0.1) * dt * TARGET_FRAMERATE
@@ -120,8 +107,8 @@ class Enemy(pygame.sprite.Sprite):
 
     def shot(self):
         self.is_shot = True
-        self.enemy_anim_frame = 0
-        self.enemy_anim_list = self.enemy_death_anim
+        self.anim_frame = 0
+        self.anim_list = self.death_anim
         return self.given_score
 
     def update(self, speed, dt):
@@ -180,23 +167,62 @@ class Coin(Collectible):
         self.type = "coin"
         self.given_score = 5
         self.sound = sfx.player_collect_coin
+    
+    def spawnCoinCurve(player, speed: int, center: tuple, replace = False,  number = 9):
+        gravity = -player.gravity
+        jump_force = player.jump_force
+        coin_list = []
+        mid = int(number / 2)
 
-class InvicibleCherry(Collectible):
+        #* v_peak = v0 + gt <=> t = (v_peak - v0)/g, v_peak = 0, v0 = jump_force
+        time_max_height = -jump_force / gravity
+        #* peak_y = h_max = h0 + v0t + 1/2*gt^2, h0 = 0, v0 = jump_force, t = time_max_height
+        peak_y = jump_force * time_max_height + 1/2 * gravity * time_max_height**2
+        peak_x = time_max_height * speed
+        step_angle = pi / (number - 1)
+
+        for i in range(number):
+            angle = step_angle * i
+            pos_x = peak_x * cos(angle) + center[0]
+            pos_y = -(peak_y * sin(angle)) + center[1]
+            if i == mid:
+                if not replace:
+                    coin_list.append(Coin(pos_x, pos_y))
+            else:
+                coin_list.append(Coin(pos_x, pos_y))
+
+        return coin_list
+    
+    def spawnCoin(platform: pygame.Rect, type: str):
+        coin_list = []
+
+        if type == "long":
+            num = 10
+        elif type == "short":
+            num = 5
+
+        step = platform.width / num
+        for i in range(1, num):
+            coin_list.append(Coin(platform.left + step * i, platform.top - 20))
+
+        return coin_list
+
+class InvinciblePotion(Collectible):
     def __init__(self, pos_x, pos_y):
         super().__init__(pos_x, pos_y)
 
-        self.type = "cherry"
-        self.anim_list = CollectibleImg.invicibility_anim
+        self.type = "potion"
+        self.anim_list = CollectibleImg.invincibility_anim
         self.given_score = 0
         self.image = self.anim_list[self.anim_frame]
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
         self.sound = sfx.player_collect_cherry
 
-class RemoveHostile(Collectible):
+class MagicOrb(Collectible):
     def __init__(self, pos_x, pos_y):
         super().__init__(pos_x, pos_y)
 
-        self.type = "removehostile"
+        self.type = "orb"
         self.anim_list = CollectibleImg.rainbow_orb_anim
         self.given_score = 0
         self.image = self.anim_list[self.anim_frame]
@@ -229,7 +255,7 @@ class Shockwave():
             if distance <= self.radius and hostile.rect.left < SCREEN_WIDTH:
                 hostile.kill()
 
-class Multiplier(Collectible):
+class Emerald(Collectible):
     def __init__(self, pos_x, pos_y):
         super().__init__(pos_x, pos_y)
 
@@ -246,45 +272,40 @@ class Multiplier(Collectible):
 
 #* a very simple obstacle class
 class Obstacle(pygame.sprite.Sprite):
-    def __init__(self, x_pos, y_pos):
+    def __init__(self, x_pos, y_pos, obstacle_type):
         super().__init__()
+        self.obstacle_type = obstacle_type
         self.type = "obstacle"
-        self.image = ObstacleImg.obstacle_1
+        self.anim_frame = 0
+
+        if self.obstacle_type == "high":
+            self.anim_list = ObstacleImg.suriken_anim
+            self.image = self.image = self.anim_list[self.anim_frame]
+            self.len_anim_list = len(self.anim_list)
+
+        elif self.obstacle_type == "low":
+            self.image = ObstacleImg.spike
+
         self.rect = self.image.get_rect(midbottom = (x_pos, y_pos))
         self.rect.width -= 4
         self.rect.height -= 4
 
     def moveObstacle(self, platform_speed, dt):
         self.rect.x -= platform_speed * dt * TARGET_FRAMERATE
-
-    def destroy(self):
         if self.rect.right <= -1:
-            self.kill
-            del self
+            self.kill()
+
+    def animateCollectible(self, dt):
+        if self.obstacle_type == "high":
+            self.anim_frame += 0.5 * dt * TARGET_FRAMERATE
+
+            if (self.anim_frame >= len(self.anim_list)):
+                self.anim_frame = 0
+
+            self.image = self.anim_list[int(self.anim_frame)]
 
     def update(self, platform_speed, dt):
         self.moveObstacle(platform_speed, dt)
-        self.destroy()
-
-
-    def createCoinPath(self, player, speed, number = 9):
-        gravity = -player.gravity
-        jump_force = player.jump_force
-        coin_list = []
-
-        #* v_peak = v0 + gt <=> t = (v_peak - v0)/g, v_peak = 0, v0 = jump_force
-        time_max_height = -jump_force / gravity
-        #* peak_y = h_max = h0 + v0t + 1/2*gt^2, h0 = 0, v0 = jump_force, t = time_max_height
-        peak_y = jump_force * time_max_height + 1/2 * gravity * time_max_height**2
-        peak_x = time_max_height * speed
-        step_angle = pi / (number - 1)
-
-        for i in range(number):
-            angle = step_angle * i
-            pos_x = peak_x * cos(angle) + self.rect.centerx
-            pos_y = -(peak_y * sin(angle)) + self.rect.centery
-            coin_list.append(Coin(pos_x, pos_y))
-
-        return coin_list
+        self.animateCollectible(dt)
     
         

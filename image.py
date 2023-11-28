@@ -39,9 +39,9 @@ class CollectibleImg():
 		multiplier_anim.append(scaleImg(multiplier_sprites.subsurface((32*i+5, 5), (22, 22)), 2))
 	
 	invicibility_sprites = loadImg("img\\collectibles\\invicibility_sprites.png")
-	invicibility_anim = []
+	invincibility_anim = []
 	for i in range(8):
-		invicibility_anim.append(scaleImg(invicibility_sprites.subsurface((32*i+5, 2), (22, 25)), 2))
+		invincibility_anim.append(scaleImg(invicibility_sprites.subsurface((32*i+5, 2), (22, 25)), 2))
 
 	rainbow_orb_sprites = loadImg("img\\collectibles\\rainbow_orb_sprites.png")
 	rainbow_orb_anim = []
@@ -49,7 +49,14 @@ class CollectibleImg():
 		rainbow_orb_anim.append(scaleImg(rainbow_orb_sprites.subsurface((32*i+7, 7), (18, 18)), 2))
 
 class ObstacleImg():
-	obstacle_1 = scaleImg(loadImg("img\\obstacles\\spike_ball.png"), 2)
+	# obstacle_1 = scaleImg(loadImg("img\\obstacles\\spike_ball.png"), 2)
+	suriken_sprites = loadImg("img\\obstacles\\suriken_sprites.png")
+	suriken_anim = []
+	for i in range(8):
+		suriken_anim.append(scaleImg(suriken_sprites.subsurface((32*i, 0), (32, 32)), 2))
+	
+	spike = scaleImg(loadImg("img\\obstacles\\spike.png"), 3)
+
 
 #* player.py
 class PlayerImg():
@@ -104,3 +111,12 @@ class ButtonImg():
 
 	main_menu_default = loadImg("img\\Buttons\\MainMenu_default.png")
 	main_menu_hover = loadImg("img\\Buttons\\MainMenu_hover.png")
+
+	sound_on_default = scaleImg(loadImg("img\\Buttons\\SoundOn_default.png"), 0.4)
+	sound_on_hover = scaleImg(loadImg("img\\Buttons\\SoundOn_hover.png"), 0.4)
+
+	sound_off_default = scaleImg(loadImg("img\\Buttons\\SoundOff_default.png"), 0.4)
+	sound_off_hover = scaleImg(loadImg("img\\Buttons\\SoundOff_hover.png"), 0.4)
+
+	how_to_play_default = scaleImg(loadImg("img\\Buttons\\HowToPlay_default.png"), 0.4)
+	how_to_play_hover = scaleImg(loadImg("img\\Buttons\\HowToPlay_hover.png"), 0.4)
