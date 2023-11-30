@@ -49,22 +49,20 @@ class CollectibleImg():
         rainbow_orb_anim.append(scaleImg(rainbow_orb_sprites.subsurface((32*i+7, 7), (18, 18)), 2))
 
 class ObstacleImg():
-    # obstacle_1 = scaleImg(loadImg("img\\obstacles\\spike_ball.png"), 2)
     suriken_sprites = loadImg("img\\obstacles\\suriken_sprites.png")
     suriken_anim = []
     for i in range(8):
-        suriken_anim.append(scaleImg(suriken_sprites.subsurface((32*i, 0), (32, 32)), 2))
+        suriken_anim.append(scaleImg(suriken_sprites.subsurface((32 * i, 0), (32, 32)), 2))
     
     spike = scaleImg(loadImg("img\\obstacles\\spike.png"), 3)
 
 
 #* player.py
 class PlayerImg():
-    run_anim = [scaleImg(loadImg(f"img\\Sprites\\player_run{i}.png"), 4) for i in range(1,5)]
-    jump_anim = ([scaleImg(loadImg("img\\Sprites\\player_jump.png"), 4)] 
-              + [scaleImg(loadImg(f"img\\Sprites\\player_spin{i}.png"), 4) for i in range(1,5)])
-    descend = scaleImg(loadImg("img\\Sprites\\player_fall.png"), 4)
-    slash_anim = [scaleImg(loadImg(f"img\\Sprites\\player_attack{i}.png"),4) for i in range(1,5)]
+	run_anim = [scaleImg(loadImg(f"img\\Sprites\\player_run{i}.png"), 4) for i in range(1,5)]
+	jump_anim = ([scaleImg(loadImg("img\\Sprites\\player_jump.png"), 4)] + [scaleImg(loadImg(f"img\\Sprites\\player_spin{i}.png"), 4) for i in range(1,5)])
+	descend = scaleImg(loadImg("img\\Sprites\\player_fall.png"), 4)
+	slash_anim = [scaleImg(loadImg(f"img\\Sprites\\player_attack{i}.png"),4) for i in range(1,5)]
 
 class BulletImg():
     bullet = scaleImg(loadImg("img\\Sprites\\slash.png"), 4)
@@ -77,6 +75,7 @@ class TitleMenuImg():
     background = loadImg("img\\Bg\\bg.jpg")
     text_quest_of = [scaleImg(loadImg(f"img\\mainmenutext\\frame_{i:02d}_delay-0.1s.png"), 1.5) for i in range(0, 20)]
     text_athelard = [scaleImg(loadImg(f"img\\mainmenutext2\\frame_{i:02d}_delay-0.1s.png"), 1.5) for i in range(0, 20)]
+    #high_score_screen = loadImg("img\\Bg\\high_score_bg.png")
 
 class MainGameImg():
     bg = loadImg("img\\Bg\\sky.png")

@@ -63,8 +63,9 @@ class MuteButton(Button):
 
 #* Creating buttons
 new_game_button = Button(ButtonImg.new_game, 640 - 270, 400)
-#high_score_button = Button(ButtonImg.high_score, 640, 520)
-option_button = Button(ButtonImg.option, 640 - 270, 520)
+high_score_button = Button(ButtonImg.high_score, 640 - 270, 520)
+
+#option_button = Button(ButtonImg.option, 640 - 270, 520)
 quit_game_button = Button(ButtonImg.quit_game, 640 - 270, 640)
 
 resume_button = Button(ButtonImg.resume, 640, 400)

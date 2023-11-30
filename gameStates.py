@@ -9,6 +9,7 @@ from gameObject import Obstacle, Platform, Enemy, Coin, InvinciblePotion, MagicO
 import random
 from math import ceil
 from image import SplashScreenImg, TitleMenuImg, MainGameImg
+from datetime import datetime
 
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -46,7 +47,7 @@ class SplashScreen(State):
 
     def processEvent(self, events):
         super().processEvent(events)
-        if pygame.time.get_ticks() > 6000:
+        if pygame.time.get_ticks() > 3000:
             return TitleMenu()
 
     def render(self):
@@ -65,21 +66,28 @@ class TitleMenu(State):
         super(State, self).__init__()
 
         self.background = TitleMenuImg.background
+        self.background = pygame.image.load("img\\Bg\\bg.jpg").convert_alpha()
         self.text_quest_of = TitleMenuImg.text_quest_of
         self.text_athelard = TitleMenuImg.text_athelard
         self.text_timer = 0
         self.particle_group = []
-
-        sfx.SoundConfig.loadMenuTheme()
+        self.is_in_high_score = False
+        self.is_in_how_to_play = False
+        self.displayed_score = None
+        #sfx.SoundConfig.loadMenuTheme()
         sfx.SoundConfig.muteSound()
 
+        self.bg_music = pygame.mixer_music.load("music\\bgm\\menu_theme.mp3")
+        pygame.mixer_music.play(-1)
+
+        self.event_processed = False
         #* initialize the button objects
         self.buttons = self.createButtons()
 
     #TODO: create the buttons and add them to a dictionary
     def createButtons(self):
         new_game_button = bt.new_game_button
-        option_button = bt.option_button
+        high_score_button = bt.high_score_button
         quit_game_button = bt.quit_game_button
         how_to_play_button = bt.how_to_play_button
         mute_button = bt.mute_button
@@ -87,7 +95,7 @@ class TitleMenu(State):
         #* creating the buttons dictionary to detect which button is being pressed
         button_names = {
             "new_game": new_game_button,
-            "option": option_button,
+            "high_score": high_score_button,
             "quit_game": quit_game_button,
             "how_to_play": how_to_play_button,
             "mute": mute_button
@@ -102,59 +110,93 @@ class TitleMenu(State):
             "button_names": button_names,
             "button_group": button_group
         }
+        
+    
 
     def processEvent(self, events):
         super().processEvent(events)
 
         for event in events:
-            #* quitting the game
+            #* quitting the game using ESC
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     exit()
 
             #* Switching the game state acording to the button pressed by the player
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN and not self.event_processed:
                 for button_name, button in self.buttons["button_names"].items():
-                    if button.isClicked():
-                        sfx.button_pressed.play()
-                        if button_name == "new_game":
-                            pygame.mixer_music.unload()
-                            return MainGame()
-                        elif button_name == "option":
-                            pass
-                        elif button_name == "quit_game":
-                            pygame.quit()
-                            exit()
-                        elif button_name == "mute":
-                            if st.is_muted:
-                                st.is_muted = False
-                            else:
-                                st.is_muted = True
-                            sfx.SoundConfig.muteSound()
+                    if not self.is_in_how_to_play and not self.is_in_high_score:
+                        if button.isClicked():
+                            sfx.button_pressed.play()
+                            print("sadasd")
                             
+                            if button_name == "quit_game":
+                                pygame.quit()
+                                exit()
+                                
+                            elif button_name == "new_game":
+                                
+                                pygame.mixer_music.unload()
+                                return MainGame()
+                            elif button_name == "high_score":
+                                self.is_in_high_score = True                            
+                                
+                            elif button_name == "mute":
+                                st.is_muted = not st.is_muted    
+                            
+                            elif button_name == "how_to_play":
+                                self.is_in_how_to_play = True    
+                        
+                        sfx.SoundConfig.muteSound()
+                        self.event_processed = True
+
+
+    def displayHighscore(self):
+        font = pygame.font.Font("font.ttf", 35)
+        screen.blit(pygame.transform.scale(pygame.image.load("img\\Bg\\sky.png"), (1280, 720)), (0 ,0))
+        with open("high_score.txt") as f:
+            self.displayed_score = f.readlines()
+            
+        line_index = 0
+        for line in self.displayed_score:
+            rendered_score = font.render(f"{line_index + 1} - {line.strip()}", 0, 'White')
+            screen.blit(rendered_score, (100, 50 + line_index * 70))
+            line_index += 1
 
     def render(self):
-        screen.blit(self.background, (0, 0))
-        self.buttons["button_group"].draw(screen)
-        
-        self.text_timer += 0.5
-        if self.text_timer >= 18:
-            self.text_timer = 0
+        if not self.is_in_how_to_play and not self.is_in_high_score:
+            screen.blit(self.background, (0, 0))
+            self.buttons["button_group"].draw(screen)
             
-        screen.blit(self.text_quest_of[int(self.text_timer)], (130, 50))
-        screen.blit(self.text_athelard[int(self.text_timer)], (115, 170))
-        
-        if self.text_timer % 5 == 0:
-            self.particle_group.append(Particle())
+            self.text_timer += 0.5
+            if self.text_timer >= 18:
+                self.text_timer = 0
+                
+            screen.blit(self.text_quest_of[int(self.text_timer)], (130, 50))
+            screen.blit(self.text_athelard[int(self.text_timer)], (115, 170))
             
-        for particle in self.particle_group:
-            if particle is not None:
-                particle.update()
+            if self.text_timer % 5 == 0:
+                self.particle_group.append(Particle())
+                
+            for particle in self.particle_group:
+                if particle is not None:
+                    particle.update()
+            
+        elif self.is_in_how_to_play:
+            screen.blit(pygame.transform.scale(pygame.image.load("img\\Bg\\tutorial.png").convert_alpha(), (1280, 720)), (0, 0))
+            
+        else:
+            self.displayHighscore()
+
+        # if self.is_in_high_score:
+        #     screen.blit(img.)
 
     def update(self, dt):
         self.render()
-        self.buttons["button_group"].update()
+        if not self.is_in_how_to_play:
+            self.buttons["button_group"].update()
+        self.event_processed = False
 
 class PauseMenu(State):
     def __init__(self, previous_state):
@@ -165,6 +207,7 @@ class PauseMenu(State):
         self.previous_state = previous_state
         self.blurScreen()
         self.buttons = self.createButtons()
+        
 
     #* Not really blur but make the game screen behind darker
     #TODO: make the game screen blur
@@ -225,6 +268,7 @@ class PauseMenu(State):
                             return MainGame()
 
                         elif button_name == "main_menu":
+                            sfx.SoundConfig.loadMenuTheme()
                             return TitleMenu()
 
                         elif button_name == "mute":
@@ -283,6 +327,7 @@ class MainGame(State):
         self.time_before = 0
         self.is_day = True
         self.day_counter = 0
+        self.day_duration = 60
         self.background_counter = 0
 
         #* pausing mechanism
@@ -297,6 +342,12 @@ class MainGame(State):
         self.score_by_player = 0
         self.total_score = 0
         self.difficulty = 1
+
+        #* collision
+        self.colliables = []
+        
+        
+        
 
     #TODO: Calculate the score and add it to a surface
     def calculateScore(self, time):
@@ -500,40 +551,50 @@ class MainGame(State):
         self.scrollBackground(self.background_layers[3], 3, 0.9, dt)
         self.scrollBackground(self.background_layers[4], 4, 0.4, dt)
 
-    def cycleDayAndNight(self, dt):
+
+    
+    # def cycleDayAndNight(self, dt):
+    #     if self.day_duration == 0:
+    #         if self.is_day:
+    #             self.day_counter += (1 * dt * TARGET_FRAMERATE) / 30
+    #             if self.day_counter >= 120:
+    #                 self.day_duration = 60
+    #                 self.is_day = False
+    #         else:
+    #             self.day_counter -= (1 * dt * TARGET_FRAMERATE) / 30
+    #             if self.day_counter <= 0:
+    #                 self.day_duration = 60
+    #                 self.is_day = True
         
-        if self.is_day:
-            self.day_counter += (1 * dt * TARGET_FRAMERATE) / 30
-            if self.day_counter >= 100:
-                self.is_day = False
-        else:
-            self.day_counter -= (1 * dt * TARGET_FRAMERATE) / 30
-            if self.day_counter <= 0:
-                self.is_day = True
-        
-        blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-        blur.set_alpha(self.day_counter)
-        screen.blit(blur, (0, 0))
-        # print(self.day_counter)
+    #     blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    #     blur.set_alpha(self.day_counter)
+    #     screen.blit(blur, (0, 0))
+    #     print(self.day_duration)
+    #     self.day_duration -= 1 * TARGET_FRAMERATE * dt
+    #     if self.day_duration <= 0:
+    #         self.day_duration = 0
         
     
-    def darkenBackground(self, dt):
-        
-        if self.is_day:
-            self.background_counter += (1 * dt * TARGET_FRAMERATE) / 25
-                
-        else:
-            self.background_counter -= (1 * dt * TARGET_FRAMERATE) / 25
+    # def darkenBackground(self, dt):
+    #     if self.day_duration == 0:     
+    #         if self.is_day:
+    #             self.background_counter += (1 * dt * TARGET_FRAMERATE) / 20
+    #         else:
+    #            self.background_counter -= (1 * dt * TARGET_FRAMERATE) / 20
 
-        blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-        blur.set_alpha(self.day_counter)
-        screen.blit(blur, (0, 0))
-        # print(self.day_counter)
+        
+    #     night = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    #     night.set_alpha(self.background_counter)
+    #     screen.blit(night, (0, 0))
+    #     # print(self.day_counter)
+        
+
+
 
     def render(self, dt):
         screen.fill('Black')
         screen.blit(self.bg, (0 ,0))
-        self.darkenBackground(dt)
+        # self.darkenBackground(dt)
         
         self.showBackground(dt)
         
@@ -542,8 +603,8 @@ class MainGame(State):
         if self.player_sprite.invicible_time > 0:
             pygame.draw.rect(screen, "blue", self.player_sprite.hitbox)
         self.player_group.draw(screen)   
- 
-        self.cycleDayAndNight(dt)
+
+        # self.cycleDayAndNight(dt)
         
         self.collectibles_group.draw(screen)
         self.bullet_group.draw(screen)
@@ -600,9 +661,7 @@ class MainGame(State):
             self.calculateScore(self.run_time)
             self.render(dt)
 
-
 class GameOver(State):
-    
     def __init__(self, score, difficulty):
         super(State, self).__init__()
         self.is_transitioned = False
@@ -612,6 +671,20 @@ class GameOver(State):
         self.difficulty = difficulty
 
         self.buttons = self.createButtons()
+        self.updateHighScore()
+    
+    def updateHighScore(self):
+        if self.score > int(Score.high_score_list[-1][0]):
+            now = datetime.now()
+            dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+            
+            Score.high_score_list[-1] = (str(self.score), dt_string)
+            Score.high_score_list = sorted(Score.high_score_list, key = lambda x : int(x[0]), reverse = True)
+            #print(Score.high_score_list)
+            with open('high_score.txt', 'w') as file:
+                for (score, date) in Score.high_score_list:
+                    file.write(f"{score}, {date}\n")
+            print(Score.high_score_list)
 
     #TODO: Transition to the game over screen
     def transition(self, dt):
@@ -662,6 +735,7 @@ class GameOver(State):
                             return MainGame()
 
                         elif button_name == "main_menu":
+                            sfx.SoundConfig.loadMenuTheme()
                             return TitleMenu()
 
     #TODO: displaying text
@@ -672,8 +746,8 @@ class GameOver(State):
 
         text_game_over = font.render(f"GAME OVER", 0, 'White')
         text_score = font.render(f"Your score: {self.score} - Difficulty: {self.difficulty}", 0, 'White')
-        text2 = font.render(f"Press R or click Restart to play again", 0, 'White')
-        text_high_score = font.render(f"Highest score: {0}", 0, 'White')
+        text2 = font.render(f"Press R to play again", 0, 'White')
+        text_high_score = font.render(f"Highest score: {Score.high_score_list[0][0]}", 0, 'White')
 
         screen.blit(text_game_over, text_game_over.get_rect(center = (SCREEN_WIDTH / 2, 100)))
         screen.blit(text_score, text_score.get_rect(center = ((SCREEN_WIDTH / 2, 200))))
@@ -690,7 +764,7 @@ class GameOver(State):
 
 
 #* I was so tired so I used chatGPT to generate this function ;) so still don't really understand wtf it does
-def fade_transition(fade_surface, FADE_SPEED = 5, FADE_DELAY = 6000):
+def fade_transition(fade_surface, FADE_SPEED = 5, FADE_DELAY = 4000):
     start_time = pygame.time.get_ticks()
     while True:
         fade_rect = fade_surface.get_rect()
@@ -733,6 +807,6 @@ class Particle():
 
     def update(self):
         self.rect.x += self.speed
-        pygame.draw.circle(screen,pygame.Color('Red'), (self.rect.x, self.rect.y), self.radius)
+        pygame.draw.circle(screen,pygame.Color('White'), (self.rect.x, self.rect.y), self.radius)
         if self.rect.x > SCREEN_WIDTH:
             self.remove = True

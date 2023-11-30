@@ -287,8 +287,8 @@ class Obstacle(pygame.sprite.Sprite):
             self.image = ObstacleImg.spike
 
         self.rect = self.image.get_rect(midbottom = (x_pos, y_pos))
-        self.rect.width -= 4
-        self.rect.height -= 4
+        self.rect.width -= 8
+        self.rect.height -= 8
 
     def moveObstacle(self, platform_speed, dt):
         self.rect.x -= platform_speed * dt * TARGET_FRAMERATE

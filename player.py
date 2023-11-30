@@ -76,9 +76,7 @@ class Player(pygame.sprite.Sprite):
         if self.mouses_click[0] and not self.last_click[0] and not self.is_slashing:
             self.bullet_group.add(Bullet(self.rect.right, self.rect.centery))
             self.is_slashing = True
-            # print(self.is_slashing)
             #? There's an error that the player will shoot when you click start the game.
-            #? I think it is related to the bug I told you (the sound duplicated one)
 
     def animatePlayerJump(self, dt):
         self.player_jump_frame += 0.2 * dt * TARGET_FRAMERATE
