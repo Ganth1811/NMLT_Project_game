@@ -1,4 +1,5 @@
 import pygame
+
 import sfx
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, TARGET_FRAMERATE
 from image import PlayerImg, BulletImg
@@ -15,7 +16,7 @@ class Player(pygame.sprite.Sprite):
 
         #* initializing player spirte animations
         self.player_anim_frame = 0
-        
+
         #* running
         self.player_run_anim = PlayerImg.run_anim
 
@@ -61,9 +62,7 @@ class Player(pygame.sprite.Sprite):
         self.multiplier_cd = 0
         self.invincible_cd = 0
         self.shock_wave_cd = 0
-        
-        
-        
+
 
     #TODO: Get the player input
     def getPlayerInput(self):
@@ -104,9 +103,9 @@ class Player(pygame.sprite.Sprite):
 
     #TODO: animate the player
     def animatePlayer(self, dt):
-        
+
         if self.invicible_time > 0:
-        
+
             self.player_run_anim = PlayerImg.run_anim_invi
 
             #* jumping
@@ -126,8 +125,8 @@ class Player(pygame.sprite.Sprite):
             #* slashing
             self.player_slash_anim = PlayerImg.slash_anim
 
-        
-        
+
+
         self.player_anim_frame += 0.2 * dt * TARGET_FRAMERATE
 
         if (self.player_anim_frame >= 4):
@@ -144,7 +143,6 @@ class Player(pygame.sprite.Sprite):
         else:
             self.player_jump_frame = 0
             self.image = self.player_run_anim[int(self.player_anim_frame)]
-
 
     #TODO: make the player jump
     def makePlayerJump(self,):
@@ -211,7 +209,7 @@ class Player(pygame.sprite.Sprite):
     def becomeInvincible(self):
         self.invicible_time = 60 * 10
         self.i_frame = 30
-        
+
 
     def collectCollectible(self, collectible):
         self.score += collectible.playerCollect() * self.current_multiplier
@@ -258,20 +256,20 @@ class Player(pygame.sprite.Sprite):
 
     def countdown(self, dt):
         elapsed_time = 1 * dt * TARGET_FRAMERATE
-        
-        self.shock_wave_cd -= elapsed_time 
+
+        self.shock_wave_cd -= elapsed_time
         self.multiplier_cd -= elapsed_time
-        self.invincible_cd -= elapsed_time 
-        
+        self.invincible_cd -= elapsed_time
+
         if self.shock_wave_cd <= 0:
             self.shock_wave_cd = 0
-            
+
         if self.multiplier_cd <= 0:
             self.multiplier_cd = 0
-            
+
         if self.invincible_cd <= 0:
             self.invincible_cd = 0
-        
+
         self.invicible_time -= elapsed_time
         if self.invicible_time <= 0:
             self.invicible_time = 0
@@ -281,7 +279,7 @@ class Player(pygame.sprite.Sprite):
             self.multiplier_time = 0
             self.current_multiplier = 1
         #print(int(self.i_frame/60))
-        
+
     def takeDamage(self, dt):
         self.i_frame -= 1 * dt * TARGET_FRAMERATE
         if self.i_frame <= 0:
@@ -291,8 +289,8 @@ class Player(pygame.sprite.Sprite):
         else:
             self.image.set_alpha(0)
         # print(int(self.i_frame))
-            
-        
+
+
 
     #TODO: update the state of the player
     def update(self, dt):

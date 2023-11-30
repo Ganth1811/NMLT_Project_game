@@ -19,12 +19,12 @@ class SoundConfig():
     def muteSound():
         pygame.mixer.music.set_volume(not st.is_muted)
         for i in range(len(sound_list)):
-            sound_list[i].set_volume(init_volume[i]) 
-                
+            sound_list[i].set_volume(init_volume[i] * (not st.is_muted))
+
     def loadMenuTheme():
         pygame.mixer_music.load("music\\bgm\\menu_theme.mp3")
         pygame.mixer_music.play(-1)
-    
+
     def loadBgMusic():
         pygame.mixer_music.load("music\\bgm\\game_bg_music.mp3")
         pygame.mixer_music.play(-1)

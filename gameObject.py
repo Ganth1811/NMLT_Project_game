@@ -1,6 +1,7 @@
 import pygame
 from random import choice
 from math import sin, cos, pi
+
 from settings import SCREEN_DIAGONAL, SCREEN_WIDTH, TARGET_FRAMERATE
 import sfx
 from image import PlatformImg, EnemyImg, CollectibleImg, ObstacleImg
@@ -41,10 +42,10 @@ class Platform(pygame.sprite.Sprite):
         #* manipulate the platform y value according to the previous platform position
         if prev_platform_pos.bottom >= 500:
             platform_y = choice([prev_platform_pos.top - 25] * 2 + [prev_platform_pos.top])
-        
+
         elif prev_platform_pos.top <= 200:
             platform_y = choice([prev_platform_pos.top + 75] * 2 + [prev_platform_pos.top])
-        
+
         else:
             platform_y = choice([prev_platform_pos.top - 50] + [prev_platform_pos.bottom + 100] * 3 +  [prev_platform_pos.top] * 2)
 
@@ -71,7 +72,7 @@ class Enemy(pygame.sprite.Sprite):
 
         #* import player enemy
 
-        
+
         self.run_anim = choice([EnemyImg.enemy1_run, EnemyImg.enemy2_run])
         self.death_anim = EnemyImg.death_anim
 
@@ -167,7 +168,7 @@ class Coin(Collectible):
         self.type = "coin"
         self.given_score = 5
         self.sound = sfx.player_collect_coin
-    
+
     def spawnCoinCurve(player, speed: int, center: tuple, replace = False,  number = 9):
         gravity = -player.gravity
         jump_force = player.jump_force
@@ -192,7 +193,7 @@ class Coin(Collectible):
                 coin_list.append(Coin(pos_x, pos_y))
 
         return coin_list
-    
+
     def spawnCoin(platform: pygame.Rect, type: str):
         coin_list = []
 
@@ -229,7 +230,7 @@ class MagicOrb(Collectible):
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
         self.sound = sfx.player_collect_cherry
         self.shockwave = None
-    
+
     def playerCollect(self):
         self.sound.play()
         self.shockwave = Shockwave(self.rect.centerx, self.rect.centery)
@@ -243,12 +244,12 @@ class Shockwave():
         self.radius = 5
         self.width = 10
         self.over = False
-    
+
     def drawShockwave(self, screen, dt):
         pygame.draw.circle(screen, 'darkgray', (self.pos_x, self.pos_y), self.radius, self.width)
         self.radius += 25 * dt * TARGET_FRAMERATE
         self.over = self.radius > SCREEN_DIAGONAL
-    
+
     def clearHostile(self, hostiles):
         for hostile in hostiles:
             distance = ((hostile.rect.x - self.pos_x)**2 + (hostile.rect.y - self.pos_y)**2) ** (1/2)
@@ -307,5 +308,4 @@ class Obstacle(pygame.sprite.Sprite):
     def update(self, platform_speed, dt):
         self.moveObstacle(platform_speed, dt)
         self.animateCollectible(dt)
-    
-        
+

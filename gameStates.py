@@ -1,15 +1,15 @@
 import pygame
 from sys import exit
+import random
+from math import ceil
+
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, TARGET_FRAMERATE, INIT_SPEED, MAX_SPEED, Score
 import settings as st
 import button as bt
 import sfx
 from player import Player
 from gameObject import Obstacle, Platform, Enemy, Coin, InvinciblePotion, MagicOrb, Emerald
-import random
-from math import ceil
 from image import SplashScreenImg, TitleMenuImg, MainGameImg
-from datetime import datetime
 
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -66,7 +66,6 @@ class TitleMenu(State):
         super(State, self).__init__()
 
         self.background = TitleMenuImg.background
-        self.background = pygame.image.load("img\\Bg\\bg.jpg").convert_alpha()
         self.text_quest_of = TitleMenuImg.text_quest_of
         self.text_athelard = TitleMenuImg.text_athelard
         self.text_timer = 0
@@ -74,15 +73,13 @@ class TitleMenu(State):
         self.is_in_high_score = False
         self.is_in_how_to_play = False
         self.displayed_score = None
-        #sfx.SoundConfig.loadMenuTheme()
+        sfx.SoundConfig.loadMenuTheme()
         sfx.SoundConfig.muteSound()
-
-        self.bg_music = pygame.mixer_music.load("music\\bgm\\menu_theme.mp3")
-        pygame.mixer_music.play(-1)
-
         self.event_processed = False
+
         #* initialize the button objects
         self.buttons = self.createButtons()
+        self.close_button = pygame.sprite.Group(bt.close_button)
 
     #TODO: create the buttons and add them to a dictionary
     def createButtons(self):
@@ -110,8 +107,8 @@ class TitleMenu(State):
             "button_names": button_names,
             "button_group": button_group
         }
-        
-    
+
+
 
     def processEvent(self, events):
         super().processEvent(events)
@@ -125,78 +122,109 @@ class TitleMenu(State):
 
             #* Switching the game state acording to the button pressed by the player
             if event.type == pygame.MOUSEBUTTONDOWN and not self.event_processed:
-                for button_name, button in self.buttons["button_names"].items():
-                    if not self.is_in_how_to_play and not self.is_in_high_score:
+                if not self.is_in_how_to_play and not self.is_in_high_score:
+                    for button_name, button in self.buttons["button_names"].items():
                         if button.isClicked():
                             sfx.button_pressed.play()
-                            print("sadasd")
-                            
+
                             if button_name == "quit_game":
                                 pygame.quit()
                                 exit()
-                                
+
                             elif button_name == "new_game":
-                                
                                 pygame.mixer_music.unload()
                                 return MainGame()
+
                             elif button_name == "high_score":
-                                self.is_in_high_score = True                            
-                                
+                                self.is_in_high_score = True
+
                             elif button_name == "mute":
-                                st.is_muted = not st.is_muted    
-                            
+                                st.is_muted = not st.is_muted
+                                sfx.SoundConfig.muteSound()
+
                             elif button_name == "how_to_play":
-                                self.is_in_how_to_play = True    
-                        
-                        sfx.SoundConfig.muteSound()
+                                self.is_in_how_to_play = True
+
                         self.event_processed = True
+
+                else:
+                    if self.close_button.sprites()[0].isClicked():
+                        sfx.button_pressed.play()
+                        self.is_in_how_to_play = False
+                        self.is_in_high_score = False
 
 
     def displayHighscore(self):
-        font = pygame.font.Font("font.ttf", 35)
-        screen.blit(pygame.transform.scale(pygame.image.load("img\\Bg\\sky.png"), (1280, 720)), (0 ,0))
-        with open("high_score.txt") as f:
-            self.displayed_score = f.readlines()
-            
-        line_index = 0
-        for line in self.displayed_score:
-            rendered_score = font.render(f"{line_index + 1} - {line.strip()}", 0, 'White')
-            screen.blit(rendered_score, (100, 50 + line_index * 70))
-            line_index += 1
+        blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        blur.set_alpha(69)
+        screen.blit(blur, (0, 0))
+
+        font = pygame.font.Font("font.ttf", 40)
+
+        high_score_popup = TitleMenuImg.high_score_popup
+        popup_rect = high_score_popup.get_rect(center = (SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
+        screen.blit(TitleMenuImg.high_score_popup, popup_rect)
+
+        score_list = Score.high_score_list
+        for i in range(len(score_list)):
+            if i == 0:
+                rank_line = font.render(f'{i+1}.', 1, 'Yellow')
+                score_line = font.render(str(score_list[i][0]), 1, 'Yellow')
+                date_line = font.render(score_list[i][1], 1, 'Yellow')
+            else:
+                rank_line = font.render(f'{i+1}.', 1, 'White')
+                score_line = font.render(str(score_list[i][0]), 1, 'White')
+                date_line = font.render(score_list[i][1], 1, 'White')
+
+            screen.blit(rank_line, (300, 300 + 75 * i))
+            screen.blit(score_line, (375, 300 + 75 * i))
+            screen.blit(date_line, (680, 300 + 75 * i))
 
     def render(self):
+        screen.blit(self.background, (0, 0))
+
         if not self.is_in_how_to_play and not self.is_in_high_score:
-            screen.blit(self.background, (0, 0))
             self.buttons["button_group"].draw(screen)
-            
-            self.text_timer += 0.5
-            if self.text_timer >= 18:
-                self.text_timer = 0
-                
-            screen.blit(self.text_quest_of[int(self.text_timer)], (130, 50))
-            screen.blit(self.text_athelard[int(self.text_timer)], (115, 170))
-            
-            if self.text_timer % 5 == 0:
-                self.particle_group.append(Particle())
-                
-            for particle in self.particle_group:
-                if particle is not None:
-                    particle.update()
-            
-        elif self.is_in_how_to_play:
+
+        self.text_timer += 0.5
+        if self.text_timer >= 18:
+            self.text_timer = 0
+
+        screen.blit(self.text_quest_of[int(self.text_timer)], (130, 50))
+        screen.blit(self.text_athelard[int(self.text_timer)], (115, 170))
+
+        if self.text_timer % 5 == 0:
+            self.particle_group.append(Particle())
+
+        for particle in self.particle_group:
+            if particle is not None:
+                particle.update()
+
+        if self.is_in_how_to_play:
             screen.blit(pygame.transform.scale(pygame.image.load("img\\Bg\\tutorial.png").convert_alpha(), (1280, 720)), (0, 0))
-            
-        else:
+            self.close_button.draw(screen)
+
+        elif self.is_in_high_score:
             self.displayHighscore()
+            self.close_button.draw(screen)
+
 
         # if self.is_in_high_score:
         #     screen.blit(img.)
 
-    def update(self, dt):
-        self.render()
-        if not self.is_in_how_to_play:
+    def handleButtons(self):
+        if not self.is_in_how_to_play and not self.is_in_high_score:
             self.buttons["button_group"].update()
+        else:
+            for button in self.buttons["button_group"].sprites():
+                button.hovered = False
+            self.close_button.update()
         self.event_processed = False
+
+    def update(self, dt):
+        self.handleButtons()
+        self.render()
+
 
 class PauseMenu(State):
     def __init__(self, previous_state):
@@ -207,14 +235,14 @@ class PauseMenu(State):
         self.previous_state = previous_state
         self.blurScreen()
         self.buttons = self.createButtons()
-        
+
 
     #* Not really blur but make the game screen behind darker
     #TODO: make the game screen blur
     def blurScreen(self):
-        self.blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.blur.set_alpha(69)
-        screen.blit(self.blur, (0, 0))
+        blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        blur.set_alpha(69)
+        screen.blit(blur, (0, 0))
 
     def createButtons(self):
         resume_button = bt.resume_button
@@ -272,12 +300,8 @@ class PauseMenu(State):
                             return TitleMenu()
 
                         elif button_name == "mute":
-                            if st.is_muted:
-                                st.is_muted = False
-                            else:
-                                st.is_muted = True
+                            st.is_muted = not st.is_muted
                             sfx.SoundConfig.muteSound()
-
 
     def render(self):
         self.buttons["button_group"].draw(screen)
@@ -294,7 +318,7 @@ class MainGame(State):
         self.scrolls = [2, 1, 1.4, 1.3, 1.2]
         self.bg = pygame.transform.scale(MainGameImg.bg, (1280, 720))
         self.background_layers = [pygame.transform.scale(image, (1280, 720)) for image in MainGameImg.bg_layers]
-        
+
         #* background music
         sfx.SoundConfig.loadBgMusic()
 
@@ -343,11 +367,6 @@ class MainGame(State):
         self.total_score = 0
         self.difficulty = 1
 
-        #* collision
-        self.colliables = []
-        
-        
-        
 
     #TODO: Calculate the score and add it to a surface
     def calculateScore(self, time):
@@ -359,7 +378,7 @@ class MainGame(State):
         self.difficulty = ceil((self.platform_speed - 10) / (MAX_SPEED - 10) * 5)
         self.total_score = self.player_sprite.score + self.score_by_playtime
         self.score_surf = self.font.render(f"Score: {int(self.total_score):05d} ", 0, "Black")
-        
+
     def processEvent(self, events):
         super().processEvent(events)
         if self.player_sprite.is_dead:
@@ -378,7 +397,6 @@ class MainGame(State):
                     #* instead of returning to the start of the game due to calling a new instance of MainGame
                     previous_state = self
                     return PauseMenu(previous_state)
-
 
     def generateGameObjects(self):
         #* Increasing the speed by a constant each frame
@@ -409,15 +427,16 @@ class MainGame(State):
                         self.enemy_group.add(Enemy(platform.rect.right - 100, platform.rect.top))
                         self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
                         self.collectibles_group.add(InvinciblePotion(platform.rect.centerx - 100 , platform.rect.top - 200))
+                        self.collectibles_group.add(Emerald(platform.rect.centerx - 10, platform.rect.top - 200))
 
                     elif random.uniform(0, 1) <= 0.7:
                         obstacle = Obstacle(platform.rect.centerx, platform.rect.top, "low")
                         self.obstacle_group.add(obstacle)
                         self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center))
-                        
+
                     else:
                         self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
-                
+
                 #* medium difficulty
                 elif self.difficulty < 4:
                     #* enemy
@@ -426,59 +445,56 @@ class MainGame(State):
                         self.enemy_group.add(Enemy(platform.rect.centerx, platform.rect.top))
                         self.enemy_group.add(Enemy(platform.rect.right - 100, platform.rect.top))
                         self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
-                        
+
                         #* a row of obstacles on top prevent the player from jumping
                         if random.uniform(0, 1) > 0.3:
                             for i in range(platform.rect.left + 20 * int(self.platform_speed), platform.rect.right - 20 * int(self.platform_speed) + 1, 75):
-                                self.obstacle_group.add(Obstacle(i, platform.rect.top - 200, "high"))    
-                                
+                                self.obstacle_group.add(Obstacle(i, platform.rect.top - 200, "high"))
+
                     # *obstacles
                     elif random.uniform(0, 1) <= 0.9:
                         if platform.rect.top < self.prev_platform_pos.top:
                             #* an obstacle high up at the end of the platform, prevent the player from jumping early
                             if random.uniform(0, 1) > 0.5:
                                 self.obstacle_group.add(Obstacle(platform.rect.right - 100, platform.rect.top - 200, "high"))
-                            
+
                             #* spawn the Multiplier
                             if random.uniform(0, 1) <= 0.31 and self.player_sprite.multiplier_cd == 0:
                                 self.collectibles_group.add(Emerald(platform.rect.centerx - 10, platform.rect.top - 200))
-                            
+
                             #* an obstacle in the middle
                             obstacle = Obstacle(platform.rect.centerx, platform.rect.top, "low")
                             self.obstacle_group.add(obstacle)
                             self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center))
-                        
+
                         #* a group of three zic-zac obstacles
                         elif platform.rect.top >= self.prev_platform_pos.bottom:
                             self.obstacle_group.add(Obstacle(platform.rect.left + 200, platform.rect.top - 200, "high"))
-                            
+
                             obstacle = Obstacle(platform.rect.left + 500, platform.rect.top, "low")
                             self.obstacle_group.add(obstacle)
                             self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center))
-                            
+
                             self.obstacle_group.add(Obstacle(platform.rect.left + 500 + 300, platform.rect.top - 200, "high"))
-                        
-                        
+
+
                         else:
                             #* an obstacle in the left of the platform prevents early jumping
                             self.obstacle_group.add(Obstacle(platform.rect.left, platform.rect.top, "low"))
-                            
+
                             obstacle = Obstacle(platform.rect.left + 500, platform.rect.top, "low")
                             self.obstacle_group.add(obstacle)
                             self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center))
-                            
+
                             self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
-                            
+
                             #* spawn the inviciblle potion
                             if random.uniform(0, 1) <= 0.25 and self.player_sprite.invincible_cd == 0:
                                 self.collectibles_group.add(InvinciblePotion(platform.rect.centerx - 100 , platform.rect.top - 200))
-                            
+
                     else:
                         self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
 
-                    
-                
-                
                 #* Hard difficulty
                 else:
                     if random.uniform(0, 1) <= 0.4:
@@ -486,52 +502,52 @@ class MainGame(State):
                         self.enemy_group.add(Enemy(platform.rect.centerx + 10, platform.rect.top))
                         self.enemy_group.add(Enemy(platform.rect.right - 100, platform.rect.top))
                         self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
-                        
+
                         #* a row of obstacles on top prevent the player from jumping
                         for i in range(platform.rect.left + 20 * int(self.platform_speed), platform.rect.right - 20 * int(self.platform_speed) + 1, 75):
-                            self.obstacle_group.add(Obstacle(i, platform.rect.top - 200, "high"))    
-                        
+                            self.obstacle_group.add(Obstacle(i, platform.rect.top - 200, "high"))
+
                     else:
                         if platform.rect.top <= self.prev_platform_pos.top:
                             #* an obstacle high up at the end of the platform, prevent the player from jumping early
                             if random.uniform(0, 1) > 0.1:
                                 self.obstacle_group.add(Obstacle(platform.rect.right - 100, platform.rect.top - 200, "high"))
-                            
+
                             #* an obstacle in the middle
                             obstacle = Obstacle(platform.rect.centerx, platform.rect.top, "low")
                             self.obstacle_group.add(obstacle)
                             self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center))
-                            
+
                             #* spawn the Multiplier
                             if random.uniform(0, 1) <= 0.31 and self.player_sprite.multiplier_cd == 0:
                                 self.collectibles_group.add(Emerald(platform.rect.centerx + 100, platform.rect.top - 200))
-                        
+
                         #* a group of five zic-zac obstacles
                         if platform.rect.top >= self.prev_platform_pos.bottom:
                             #* high
                             self.obstacle_group.add(Obstacle(platform.rect.left + 200, platform.rect.top - 210, "high"))
-                            
+
                             #* low
                             obstacle = Obstacle(platform.rect.left + 500, platform.rect.top, "low")
                             self.obstacle_group.add(obstacle)
                             self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center))
-                            
+
                             #* high
                             self.obstacle_group.add(Obstacle(platform.rect.left + 500 + 300, platform.rect.top - 210, "high"))
-                            
+
                             if self.difficulty == 5:
                                 #* low
                                 obstacle = Obstacle(platform.rect.left + 1150, platform.rect.top, "low")
                                 self.obstacle_group.add(obstacle)
                                 self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center))
-                                
+
                                 #* high
                                 self.obstacle_group.add(Obstacle(platform.rect.left + 1200 + 300, platform.rect.top - 210, "high"))
-                        
+
                         #* an obstacle at the start of the platform prevents early jumping
-                        else: 
-                            self.obstacle_group.add(Obstacle(platform.rect.left, platform.rect.top, "low")) 
-                            
+                        else:
+                            self.obstacle_group.add(Obstacle(platform.rect.left, platform.rect.top, "low"))
+
                             #* spawn the inviciblle potion
                             if random.uniform(0, 1) <= 0.25 and self.player_sprite.invincible_cd == 0:
                                 self.collectibles_group.add(InvinciblePotion(platform.rect.centerx , platform.rect.top - 200))
@@ -539,10 +555,10 @@ class MainGame(State):
                         #* spawn the obstacle deleter
                         if random.uniform(0, 1) <= 0.15 and self.player_sprite.shock_wave_cd == 0:
                             self.collectibles_group.add(MagicOrb(platform.rect.right + 100, platform.rect.top - 200))
-                        
+
             else:
                 self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
-            
+
             self.prev_platform_pos = platform.rect
 
     def showBackground(self, dt):
@@ -552,8 +568,6 @@ class MainGame(State):
         self.scrollBackground(self.background_layers[3], 3, 0.9, dt)
         self.scrollBackground(self.background_layers[4], 4, 0.4, dt)
 
-
-    
     # def cycleDayAndNight(self, dt):
     #     if self.day_duration == 0:
     #         if self.is_day:
@@ -566,7 +580,7 @@ class MainGame(State):
     #             if self.day_counter <= 0:
     #                 self.day_duration = 60
     #                 self.is_day = True
-        
+
     #     blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
     #     blur.set_alpha(self.day_counter)
     #     screen.blit(blur, (0, 0))
@@ -574,49 +588,52 @@ class MainGame(State):
     #     self.day_duration -= 1 * TARGET_FRAMERATE * dt
     #     if self.day_duration <= 0:
     #         self.day_duration = 0
-        
-    
+
+
     # def darkenBackground(self, dt):
-    #     if self.day_duration == 0:     
+    #     if self.day_duration == 0:
     #         if self.is_day:
     #             self.background_counter += (1 * dt * TARGET_FRAMERATE) / 20
     #         else:
     #            self.background_counter -= (1 * dt * TARGET_FRAMERATE) / 20
 
-        
+
     #     night = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
     #     night.set_alpha(self.background_counter)
     #     screen.blit(night, (0, 0))
     #     # print(self.day_counter)
-        
-
-
 
     def render(self, dt):
         screen.fill('Black')
         screen.blit(self.bg, (0 ,0))
         # self.darkenBackground(dt)
-        
+
         self.showBackground(dt)
-        
+
         self.platform_group.draw(screen)
-        self.player_group.draw(screen)   
+        self.player_group.draw(screen)
 
         # self.cycleDayAndNight(dt)
-        
+
         self.collectibles_group.draw(screen)
         self.bullet_group.draw(screen)
         self.obstacle_group.draw(screen)
         self.enemy_group.draw(screen)
-        
 
         screen.blit(self.score_frame, (640 - 200- 20, 10))
         screen.blit(self.score_surf, (640 - 155 - 20, 60))
 
         if self.player_sprite.shockwave is not None and not self.player_sprite.shockwave.over:
-            self.player_sprite.shockwave.drawShockwave(screen, dt)     
-    
-    
+            self.player_sprite.shockwave.drawShockwave(screen, dt)
+        
+        if self.player_sprite.invicible_time > 0:
+            icon = MainGameImg.popup_invincible
+            screen.blit(icon, icon.get_rect(topright = self.player_sprite.rect.topleft))
+        if self.player_sprite.multiplier_time > 0:
+            icon = MainGameImg.popup_x2
+            screen.blit(icon, icon.get_rect(midright = (self.player_sprite.rect.left, self.player_sprite.rect.centery)))
+
+
     def scrollBackground(self, layer, index, speed, dt):
         if (self.scrolls[index] > SCREEN_WIDTH):
             self.scrolls[index] = 0
@@ -636,8 +653,8 @@ class MainGame(State):
 
         for enemy in self.enemy_group.sprites():
             self.player_sprite.score += self.player_sprite.handleEnemyCollision(enemy) * self.player_sprite.current_multiplier
-        
-        if self.player_sprite.shockwave is not None: 
+
+        if self.player_sprite.shockwave is not None:
             self.player_sprite.shockwave.clearHostile(self.obstacle_group.sprites() + self.enemy_group.sprites())
             if self.player_sprite.shockwave.over:
                 self.player_sprite.shockwave = None
@@ -669,20 +686,20 @@ class GameOver(State):
         self.difficulty = difficulty
 
         self.buttons = self.createButtons()
-        self.updateHighScore()
-    
-    def updateHighScore(self):
-        if self.score > int(Score.high_score_list[-1][0]):
-            now = datetime.now()
-            dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-            
-            Score.high_score_list[-1] = (str(self.score), dt_string)
-            Score.high_score_list = sorted(Score.high_score_list, key = lambda x : int(x[0]), reverse = True)
-            #print(Score.high_score_list)
-            with open('high_score.txt', 'w') as file:
-                for (score, date) in Score.high_score_list:
-                    file.write(f"{score}, {date}\n")
-            print(Score.high_score_list)
+        self.is_new_high_score = Score.updateHighScore(score)
+
+    # def updateHighScore(self):
+    #     if self.score > int(Score.high_score_list[-1][0]):
+    #         now = datetime.now()
+    #         dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+
+    #         Score.high_score_list[-1] = (str(self.score), dt_string)
+    #         Score.high_score_list = sorted(Score.high_score_list, key = lambda x : int(x[0]), reverse = True)
+    #         #print(Score.high_score_list)
+    #         with open('high_score.txt', 'w') as file:
+    #             for (score, date) in Score.high_score_list:
+    #                 file.write(f"{score}, {date}\n")
+    #         print(Score.high_score_list)
 
     #TODO: Transition to the game over screen
     def transition(self, dt):
@@ -695,7 +712,7 @@ class GameOver(State):
 
             else:
                 self.is_transitioned = True
-    
+
     def createButtons(self):
         restart_button = bt.restart_button
         main_menu_button = bt.main_menu_button
@@ -723,7 +740,7 @@ class GameOver(State):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     return MainGame()
-                
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for button_name, button in self.buttons["button_names"].items():
                     if button.isClicked():
@@ -743,9 +760,14 @@ class GameOver(State):
         font = pygame.font.Font("font.ttf", 35)
 
         text_game_over = font.render(f"GAME OVER", 0, 'White')
-        text_score = font.render(f"Your score: {self.score} - Difficulty: {self.difficulty}", 0, 'White')
-        text2 = font.render(f"Press R to play again", 0, 'White')
+
+        if self.is_new_high_score:
+            text_score = font.render(f"New high score: {self.score} - Difficulty: {self.difficulty}", 0, 'Yellow')
+        else:
+            text_score = font.render(f"Your score: {self.score} - Difficulty: {self.difficulty}", 0, 'White')
+
         text_high_score = font.render(f"Highest score: {Score.high_score_list[0][0]}", 0, 'White')
+        text2 = font.render(f"Press R to play again", 0, 'White')
 
         screen.blit(text_game_over, text_game_over.get_rect(center = (SCREEN_WIDTH / 2, 100)))
         screen.blit(text_score, text_score.get_rect(center = ((SCREEN_WIDTH / 2, 200))))
@@ -792,8 +814,8 @@ def fade_transition(fade_surface, FADE_SPEED = 5, FADE_DELAY = 4000):
         # Exit the loop after the fade-in and fade-out are complete
         if elapsed_time > FADE_DELAY + 255 * FADE_SPEED:
             break
-        
-        
+
+
 class Particle():
     def __init__(self):
         self.rect = pygame.Rect(-1, random.randint(50, 700), 5, 5)
@@ -801,7 +823,7 @@ class Particle():
         self.remove = False
         self.radius = random.randint(2, 5)
         self.radius = random.randint(2, 5)
-        self.radius = random.randint(2, 5) 
+        self.radius = random.randint(2, 5)
 
     def update(self):
         self.rect.x += self.speed

@@ -1,37 +1,35 @@
 import pygame
+from time import time
+
 import gameStates as gs
 from settings import SCREEN_HEIGHT, SCREEN_WIDTH
-from time import time
 from image import MainImg
 
-
-#setup before running          
+#setup before running
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
-pygame.display.set_caption("Quest of Atheland (Beta 2.0)")
+pygame.display.set_caption("Quest of Atheland (Pre-release)")
 pygame.display.set_icon(MainImg.game_icon)
 
 #setting the default state
 #current_state = gs.SplashScreen()
-current_state = gs.TitleMenu() 
+current_state = gs.TitleMenu()
 last_time = time()
 
 #* main game loop
 while 1:
-    
+
     #Getting the events and passing it to the current state so it can procress the events accordingly
     events = pygame.event.get()
-    
 
-    #Getting the next state of the game  
+
+    #Getting the next state of the game
     next_state = current_state.processEvent(events)
     #if there is a next state switch to it
     if next_state is not None:
         current_state = next_state
-        
-    
-    
+
     #Update the current state (meaning handling everything in that state)
     current_time = time()
     dt = current_time - last_time

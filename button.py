@@ -19,7 +19,6 @@ class Button(pygame.sprite.Sprite):
         self.position = (x_pos, y_pos)
         self.hovered = False
 
-
     #TODO: Draw the button on the screen depending on the state (hover or static)
     def drawButton(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
@@ -52,7 +51,7 @@ class MuteButton(Button):
             images = self.unmute
 
         super().__init__(images, x_pos, y_pos)
-    
+
     def update(self):
         if st.is_muted:
             self.default_image, self.hovering_image = self.mute
@@ -74,3 +73,4 @@ main_menu_button = Button(ButtonImg.main_menu, 640, 640)
 
 mute_button = MuteButton(SCREEN_WIDTH - 70, 70)
 how_to_play_button = Button(ButtonImg.how_to_play, SCREEN_WIDTH - 70, 190)
+close_button = Button(ButtonImg.close, SCREEN_WIDTH - 70, 120)
