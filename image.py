@@ -58,12 +58,18 @@ class ObstacleImg():
 
 
 #* player.py
+    
 class PlayerImg():
-	run_anim = [scaleImg(loadImg(f"img\\Sprites\\player_run{i}.png"), 4) for i in range(1,5)]
-	jump_anim = ([scaleImg(loadImg("img\\Sprites\\player_jump.png"), 4)] + [scaleImg(loadImg(f"img\\Sprites\\player_spin{i}.png"), 4) for i in range(1,5)])
-	descend = scaleImg(loadImg("img\\Sprites\\player_fall.png"), 4)
-	slash_anim = [scaleImg(loadImg(f"img\\Sprites\\player_attack{i}.png"),4) for i in range(1,5)]
-
+    run_anim = [scaleImg(loadImg(f"img\\Sprites\\player_run{i}.png"), 4) for i in range(1,5)]
+    jump_anim = ([scaleImg(loadImg("img\\Sprites\\player_jump.png"), 4)] + [scaleImg(loadImg(f"img\\Sprites\\player_spin{i}.png"), 4) for i in range(1,5)])
+    descend = scaleImg(loadImg("img\\Sprites\\player_fall.png"), 4)
+    slash_anim = [scaleImg(loadImg(f"img\\Sprites\\player_attack{i}.png"),4) for i in range(1,5)]
+    
+    run_anim_invi = [scaleImg(loadImg(f"img\\Sprites\\pleier\\player_run{i}.png"), 4) for i in range(1,5)]
+    jump_anim_invi = ([scaleImg(loadImg("img\\Sprites\\pleier\\player_jump.png"), 4)] + [scaleImg(loadImg(f"img\\Sprites\\pleier\\player_spin{i}.png"), 4) for i in range(1,5)])
+    descend_invi = scaleImg(loadImg("img\\Sprites\\pleier\\player_fall.png"), 4)
+    slash_anim_invi = [scaleImg(loadImg(f"img\\Sprites\\pleier\\player_attack{i}.png"),4) for i in range(1,5)]
+                            
 class BulletImg():
     bullet = scaleImg(loadImg("img\\Sprites\\slash.png"), 4)
 

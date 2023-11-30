@@ -15,7 +15,7 @@ class Player(pygame.sprite.Sprite):
 
         #* initializing player spirte animations
         self.player_anim_frame = 0
-
+        
         #* running
         self.player_run_anim = PlayerImg.run_anim
 
@@ -62,6 +62,8 @@ class Player(pygame.sprite.Sprite):
         self.invincible_cd = 0
         self.shock_wave_cd = 0
         
+        
+        
 
     #TODO: Get the player input
     def getPlayerInput(self):
@@ -102,6 +104,30 @@ class Player(pygame.sprite.Sprite):
 
     #TODO: animate the player
     def animatePlayer(self, dt):
+        
+        if self.invicible_time > 0:
+        
+            self.player_run_anim = PlayerImg.run_anim_invi
+
+            #* jumping
+            self.player_jump_anim = PlayerImg.jump_anim_invi
+            self.player_descend = PlayerImg.descend_invi
+
+            #* slashing
+            self.player_slash_anim = PlayerImg.slash_anim_invi
+
+        else:
+            self.player_run_anim = PlayerImg.run_anim
+
+            #* jumping
+            self.player_jump_anim = PlayerImg.jump_anim
+            self.player_descend = PlayerImg.descend
+
+            #* slashing
+            self.player_slash_anim = PlayerImg.slash_anim
+
+        
+        
         self.player_anim_frame += 0.2 * dt * TARGET_FRAMERATE
 
         if (self.player_anim_frame >= 4):
@@ -257,10 +283,10 @@ class Player(pygame.sprite.Sprite):
         #print(int(self.i_frame/60))
         
     def takeDamage(self, dt):
-        self.i_frame -= 1
+        self.i_frame -= 1 * dt * TARGET_FRAMERATE
         if self.i_frame <= 0:
             self.i_frame = 0
-        if self.i_frame % 3 == 0:
+        if int(self.i_frame) % 2 == 0:
             self.image.set_alpha(255)
         else:
             self.image.set_alpha(0)

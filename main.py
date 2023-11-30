@@ -19,8 +19,10 @@ last_time = time()
 
 #* main game loop
 while 1:
+    
     #Getting the events and passing it to the current state so it can procress the events accordingly
     events = pygame.event.get()
+    
 
     #Getting the next state of the game  
     next_state = current_state.processEvent(events)

@@ -408,6 +408,7 @@ class MainGame(State):
                     if random.uniform(0, 1) <= 0.3:
                         self.enemy_group.add(Enemy(platform.rect.right - 100, platform.rect.top))
                         self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
+                        self.collectibles_group.add(InvinciblePotion(platform.rect.centerx - 100 , platform.rect.top - 200))
 
                     elif random.uniform(0, 1) <= 0.7:
                         obstacle = Obstacle(platform.rect.centerx, platform.rect.top, "low")
@@ -599,9 +600,6 @@ class MainGame(State):
         self.showBackground(dt)
         
         self.platform_group.draw(screen)
-        
-        if self.player_sprite.invicible_time > 0:
-            pygame.draw.rect(screen, "blue", self.player_sprite.hitbox)
         self.player_group.draw(screen)   
 
         # self.cycleDayAndNight(dt)
