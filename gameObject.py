@@ -41,9 +41,9 @@ class Platform(pygame.sprite.Sprite):
 
         #* manipulate the platform y value according to the previous platform position
         if prev_platform_pos.bottom >= 500:
-            platform_y = choice([prev_platform_pos.top - 25] * 2 + [prev_platform_pos.top])
+            platform_y = choice([prev_platform_pos.top - 50] * 2 + [prev_platform_pos.top])
 
-        elif prev_platform_pos.top <= 200:
+        elif prev_platform_pos.top <= 300:
             platform_y = choice([prev_platform_pos.top + 75] * 2 + [prev_platform_pos.top])
 
         else:

@@ -13,8 +13,8 @@ pygame.display.set_caption("Quest of Atheland")
 pygame.display.set_icon(MainImg.game_icon)
 
 #setting the default state
-#current_state = gs.SplashScreen()
-current_state = gs.TitleMenu()
+current_state = gs.SplashScreen()
+#current_state = gs.TitleMenu()
 last_time = time()
 
 #* main game loop

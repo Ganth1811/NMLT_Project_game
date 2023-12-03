@@ -73,7 +73,7 @@ class TitleMenu(State):
         self.is_in_high_score = False
         self.is_in_how_to_play = False
         self.displayed_score = None
-        sfx.SoundConfig.loadMenuTheme()
+        #sfx.SoundConfig.loadMenuTheme()
         sfx.SoundConfig.muteSound()
         self.event_processed = False
 
@@ -342,7 +342,7 @@ class MainGame(State):
         self.init_platform = Platform(100, 500, 1200, 100)
         self.platform_group.add(Platform(0, 500, 3000, 100)) #* initial platform
         self.prev_platform_pos = self.init_platform.rect
-        self.platform_speed = INIT_SPEED
+        self.platform_speed = 12 #INIT_SPEED
 
         #* enemy
         self.enemy_group = pygame.sprite.Group()
@@ -427,7 +427,6 @@ class MainGame(State):
             platform_info = Platform.generatePlatform(self.prev_platform_pos, 100, self.platform_speed)
             platform = platform_info["platform"]
             platform_type = platform_info["platform_type"]
-            platform_width = platform_info["platform_width"]
             self.platform_group.add(platform)
 
             #* spawn logic
@@ -437,7 +436,6 @@ class MainGame(State):
                     if random.uniform(0, 1) <= 0.3:
                         self.enemy_group.add(Enemy(platform.rect.right - 100, platform.rect.top))
                         self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
-                        self.collectibles_group.add(MagicOrb(platform.rect.centerx - 100 , platform.rect.top - 200))
 
                     elif random.uniform(0, 1) <= 0.7:
                         obstacle = Obstacle(platform.rect.centerx, platform.rect.top, "low")
@@ -450,11 +448,23 @@ class MainGame(State):
                 #* medium difficulty
                 elif self.difficulty < 4:
                     #* enemy
-                    if random.uniform(0, 1) <= 0.3:
-                        #* spawn two enemies in the middle and the end of the platform respectively
-                        self.enemy_group.add(Enemy(platform.rect.centerx, platform.rect.top))
-                        self.enemy_group.add(Enemy(platform.rect.right - 100, platform.rect.top))
-                        self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
+                    if random.uniform(0, 1) <= 0.4:
+                        if random.uniform(0, 1) <= 0.3 and self.difficulty == 3:
+                            #* spawn like a tons of enemies
+                            self.enemy_group.add(Enemy(platform.rect.centerx, platform.rect.top))
+                            self.enemy_group.add(Enemy(platform.rect.right - 100, platform.rect.top))
+                            self.enemy_group.add(Enemy(platform.rect.right - 200, platform.rect.top))
+                            self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
+                            
+                            
+                            
+                        else:
+                            #* spawn two enemies in the middle and the end of the platform respectively
+                            self.enemy_group.add(Enemy(platform.rect.centerx, platform.rect.top))
+                            self.enemy_group.add(Enemy(platform.rect.right - 100, platform.rect.top))
+                            self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
+                            
+                            
 
                         #* a row of obstacles on top prevent the player from jumping
                         if random.uniform(0, 1) > 0.3:
@@ -471,7 +481,11 @@ class MainGame(State):
                             #* spawn the Multiplier
                             if random.uniform(0, 1) <= 0.31 and self.player_sprite.multiplier_cd == 0:
                                 self.collectibles_group.add(Emerald(platform.rect.centerx - 10, platform.rect.top - 200))
-
+                                self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center, True))
+                                
+                            else:
+                                self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center))
+                    
                             #* an obstacle in the middle
                             obstacle = Obstacle(platform.rect.centerx, platform.rect.top, "low")
                             self.obstacle_group.add(obstacle)
@@ -494,23 +508,28 @@ class MainGame(State):
 
                             obstacle = Obstacle(platform.rect.left + 500, platform.rect.top, "low")
                             self.obstacle_group.add(obstacle)
-                            self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center))
-
-                            self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
-
+                            
                             #* spawn the inviciblle potion
                             if random.uniform(0, 1) <= 0.25 and self.player_sprite.invincible_cd == 0:
                                 self.collectibles_group.add(InvinciblePotion(platform.rect.centerx - 100 , platform.rect.top - 200))
+                                self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center, True))
 
+                            else:
+                                self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center))
+                                
                     else:
                         self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
 
                 #* Hard difficulty
                 else:
                     if random.uniform(0, 1) <= 0.4:
+                        if random.uniform(0, 1) <= 0.4:
+                            self.enemy_group.add(Enemy(platform.rect.centerx + 300, platform.rect.top))
+                            self.enemy_group.add(Enemy(platform.rect.centerx + 600, platform.rect.top))
                         #* spawn two enemies in the middle and the end of the platform respectively
+                        
                         self.enemy_group.add(Enemy(platform.rect.centerx + 10, platform.rect.top))
-                        self.enemy_group.add(Enemy(platform.rect.right - 100, platform.rect.top))
+                        self.enemy_group.add(Enemy(platform.rect.right - 5, platform.rect.top))
                         self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
 
                         #* a row of obstacles on top prevent the player from jumping
@@ -526,12 +545,15 @@ class MainGame(State):
                             #* an obstacle in the middle
                             obstacle = Obstacle(platform.rect.centerx, platform.rect.top, "low")
                             self.obstacle_group.add(obstacle)
-                            self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center))
+                            
 
                             #* spawn the Multiplier
                             if random.uniform(0, 1) <= 0.31 and self.player_sprite.multiplier_cd == 0:
                                 self.collectibles_group.add(Emerald(platform.rect.centerx + 100, platform.rect.top - 200))
-
+                                self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center, True))
+                            else:
+                                self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center))
+                                
                         #* a group of five zic-zac obstacles
                         if platform.rect.top >= self.prev_platform_pos.bottom:
                             #* high
@@ -561,57 +583,16 @@ class MainGame(State):
                             #* spawn the inviciblle potion
                             if random.uniform(0, 1) <= 0.25 and self.player_sprite.invincible_cd == 0:
                                 self.collectibles_group.add(InvinciblePotion(platform.rect.centerx , platform.rect.top - 200))
+                                
 
                         #* spawn the obstacle deleter
-                        if random.uniform(0, 1) <= 0.15 and self.player_sprite.shock_wave_cd == 0:
+                        if random.uniform(0, 1) <= 0.25 and self.player_sprite.shock_wave_cd == 0:
                             self.collectibles_group.add(MagicOrb(platform.rect.right + 100, platform.rect.top - 200))
 
             else:
                 self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
 
             self.prev_platform_pos = platform.rect
-
-    # def showBackground(self, dt):
-    #     self.scrollBackground(self.background_layers[0], 0, 0.8, dt)
-    #     self.scrollBackground(self.background_layers[1], 1, 0.1, dt)
-    #     self.scrollBackground(self.background_layers[2], 2, 0.6, dt)
-    #     self.scrollBackground(self.background_layers[3], 3, 0.9, dt)
-    #     self.scrollBackground(self.background_layers[4], 4, 0.4, dt)
-
-    # def cycleDayAndNight(self, dt):
-    #     if self.day_duration == 0:
-    #         if self.is_day:
-    #             self.day_counter += (1 * dt * TARGET_FRAMERATE) / 30
-    #             if self.day_counter >= 120:
-    #                 self.day_duration = 60
-    #                 self.is_day = False
-    #         else:
-    #             self.day_counter -= (1 * dt * TARGET_FRAMERATE) / 30
-    #             if self.day_counter <= 0:
-    #                 self.day_duration = 60
-    #                 self.is_day = True
-
-    #     blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-    #     blur.set_alpha(self.day_counter)
-    #     screen.blit(blur, (0, 0))
-    #     print(self.day_duration)
-    #     self.day_duration -= 1 * TARGET_FRAMERATE * dt
-    #     if self.day_duration <= 0:
-    #         self.day_duration = 0
-
-
-    # def darkenBackground(self, dt):
-    #     if self.day_duration == 0:
-    #         if self.is_day:
-    #             self.background_counter += (1 * dt * TARGET_FRAMERATE) / 20
-    #         else:
-    #            self.background_counter -= (1 * dt * TARGET_FRAMERATE) / 20
-
-
-    #     night = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-    #     night.set_alpha(self.background_counter)
-    #     screen.blit(night, (0, 0))
-    #     # print(self.day_counter)
 
     def render(self, dt):
         screen.fill('Black')
@@ -622,12 +603,8 @@ class MainGame(State):
         self.bg_layer_4.draw()
         self.bg_layer_5.draw()
 
-        #self.scrollBackground(self.background_layers, 0, 1, dt)
-
         self.platform_group.draw(screen)
         self.player_group.draw(screen)
-
-        # self.cycleDayAndNight(dt)
 
         self.collectibles_group.draw(screen)
         self.bullet_group.draw(screen)
@@ -724,19 +701,6 @@ class GameOver(State):
         self.is_new_high_score = Score.updateHighScore(score)
 
         sfx.SoundConfig.loadGameOverMusic()
-
-    # def updateHighScore(self):
-    #     if self.score > int(Score.high_score_list[-1][0]):
-    #         now = datetime.now()
-    #         dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-
-    #         Score.high_score_list[-1] = (str(self.score), dt_string)
-    #         Score.high_score_list = sorted(Score.high_score_list, key = lambda x : int(x[0]), reverse = True)
-    #         #print(Score.high_score_list)
-    #         with open('high_score.txt', 'w') as file:
-    #             for (score, date) in Score.high_score_list:
-    #                 file.write(f"{score}, {date}\n")
-    #         print(Score.high_score_list)
 
     #TODO: Transition to the game over screen
     def transition(self, dt):
