@@ -16,6 +16,7 @@ class Player(pygame.sprite.Sprite):
 
         #* initializing player spirte animations
         self.player_anim_frame = 0
+        self.player_die_frame = 0
 
         #* running
         self.player_run_anim = PlayerImg.run_anim
@@ -27,9 +28,13 @@ class Player(pygame.sprite.Sprite):
         #* slashing
         self.player_slash_anim = PlayerImg.slash_anim
 
+        #* die and explode
+        self.player_die_anim = PlayerImg.die_anim
+        self.player_explode_anim = PlayerImg.explode_anim
+
         self.image = self.player_run_anim[self.player_anim_frame]
         self.rect = self.image.get_rect(bottomleft = self.player_position)
-        self.previous_position = self.rect.copy()
+        self.previous_pos = self.rect.copy()
 
         #* jumping related
         self.gravity = 1
@@ -62,7 +67,6 @@ class Player(pygame.sprite.Sprite):
         self.multiplier_cd = 0
         self.invincible_cd = 0
         self.shock_wave_cd = 0
-
 
     #TODO: Get the player input
     def getPlayerInput(self):
@@ -125,8 +129,6 @@ class Player(pygame.sprite.Sprite):
             #* slashing
             self.player_slash_anim = PlayerImg.slash_anim
 
-
-
         self.player_anim_frame += 0.2 * dt * TARGET_FRAMERATE
 
         if (self.player_anim_frame >= 4):
@@ -144,8 +146,18 @@ class Player(pygame.sprite.Sprite):
             self.player_jump_frame = 0
             self.image = self.player_run_anim[int(self.player_anim_frame)]
 
+        if self.is_dead:
+            self.player_die_frame += 0.1 * dt * TARGET_FRAMERATE
+            if self.player_die_frame > 12:
+                self.player_die_frame = 12
+            if self.player_die_frame < 4:
+                self.image = self.player_die_anim[int(self.player_die_frame)]
+            else:
+                self.image = self.player_explode_anim[int(self.player_die_frame) - 4]
+                self.rect = self.image.get_rect(midtop = self.previous_pos.center)
+
     #TODO: make the player jump
-    def makePlayerJump(self,):
+    def makePlayerJump(self):
         self.vertical_velocity = -self.jump_force
         sfx.player_jump.play()
 
@@ -251,7 +263,7 @@ class Player(pygame.sprite.Sprite):
     #TODO: kill the player, thus ending the game
     def die(self):
         self.is_dead = True
-        # self.kill()
+        sfx.player_die.play()
 
 
     def countdown(self, dt):
@@ -280,7 +292,7 @@ class Player(pygame.sprite.Sprite):
             self.current_multiplier = 1
         #print(int(self.i_frame/60))
 
-    def takeDamage(self, dt):
+    def flash(self, dt):
         self.i_frame -= 1 * dt * TARGET_FRAMERATE
         if self.i_frame <= 0:
             self.i_frame = 0
@@ -300,7 +312,7 @@ class Player(pygame.sprite.Sprite):
         self.animatePlayer(dt)
         self.getHitbox()
         self.countdown(dt)
-        self.takeDamage(dt)
+        self.flash(dt)
 
 
 class Bullet(pygame.sprite.Sprite):

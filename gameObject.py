@@ -242,11 +242,13 @@ class Shockwave():
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.radius = 5
-        self.width = 10
+        self.width = 3
         self.over = False
+        self.color = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'purple']
 
     def drawShockwave(self, screen, dt):
-        pygame.draw.circle(screen, 'darkgray', (self.pos_x, self.pos_y), self.radius, self.width)
+        for i in range(7):
+            pygame.draw.circle(screen, self.color[i], (self.pos_x, self.pos_y), self.radius - i * self.width, self.width)
         self.radius += 25 * dt * TARGET_FRAMERATE
         self.over = self.radius > SCREEN_DIAGONAL
 
@@ -288,8 +290,8 @@ class Obstacle(pygame.sprite.Sprite):
             self.image = ObstacleImg.spike
 
         self.rect = self.image.get_rect(midbottom = (x_pos, y_pos))
-        self.rect.width -= 8
-        self.rect.height -= 8
+        self.rect.width -= 20
+        self.rect.height -= 20
 
     def moveObstacle(self, platform_speed, dt):
         self.rect.x -= platform_speed * dt * TARGET_FRAMERATE

@@ -108,8 +108,6 @@ class TitleMenu(State):
             "button_group": button_group
         }
 
-
-
     def processEvent(self, events):
         super().processEvent(events)
 
@@ -201,7 +199,14 @@ class TitleMenu(State):
                 particle.update()
 
         if self.is_in_how_to_play:
-            screen.blit(pygame.transform.scale(pygame.image.load("img\\Bg\\tutorial.png").convert_alpha(), (1280, 720)), (0, 0))
+            blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            blur.set_alpha(69)
+            screen.blit(blur, (0, 0))
+
+            how_to_play_popup = TitleMenuImg.how_to_play_popup
+            popup_rect = how_to_play_popup.get_rect(center = (SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
+            screen.blit(TitleMenuImg.how_to_play_popup, popup_rect)
+
             self.close_button.draw(screen)
 
         elif self.is_in_high_score:
@@ -317,7 +322,12 @@ class MainGame(State):
         #* background and other visual objects
         self.scrolls = [2, 1, 1.4, 1.3, 1.2]
         self.bg = pygame.transform.scale(MainGameImg.bg, (1280, 720))
-        self.background_layers = [pygame.transform.scale(image, (1280, 720)) for image in MainGameImg.bg_layers]
+        #self.background_layers = [pygame.transform.scale(image, (1280, 720)) for image in MainGameImg.bg_layers]
+        self.bg_layer_1 = Background(MainGameImg.bg_1, 0.4)
+        self.bg_layer_2 = Background(MainGameImg.bg_2, 0.8)
+        self.bg_layer_3 = Background(MainGameImg.bg_3, 1)
+        self.bg_layer_4 = Background(MainGameImg.bg_4, 1.3)
+        self.bg_layer_5 = Background(MainGameImg.bg_5, 1.4)
 
         #* background music
         sfx.SoundConfig.loadBgMusic()
@@ -353,6 +363,7 @@ class MainGame(State):
         self.day_counter = 0
         self.day_duration = 60
         self.background_counter = 0
+        self.death_countdown = 60 * 2
 
         #* pausing mechanism
         self.is_pause = False
@@ -366,7 +377,7 @@ class MainGame(State):
         self.score_by_player = 0
         self.total_score = 0
         self.difficulty = 1
-
+        self.scroll = 0
 
     #TODO: Calculate the score and add it to a surface
     def calculateScore(self, time):
@@ -383,8 +394,8 @@ class MainGame(State):
         super().processEvent(events)
         if self.player_sprite.is_dead:
             pygame.mixer_music.unload()
-            sfx.player_die.play()
-            return GameOver(self.total_score, self.difficulty)
+            if self.death_countdown <= 0:
+                return GameOver(self.total_score, self.difficulty)
 
         for event in events:
             #* Pausing the game
@@ -426,8 +437,7 @@ class MainGame(State):
                     if random.uniform(0, 1) <= 0.3:
                         self.enemy_group.add(Enemy(platform.rect.right - 100, platform.rect.top))
                         self.collectibles_group.add(Coin.spawnCoin(platform.rect, platform_type))
-                        self.collectibles_group.add(InvinciblePotion(platform.rect.centerx - 100 , platform.rect.top - 200))
-                        self.collectibles_group.add(Emerald(platform.rect.centerx - 10, platform.rect.top - 200))
+                        self.collectibles_group.add(MagicOrb(platform.rect.centerx - 100 , platform.rect.top - 200))
 
                     elif random.uniform(0, 1) <= 0.7:
                         obstacle = Obstacle(platform.rect.centerx, platform.rect.top, "low")
@@ -561,12 +571,12 @@ class MainGame(State):
 
             self.prev_platform_pos = platform.rect
 
-    def showBackground(self, dt):
-        self.scrollBackground(self.background_layers[0], 0, 0.8, dt)
-        self.scrollBackground(self.background_layers[1], 1, 0.1, dt)
-        self.scrollBackground(self.background_layers[2], 2, 0.6, dt)
-        self.scrollBackground(self.background_layers[3], 3, 0.9, dt)
-        self.scrollBackground(self.background_layers[4], 4, 0.4, dt)
+    # def showBackground(self, dt):
+    #     self.scrollBackground(self.background_layers[0], 0, 0.8, dt)
+    #     self.scrollBackground(self.background_layers[1], 1, 0.1, dt)
+    #     self.scrollBackground(self.background_layers[2], 2, 0.6, dt)
+    #     self.scrollBackground(self.background_layers[3], 3, 0.9, dt)
+    #     self.scrollBackground(self.background_layers[4], 4, 0.4, dt)
 
     # def cycleDayAndNight(self, dt):
     #     if self.day_duration == 0:
@@ -606,9 +616,13 @@ class MainGame(State):
     def render(self, dt):
         screen.fill('Black')
         screen.blit(self.bg, (0 ,0))
-        # self.darkenBackground(dt)
+        self.bg_layer_1.draw()
+        self.bg_layer_2.draw()
+        self.bg_layer_3.draw()
+        self.bg_layer_4.draw()
+        self.bg_layer_5.draw()
 
-        self.showBackground(dt)
+        #self.scrollBackground(self.background_layers, 0, 1, dt)
 
         self.platform_group.draw(screen)
         self.player_group.draw(screen)
@@ -634,13 +648,17 @@ class MainGame(State):
             screen.blit(icon, icon.get_rect(midright = (self.player_sprite.rect.left, self.player_sprite.rect.centery)))
 
 
-    def scrollBackground(self, layer, index, speed, dt):
-        if (self.scrolls[index] > SCREEN_WIDTH):
-            self.scrolls[index] = 0
-        self.scrolls[index] += (self.platform_speed - 9) * speed * dt * TARGET_FRAMERATE
+    def scrollBackground(self, layers, index, speed, dt):
+        # if (self.scrolls[index] > SCREEN_WIDTH):
+        #     self.scrolls[index] = 0
+        # self.scrolls[index] += (self.platform_speed - 9) * speed * dt * TARGET_FRAMERATE
 
-        for i in range(0, ceil(SCREEN_WIDTH / layer.get_width()) + 1 ):
-            screen.blit(layer, (i * SCREEN_WIDTH - (self.scrolls[index]), 0))
+        for i in range(5):
+            screen.blit(layers[0], (i * SCREEN_WIDTH - self.scroll * 1.2, 0))
+            screen.blit(layers[1], (i * SCREEN_WIDTH - self.scroll * 0.5, 0))
+            # screen.blit(layers[2], (i * SCREEN_WIDTH - self.scroll * 0.7, 0))
+            # screen.blit(layers[3], (i * SCREEN_WIDTH - self.scroll * 2, 0))
+            # screen.blit(layers[4], (i * SCREEN_WIDTH - self.scroll * 0.1, 0))
 
     def handleGameEvent(self):
         colliables = self.obstacle_group.sprites() + self.collectibles_group.sprites()
@@ -661,6 +679,17 @@ class MainGame(State):
 
     def update(self, dt):
         if not self.player_sprite.is_dead and not self.is_pause:
+
+            self.scroll += 1
+            if self.scroll >= SCREEN_WIDTH:
+                self.scroll = 0
+
+            self.bg_layer_1.update(dt)
+            self.bg_layer_2.update(dt)
+            self.bg_layer_3.update(dt)
+            self.bg_layer_4.update(dt)
+            self.bg_layer_5.update(dt)
+
             #* getting the second elapsed since MainGame ran as score
             self.run_time = self.previous_run_time + int((pygame.time.get_ticks() - self.start_time) / 1000)
 
@@ -676,6 +705,12 @@ class MainGame(State):
             self.calculateScore(self.run_time)
             self.render(dt)
 
+        else:
+            self.death_countdown -= 1 * dt * TARGET_FRAMERATE
+            self.player_group.update(dt)
+            self.handleGameEvent()
+            self.render(dt)
+
 class GameOver(State):
     def __init__(self, score, difficulty):
         super(State, self).__init__()
@@ -687,6 +722,8 @@ class GameOver(State):
 
         self.buttons = self.createButtons()
         self.is_new_high_score = Score.updateHighScore(score)
+
+        sfx.SoundConfig.loadGameOverMusic()
 
     # def updateHighScore(self):
     #     if self.score > int(Score.high_score_list[-1][0]):
@@ -757,22 +794,23 @@ class GameOver(State):
     def render(self):
         #! This is just temporary
         pygame.draw.rect(screen, 'black', (0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
-        font = pygame.font.Font("font.ttf", 35)
+        font1 = pygame.font.Font("font.ttf", 60)
+        font2 = pygame.font.Font("font.ttf", 40)
 
-        text_game_over = font.render(f"GAME OVER", 0, 'White')
+        text_game_over = font1.render(f"GAME OVER", 0, 'White')
 
         if self.is_new_high_score:
-            text_score = font.render(f"New high score: {self.score} - Difficulty: {self.difficulty}", 0, 'Yellow')
+            text_score = font2.render(f"New high score: {self.score} - Difficulty: {self.difficulty}", 0, 'Yellow')
         else:
-            text_score = font.render(f"Your score: {self.score} - Difficulty: {self.difficulty}", 0, 'White')
+            text_score = font2.render(f"Your score: {self.score} - Difficulty: {self.difficulty}", 0, 'White')
 
-        text_high_score = font.render(f"Highest score: {Score.high_score_list[0][0]}", 0, 'White')
-        text2 = font.render(f"Press R to play again", 0, 'White')
+        text_high_score = font2.render(f"Highest score: {Score.high_score_list[0][0]}", 0, 'White')
+        # text2 = font.render(f"Press R to play again", 0, 'White')
 
         screen.blit(text_game_over, text_game_over.get_rect(center = (SCREEN_WIDTH / 2, 100)))
-        screen.blit(text_score, text_score.get_rect(center = ((SCREEN_WIDTH / 2, 200))))
-        screen.blit(text_high_score, text_high_score.get_rect(center = ((SCREEN_WIDTH / 2, 300))))
-        screen.blit(text2, text2.get_rect(center = ((SCREEN_WIDTH / 2, 400))))
+        screen.blit(text_score, text_score.get_rect(center = ((SCREEN_WIDTH / 2, 275))))
+        screen.blit(text_high_score, text_high_score.get_rect(center = ((SCREEN_WIDTH / 2, 350))))
+        # screen.blit(text2, text2.get_rect(center = ((SCREEN_WIDTH / 2, 400))))
 
         self.buttons["button_group"].draw(screen)
 
@@ -784,7 +822,7 @@ class GameOver(State):
 
 
 #* I was so tired so I used chatGPT to generate this function ;) so still don't really understand wtf it does
-def fade_transition(fade_surface, FADE_SPEED = 5, FADE_DELAY = 4000):
+def fade_transition(fade_surface, FADE_SPEED = 2, FADE_DELAY = 4000):
     start_time = pygame.time.get_ticks()
     while True:
         fade_rect = fade_surface.get_rect()
@@ -830,3 +868,20 @@ class Particle():
         pygame.draw.circle(screen,pygame.Color('White'), (self.rect.x, self.rect.y), self.radius)
         if self.rect.x > SCREEN_WIDTH:
             self.remove = True
+
+
+class Background():
+    def __init__(self, img, speed):
+        self.x = 0
+        self.y = 0
+        self.speed = speed
+        self.img = img
+        self.width = self.img.get_width()
+        self.height = self.img.get_height()
+    def draw(self):
+        screen.blit(self.img, (int(self.x), int(self.y)))
+        screen.blit(self.img, (int(self.x + self.width), int(self.y)))
+    def update(self, dt):
+        self.x -= self.speed * dt * TARGET_FRAMERATE
+        if self.x < -self.width - 100:
+            self.x += self.width 

@@ -9,7 +9,7 @@ from image import MainImg
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
-pygame.display.set_caption("Quest of Atheland (Pre-release)")
+pygame.display.set_caption("Quest of Atheland")
 pygame.display.set_icon(MainImg.game_icon)
 
 #setting the default state
@@ -19,10 +19,8 @@ last_time = time()
 
 #* main game loop
 while 1:
-
     #Getting the events and passing it to the current state so it can procress the events accordingly
     events = pygame.event.get()
-
 
     #Getting the next state of the game
     next_state = current_state.processEvent(events)
@@ -40,7 +38,6 @@ while 1:
     pygame.display.update()
 
     clock.tick(60)
-
 
 
 

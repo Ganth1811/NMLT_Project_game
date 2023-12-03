@@ -8,7 +8,7 @@ def loadImg(path: str):
     return pygame.image.load(path).convert_alpha()
 
 def scaleImg(img: pygame.Surface, scale: int):
-    return pygame.transform.scale_by(img, scale)
+    return pygame.transform.scale_by(img, scale).convert_alpha()
 
 #* platforms.py
 class PlatformImg():
@@ -69,6 +69,9 @@ class PlayerImg():
     descend_invi = scaleImg(loadImg("img\\Sprites\\pleier\\player_fall.png"), 4)
     slash_anim_invi = [scaleImg(loadImg(f"img\\Sprites\\pleier\\player_attack{i}.png"),4) for i in range(1,5)]
 
+    die_anim = [scaleImg(loadImg(f"img\\Sprites\\player_die{i}.png"), 4) for i in range(1, 5)]
+    explode_anim = [scaleImg(loadImg(f"img\\Sprites\\player_explode{i}.png"), 4) for i in range(1, 10)]
+
 
 class BulletImg():
     bullet = scaleImg(loadImg("img\\Sprites\\slash.png"), 4)
@@ -82,14 +85,19 @@ class TitleMenuImg():
     text_quest_of = [scaleImg(loadImg(f"img\\mainmenutext\\frame_{i:02d}_delay-0.1s.png"), 1.5) for i in range(0, 20)]
     text_athelard = [scaleImg(loadImg(f"img\\mainmenutext2\\frame_{i:02d}_delay-0.1s.png"), 1.5) for i in range(0, 20)]
     high_score_popup = loadImg("img\\Bg\\highscore_popup.png")
+    how_to_play_popup = loadImg("img\\Bg\\how_to_play_popup.png")
 
 class MainGameImg():
     bg = loadImg("img\\Bg\\sky.png")
-    bg_layers = [loadImg(f"img\\Bg\\layer_{i}.png") for i in range(1, 6)]
+    bg_1 = scaleImg(loadImg("img\\Bg\\layer_1.png"), 4)
+    bg_2 = scaleImg(loadImg("img\\Bg\\layer_2.png"), 4) 
+    bg_3 = scaleImg(loadImg("img\\Bg\\layer_3.png"), 4) 
+    bg_4 = scaleImg(loadImg("img\\Bg\\layer_4.png"), 4) 
+    bg_5 = scaleImg(loadImg("img\\Bg\\layer_5.png"), 4) 
     score_frame = loadImg("img\\Buttons\\score_frame.png")
 
-    for i in range(5):
-        bg_layers[i].set_alpha(150)
+    # for i in range(5):
+    #     bg_layers[i].set_alpha(150)
 
     popup_x2 = scaleImg(loadImg(f"img\\Sprites\\popup_x2.png"), 0.4)
     popup_invincible = scaleImg(loadImg(f"img\\Sprites\\popup_invincible.png"), 0.125)
