@@ -73,7 +73,6 @@ class TitleMenu(State):
         self.is_in_high_score = False
         self.is_in_how_to_play = False
         self.displayed_score = None
-        #sfx.SoundConfig.loadMenuTheme()
         sfx.SoundConfig.muteSound()
         self.event_processed = False
 
@@ -342,7 +341,7 @@ class MainGame(State):
         self.init_platform = Platform(100, 500, 1200, 100)
         self.platform_group.add(Platform(0, 500, 3000, 100)) #* initial platform
         self.prev_platform_pos = self.init_platform.rect
-        self.platform_speed = 12 #INIT_SPEED
+        self.platform_speed = INIT_SPEED
 
         #* enemy
         self.enemy_group = pygame.sprite.Group()
