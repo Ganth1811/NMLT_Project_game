@@ -476,6 +476,7 @@ class MainGame(State):
                             #* an obstacle high up at the end of the platform, prevent the player from jumping early
                             if random.uniform(0, 1) > 0.5:
                                 self.obstacle_group.add(Obstacle(platform.rect.right - 100, platform.rect.top - 200, "high"))
+                            obstacle = Obstacle(platform.rect.centerx, platform.rect.top, "low")
 
                             #* spawn the Multiplier
                             if random.uniform(0, 1) <= 0.31 and self.player_sprite.multiplier_cd == 0:
@@ -486,7 +487,6 @@ class MainGame(State):
                                 self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center))
                     
                             #* an obstacle in the middle
-                            obstacle = Obstacle(platform.rect.centerx, platform.rect.top, "low")
                             self.obstacle_group.add(obstacle)
                             self.collectibles_group.add(Coin.spawnCoinCurve(self.player_sprite, self.platform_speed, obstacle.rect.center))
 
