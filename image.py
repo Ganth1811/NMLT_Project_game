@@ -33,15 +33,15 @@ class CollectibleImg():
     for i in range(8):
         coin_anim.append(coin_sprites.subsurface((32*i+5, 5), (22, 22)))
 
-    multiplier_sprites = loadImg("img\\collectibles\\multiplier_sprites.png")
-    multiplier_anim = []
+    emerald_sprites = loadImg("img\\collectibles\\multiplier_sprites.png")
+    emerald_anim = []
     for i in range(8):
-        multiplier_anim.append(scaleImg(multiplier_sprites.subsurface((32*i+5, 5), (22, 22)), 2))
+        emerald_anim.append(scaleImg(emerald_sprites.subsurface((32*i+5, 5), (22, 22)), 2))
 
-    invicibility_sprites = loadImg("img\\collectibles\\invicibility_sprites.png")
-    invincibility_anim = []
+    potion_sprites = loadImg("img\\collectibles\\invicibility_sprites.png")
+    potion_anim = []
     for i in range(8):
-        invincibility_anim.append(scaleImg(invicibility_sprites.subsurface((32*i+5, 2), (22, 25)), 2))
+        potion_anim.append(scaleImg(potion_sprites.subsurface((32*i+5, 2), (22, 25)), 2))
 
     rainbow_orb_sprites = loadImg("img\\collectibles\\rainbow_orb_sprites.png")
     rainbow_orb_anim = []
@@ -65,7 +65,7 @@ class PlayerImg():
     slash_anim = [scaleImg(loadImg(f"img\\Sprites\\player_attack{i}.png"), 4) for i in range(1,5)]
 
     run_anim_invi = [scaleImg(loadImg(f"img\\Sprites\\pleier\\player_run{i}.png"), 4) for i in range(1,5)]
-    jump_anim_invi = ([scaleImg(loadImg("img\\Sprites\\pleier\\player_jump.png"), 4)] + [scaleImg(loadImg(f"img\\Sprites\\pleier\\player_spin{i}.png"), 4) for i in range(1,5)])
+    jump_anim_invi = [scaleImg(loadImg("img\\Sprites\\pleier\\player_jump.png"), 4)] + [scaleImg(loadImg(f"img\\Sprites\\pleier\\player_spin{i}.png"), 4) for i in range(1,5)]
     descend_invi = scaleImg(loadImg("img\\Sprites\\pleier\\player_fall.png"), 4)
     slash_anim_invi = [scaleImg(loadImg(f"img\\Sprites\\pleier\\player_attack{i}.png"),4) for i in range(1,5)]
 
@@ -90,10 +90,10 @@ class TitleMenuImg():
 class MainGameImg():
     bg = loadImg("img\\Bg\\sky.png")
     bg_1 = scaleImg(loadImg("img\\Bg\\layer_1.png"), 4)
-    bg_2 = scaleImg(loadImg("img\\Bg\\layer_2.png"), 4) 
-    bg_3 = scaleImg(loadImg("img\\Bg\\layer_3.png"), 4) 
-    bg_4 = scaleImg(loadImg("img\\Bg\\layer_4.png"), 4) 
-    bg_5 = scaleImg(loadImg("img\\Bg\\layer_5.png"), 4) 
+    bg_2 = scaleImg(loadImg("img\\Bg\\layer_2.png"), 4)
+    bg_3 = scaleImg(loadImg("img\\Bg\\layer_3.png"), 4)
+    bg_4 = scaleImg(loadImg("img\\Bg\\layer_4.png"), 4)
+    bg_5 = scaleImg(loadImg("img\\Bg\\layer_5.png"), 4)
     score_frame = loadImg("img\\Buttons\\score_frame.png")
 
     # for i in range(5):

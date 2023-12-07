@@ -71,8 +71,6 @@ class Enemy(pygame.sprite.Sprite):
         self.anim_frame = 0
 
         #* import player enemy
-
-
         self.run_anim = choice([EnemyImg.enemy1_run, EnemyImg.enemy2_run])
         self.death_anim = EnemyImg.death_anim
 
@@ -213,7 +211,7 @@ class InvinciblePotion(Collectible):
         super().__init__(pos_x, pos_y)
 
         self.type = "potion"
-        self.anim_list = CollectibleImg.invincibility_anim
+        self.anim_list = CollectibleImg.potion_anim
         self.given_score = 0
         self.image = self.anim_list[self.anim_frame]
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
@@ -263,7 +261,7 @@ class Emerald(Collectible):
         super().__init__(pos_x, pos_y)
 
         self.anim_frame = 0
-        self.anim_list = CollectibleImg.multiplier_anim
+        self.anim_list = CollectibleImg.emerald_anim
         self.image = self.anim_list[self.anim_frame]
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
         self.type = "emerald"

@@ -108,53 +108,56 @@ class Player(pygame.sprite.Sprite):
     #TODO: animate the player
     def animatePlayer(self, dt):
 
-        if self.invicible_time > 0:
+        if not self.is_dead:
+            if self.invicible_time > 0:
 
-            self.player_run_anim = PlayerImg.run_anim_invi
+                self.player_run_anim = PlayerImg.run_anim_invi
 
-            #* jumping
-            self.player_jump_anim = PlayerImg.jump_anim_invi
-            self.player_descend = PlayerImg.descend_invi
+                #* jumping
+                self.player_jump_anim = PlayerImg.jump_anim_invi
+                self.player_descend = PlayerImg.descend_invi
 
-            #* slashing
-            self.player_slash_anim = PlayerImg.slash_anim_invi
+                #* slashing
+                self.player_slash_anim = PlayerImg.slash_anim_invi
+
+            else:
+                self.player_run_anim = PlayerImg.run_anim
+
+                #* jumping
+                self.player_jump_anim = PlayerImg.jump_anim
+                self.player_descend = PlayerImg.descend
+
+                #* slashing
+                self.player_slash_anim = PlayerImg.slash_anim
+
+            self.player_anim_frame += 0.2 * dt * TARGET_FRAMERATE
+
+            if (self.player_anim_frame >= 4):
+                self.player_anim_frame = 0
+
+            if self.is_slashing:
+                self.animatePlayerSlash(dt)
+            #* Check if player is above the ground level and is not on another platform
+            elif (self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity < 6):
+                self.animatePlayerJump(dt)
+            elif(self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity > 7):
+                self.image = self.player_descend
+                self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
+            else:
+                self.player_jump_frame = 0
+                self.image = self.player_run_anim[int(self.player_anim_frame)]
+                self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
 
         else:
-            self.player_run_anim = PlayerImg.run_anim
-
-            #* jumping
-            self.player_jump_anim = PlayerImg.jump_anim
-            self.player_descend = PlayerImg.descend
-
-            #* slashing
-            self.player_slash_anim = PlayerImg.slash_anim
-
-        self.player_anim_frame += 0.2 * dt * TARGET_FRAMERATE
-
-        if (self.player_anim_frame >= 4):
-            self.player_anim_frame = 0
-
-        if self.is_slashing:
-            self.animatePlayerSlash(dt)
-        #* Check if player is above the ground level and is not on another platform
-        elif (self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity < 6):
-            self.animatePlayerJump(dt)
-        elif(self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity > 7):
-            self.image = self.player_descend
-            self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
-        else:
-            self.player_jump_frame = 0
-            self.image = self.player_run_anim[int(self.player_anim_frame)]
-
-        if self.is_dead:
             self.player_die_frame += 0.1 * dt * TARGET_FRAMERATE
             if self.player_die_frame > 12:
                 self.player_die_frame = 12
             if self.player_die_frame < 4:
                 self.image = self.player_die_anim[int(self.player_die_frame)]
+                self.rect = self.image.get_rect(center = self.rect.center)
             else:
                 self.image = self.player_explode_anim[int(self.player_die_frame) - 4]
-                self.rect = self.image.get_rect(midtop = self.previous_pos.center)
+                self.rect = self.image.get_rect(center = self.rect.center)
 
     #TODO: make the player jump
     def makePlayerJump(self):
@@ -222,7 +225,6 @@ class Player(pygame.sprite.Sprite):
         self.invicible_time = 60 * 10
         self.i_frame = 30
 
-
     def collectCollectible(self, collectible):
         self.score += collectible.playerCollect() * self.current_multiplier
 
@@ -253,12 +255,16 @@ class Player(pygame.sprite.Sprite):
                     self.multiplier_cd = self.multiplier_time + TARGET_FRAMERATE * 15
 
     def getHitbox(self):
-        if not self.image in PlayerImg.jump_anim[1:]:
-            self.hitbox = pygame.Rect(0, 0, 12 * 4, 22 * 4)
-            self.hitbox.bottomleft = (self.rect.left + 6 * 4, self.rect.bottom)
+        if not self.is_dead:
+            if not self.image in PlayerImg.jump_anim[1:]:
+                self.hitbox = pygame.Rect(0, 0, 12 * 4, 22 * 4)
+                self.hitbox.bottomleft = (self.rect.left + 6 * 4, self.rect.bottom)
+            else:
+                self.hitbox = pygame.Rect(0, 0, 17 * 4, 17 * 4)
+                self.hitbox.bottomleft = (self.rect.left, self.rect.bottom)
         else:
-            self.hitbox = pygame.Rect(0, 0, 17 * 4, 17 * 4)
-            self.hitbox.bottomleft = (self.rect.left, self.rect.bottom)
+            self.hitbox = pygame.Rect(0, 0, 12 * 4, 22 * 4)
+            self.hitbox.bottomleft = (self.previous_pos.left + 6 * 4, self.previous_pos.bottom)
 
     #TODO: kill the player, thus ending the game
     def die(self):
