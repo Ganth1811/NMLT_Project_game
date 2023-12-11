@@ -90,9 +90,6 @@ class Player(pygame.sprite.Sprite):
             self.player_jump_frame = 0
         self.image = self.player_jump_anim[int(self.player_jump_frame)]
 
-        if self.player_jump_frame >= 1:
-            self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
-
     def animatePlayerSlash(self, dt):
         self.slash_frame += 0.4 * dt * TARGET_FRAMERATE
 
@@ -102,7 +99,6 @@ class Player(pygame.sprite.Sprite):
             return
 
         self.image = self.player_slash_anim[int(self.slash_frame)]
-        self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
 
 
     #TODO: animate the player
@@ -142,11 +138,11 @@ class Player(pygame.sprite.Sprite):
                 self.animatePlayerJump(dt)
             elif(self.rect.bottom < 500 and not(self.is_colliding) and self.vertical_velocity > 7):
                 self.image = self.player_descend
-                self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
             else:
                 self.player_jump_frame = 0
                 self.image = self.player_run_anim[int(self.player_anim_frame)]
-                self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
+
+            self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
 
         else:
             self.player_die_frame += 0.1 * dt * TARGET_FRAMERATE

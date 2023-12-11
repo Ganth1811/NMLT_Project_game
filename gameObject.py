@@ -64,7 +64,7 @@ class Platform(pygame.sprite.Sprite):
         }
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, platform_x, platform_y):
+    def __init__(self, pos_x: int, pos_y: int):
         super().__init__()
         self.type = "enemy"
         #* initializing enemy spirte animations
@@ -77,8 +77,8 @@ class Enemy(pygame.sprite.Sprite):
         self.anim_list = self.run_anim
         self.len_anim_list = len(self.anim_list)
 
-        self.x_pos = platform_x
-        self.y_pos = platform_y
+        self.x_pos = pos_x
+        self.y_pos = pos_y
         self.image = self.anim_list[self.anim_frame]
         self.rect = self.image.get_rect(bottomright = (self.x_pos, self.y_pos))
 
@@ -116,7 +116,7 @@ class Enemy(pygame.sprite.Sprite):
 
 
 class Collectible(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y,):
+    def __init__(self, pos_x: int, pos_y: int):
         super().__init__()
 
         self.pos_x = pos_x

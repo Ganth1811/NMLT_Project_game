@@ -112,7 +112,6 @@ class ButtonImg():
     resume = (loadImg("img\\Buttons\\Resume_default.png"), loadImg("img\\Buttons\\Resume_hover.png"))
     high_score = (loadImg("img\\Buttons\\HighScore_default.png"), loadImg("img\\Buttons\\HighScore_hover.png"))
     quit_game = (loadImg("img\\Buttons\\QuitGame_default.png"), loadImg("img\\Buttons\\QuitGame_hover.png"))
-    option = (loadImg("img\\Buttons\\Option_default.png"), loadImg("img\\Buttons\\Option_hover.png"))
     restart = (loadImg("img\\Buttons\\Restart_default.png"), loadImg("img\\Buttons\\Restart_hover.png"))
     main_menu = (loadImg("img\\Buttons\\MainMenu_default.png"), loadImg("img\\Buttons\\MainMenu_hover.png"))
     unmute = (scaleImg(loadImg("img\\Buttons\\SoundOn_default.png"), 0.3), scaleImg(loadImg("img\\Buttons\\SoundOn_hover.png"), 0.3))

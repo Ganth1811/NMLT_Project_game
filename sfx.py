@@ -28,7 +28,7 @@ class SoundConfig():
         pygame.mixer_music.play(-1)
 
     def loadBgMusic():
-        pygame.mixer_music.load("music\\bgm\\stage_theme_1.wav")
+        pygame.mixer_music.load("music\\bgm\\stage_theme.wav")
         pygame.mixer_music.play(-1)
 
     def loadGameOverMusic():

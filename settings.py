@@ -13,7 +13,10 @@ is_muted = False
 class Score:
     high_score_list = []
     with open("high_score.txt", 'r') as f:
-        high_score_list = [(int(data[0]), data[1].strip()) for data in [line.split(", ") for line in f.readlines()]]
+        for i in range(5):
+            line = f.readline().split(", ")
+            high_score_list.append((int(line[0]), line[1].strip()))
+            
         high_score_list = sorted(high_score_list, key = lambda x: x[0], reverse = True)
 
     def updateHighScore(score):

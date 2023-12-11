@@ -34,6 +34,7 @@ class State(object):
     def update(self, dt):
         pass
 
+
 #* The splash screen displays the logo of the group for a few seconds then fades out
 class SplashScreen(State):
     def __init__(self):
@@ -87,6 +88,7 @@ class SplashScreen(State):
 
     def update(self, dt):
         self.render()
+
 
 #* The title menu displays the game name and different options player can choose
 class TitleMenu(State):
@@ -342,6 +344,7 @@ class PauseMenu(State):
     def update(self, dt):
         self.render()
         self.buttons["button_group"].update()
+
 
 class MainGame(State):
     def __init__(self):
@@ -649,19 +652,6 @@ class MainGame(State):
                 icon = MainGameImg.popup_x2
                 screen.blit(icon, icon.get_rect(midright = (self.player_sprite.rect.left, self.player_sprite.rect.centery)))
 
-
-    def scrollBackground(self, layers, index, speed, dt):
-        # if (self.scrolls[index] > SCREEN_WIDTH):
-        #     self.scrolls[index] = 0
-        # self.scrolls[index] += (self.platform_speed - 9) * speed * dt * TARGET_FRAMERATE
-
-        for i in range(5):
-            screen.blit(layers[0], (i * SCREEN_WIDTH - self.scroll * 1.2, 0))
-            screen.blit(layers[1], (i * SCREEN_WIDTH - self.scroll * 0.5, 0))
-            # screen.blit(layers[2], (i * SCREEN_WIDTH - self.scroll * 0.7, 0))
-            # screen.blit(layers[3], (i * SCREEN_WIDTH - self.scroll * 2, 0))
-            # screen.blit(layers[4], (i * SCREEN_WIDTH - self.scroll * 0.1, 0))
-
     def handleGameEvent(self):
         colliables = self.obstacle_group.sprites() + self.collectibles_group.sprites()
         self.player_sprite.handleAllCollisions(colliables, self.platform_group.sprites())
@@ -714,6 +704,7 @@ class MainGame(State):
             self.player_sprite.animatePlayer(dt)
             self.render(dt)
 
+
 class GameOver(State):
     def __init__(self, score, difficulty):
         super(State, self).__init__()
@@ -726,7 +717,11 @@ class GameOver(State):
         self.buttons = self.createButtons()
         self.is_new_high_score = Score.updateHighScore(score)
 
+        self.font1 = pygame.font.Font("font.ttf", 60)
+        self.font2 = pygame.font.Font("font.ttf", 40)
+
         sfx.SoundConfig.loadGameOverMusic()
+
 
     #TODO: Transition to the game over screen
     def transition(self, dt):
@@ -782,19 +777,16 @@ class GameOver(State):
 
     #TODO: displaying text
     def render(self):
-        #! This is just temporary
         pygame.draw.rect(screen, 'black', (0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
-        font1 = pygame.font.Font("font.ttf", 60)
-        font2 = pygame.font.Font("font.ttf", 40)
 
-        text_game_over = font1.render(f"GAME OVER", 0, 'White')
+        text_game_over = self.font1.render(f"GAME OVER", 0, 'White')
 
         if self.is_new_high_score:
-            text_score = font2.render(f"New high score: {self.score} - Difficulty: {self.difficulty}", 0, 'Yellow')
+            text_score = self.font2.render(f"New high score: {self.score} - Difficulty: {self.difficulty}", 0, 'Yellow')
         else:
-            text_score = font2.render(f"Your score: {self.score} - Difficulty: {self.difficulty}", 0, 'White')
+            text_score = self.font2.render(f"Your score: {self.score} - Difficulty: {self.difficulty}", 0, 'White')
 
-        text_high_score = font2.render(f"Highest score: {Score.high_score_list[0][0]}", 0, 'White')
+        text_high_score = self.font2.render(f"Highest score: {Score.high_score_list[0][0]}", 0, 'White')
         # text2 = font.render(f"Press R to play again", 0, 'White')
 
         screen.blit(text_game_over, text_game_over.get_rect(center = (SCREEN_WIDTH / 2, 100)))
