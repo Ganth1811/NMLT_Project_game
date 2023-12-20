@@ -172,7 +172,7 @@ class Player(pygame.sprite.Sprite):
             self.die()
 
     #TODO: handle all the platform collision
-    def handlePlatformCollision(self, platforms):
+    def handlePlatformCollision(self, platforms: list[pygame.sprite.Sprite]):
         on_platform = False
 
         #* If exists at least one platform, check for the player collision with the platforms
@@ -206,9 +206,8 @@ class Player(pygame.sprite.Sprite):
                 if (self.rect.right < -5):
                     self.die()
 
-
     #TODO: handle enemy collisions
-    def handleEnemyCollision(self, enemy):
+    def handleEnemyCollision(self, enemy: pygame.sprite.Sprite):
         if self.hitbox.colliderect(enemy.rect):
             if self.invicible_time == 0:
                 if not enemy.is_shot:
@@ -221,10 +220,10 @@ class Player(pygame.sprite.Sprite):
         self.invicible_time = 60 * 10
         self.i_frame = 30
 
-    def collectCollectible(self, collectible):
+    def collectCollectible(self, collectible: pygame.sprite.Sprite):
         self.score += collectible.playerCollect() * self.current_multiplier
 
-    def handleAllCollisions(self, colliables, platforms):
+    def handleAllCollisions(self, colliables: list[pygame.sprite.Sprite], platforms: list[pygame.sprite.Sprite]):
         self.handlePlatformCollision(platforms)
         for colliable in colliables:
             if self.hitbox.colliderect(colliable.rect):
@@ -267,7 +266,6 @@ class Player(pygame.sprite.Sprite):
         self.is_dead = True
         sfx.player_die.play()
 
-
     def countdown(self, dt):
         elapsed_time = 1 * dt * TARGET_FRAMERATE
 
@@ -304,8 +302,6 @@ class Player(pygame.sprite.Sprite):
             self.image.set_alpha(0)
         # print(int(self.i_frame))
 
-
-
     #TODO: update the state of the player
     def update(self, dt):
         self.previous_pos = self.rect.copy()
@@ -337,13 +333,13 @@ class Bullet(pygame.sprite.Sprite):
     def update(self, dt):
         self.moveBullet(dt)
 
-    def handlePlatformCollision(self, platform_group):
+    def handlePlatformCollision(self, platform_group: list[pygame.sprite.Sprite]):
         for platform in platform_group:
             if self.rect.colliderect(platform.rect):
                 self.kill()
                 break
 
-    def handleEnemyCollision(self, enemy_group):
+    def handleEnemyCollision(self, enemy_group: list[pygame.sprite.Sprite]):
         for enemy in enemy_group:
             if self.rect.colliderect(enemy.rect) and not enemy.is_shot:
                 self.kill()

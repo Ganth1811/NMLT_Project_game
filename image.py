@@ -7,8 +7,9 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 def loadImg(path: str):
     return pygame.image.load(path).convert_alpha()
 
-def scaleImg(img: pygame.Surface, scale: int):
+def scaleImg(img: pygame.Surface, scale: float):
     return pygame.transform.scale_by(img, scale).convert_alpha()
+
 
 #* platforms.py
 class PlatformImg():
@@ -72,9 +73,9 @@ class PlayerImg():
     die_anim = [scaleImg(loadImg(f"img\\Sprites\\player_die{i}.png"), 4) for i in range(1, 5)]
     explode_anim = [scaleImg(loadImg(f"img\\Sprites\\player_explode{i}.png"), 4) for i in range(1, 10)]
 
-
 class BulletImg():
     bullet = scaleImg(loadImg("img\\Sprites\\slash.png"), 4)
+
 
 #* gameState.py
 class SplashScreenImg():
@@ -102,9 +103,11 @@ class MainGameImg():
     popup_x2 = scaleImg(loadImg(f"img\\Sprites\\popup_x2.png"), 0.4)
     popup_invincible = scaleImg(loadImg(f"img\\Sprites\\popup_invincible.png"), 0.125)
 
+
 #* main.py
 class MainImg():
     game_icon = loadImg('img\\Other\\game_icon.png')
+
 
 #* button.py
 class ButtonImg():

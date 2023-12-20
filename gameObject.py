@@ -114,7 +114,6 @@ class Enemy(pygame.sprite.Sprite):
         self.animateEnemy(dt)
         self.moveEnemy(speed, dt)
 
-
 class Collectible(pygame.sprite.Sprite):
     def __init__(self, pos_x: int, pos_y: int):
         super().__init__()
@@ -154,7 +153,6 @@ class Collectible(pygame.sprite.Sprite):
     def destroy(self):
         if self.rect.right < 0:
             self.kill()
-
 
 class Coin(Collectible):
     def __init__(self, pos_x, pos_y):
@@ -250,7 +248,7 @@ class Shockwave():
         self.radius += 25 * dt * TARGET_FRAMERATE
         self.over = self.radius > SCREEN_DIAGONAL
 
-    def clearHostile(self, hostiles):
+    def clearHostile(self, hostiles: list[pygame.sprite.Sprite]):
         for hostile in hostiles:
             distance = ((hostile.rect.x - self.pos_x)**2 + (hostile.rect.y - self.pos_y)**2) ** (1/2)
             if distance <= self.radius and hostile.rect.left < SCREEN_WIDTH:
@@ -270,8 +268,6 @@ class Emerald(Collectible):
         self.multiplier = 2
         self.effect_time = 10
 
-
-#* a very simple obstacle class
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, x_pos, y_pos, obstacle_type):
         super().__init__()
