@@ -31,7 +31,7 @@ class Score:
 
             Score.high_score_list.pop(-1)
 
-            with open("high_score.txt", 'w') as f:
+            with open("GameAssets\\high_score.txt", 'w') as f:
                 f.writelines([f"{score}, {date}\n" for score, date in Score.high_score_list])
 
         return is_new_high_score
