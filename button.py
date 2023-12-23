@@ -7,7 +7,6 @@ from image import ButtonImg
 pygame.init()
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-hover_sound = pygame.mixer_music.load("music\\cirno.mp3")
 
 class Button(pygame.sprite.Sprite):
     def __init__(self, images: tuple, x_pos: int, y_pos: int):

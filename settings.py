@@ -12,7 +12,7 @@ is_muted = False
 
 class Score:
     high_score_list = []
-    with open("high_score.txt", 'r') as f:
+    with open("GameAssets\\high_score.txt", 'r') as f:
         for i in range(5):
             line = f.readline().split(", ")
             high_score_list.append((int(line[0]), line[1].strip()))

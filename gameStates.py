@@ -185,7 +185,7 @@ class TitleMenu(State):
         blur.set_alpha(69)
         screen.blit(blur, (0, 0))
 
-        font = pygame.font.Font("font.ttf", 40)
+        font = pygame.font.Font("GameAssets\\font\\font.ttf", 40)
 
         high_score_popup = TitleMenuImg.high_score_popup
         popup_rect = high_score_popup.get_rect(center = (SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
@@ -399,7 +399,7 @@ class MainGame(State):
 
         #* score
         self.score_frame = MainGameImg.score_frame
-        self.font = pygame.font.Font("font2.otf", 50)
+        self.font = pygame.font.Font("GameAssets\\font\\font2.otf", 50)
         self.score_surf = pygame.Surface((0, 0))
 
         self.score_by_playtime = 0
@@ -712,8 +712,8 @@ class GameOver(State):
         self.buttons = self.createButtons()
         self.is_new_high_score = Score.updateHighScore(score)
 
-        self.font1 = pygame.font.Font("font.ttf", 60)
-        self.font2 = pygame.font.Font("font.ttf", 40)
+        self.font1 = pygame.font.Font("GameAssets\\font\\font.ttf", 60)
+        self.font2 = pygame.font.Font("GameAssets\\font\\font.ttf", 40)
 
         sfx.loadGameOverMusic()
 
