@@ -213,7 +213,7 @@ class InvinciblePotion(Collectible):
         self.given_score = 0
         self.image = self.anim_list[self.anim_frame]
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
-        self.sound = sfx.player_collect_cherry
+        self.sound = sfx.player_collect_item
 
 class MagicOrb(Collectible):
     def __init__(self, pos_x, pos_y):
@@ -224,7 +224,7 @@ class MagicOrb(Collectible):
         self.given_score = 0
         self.image = self.anim_list[self.anim_frame]
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
-        self.sound = sfx.player_collect_cherry
+        self.sound = sfx.player_collect_item
         self.shockwave = None
 
     def playerCollect(self):
@@ -264,7 +264,7 @@ class Emerald(Collectible):
         self.rect = self.image.get_rect(center = (pos_x, pos_y))
         self.type = "emerald"
         self.given_score = 0
-        self.sound = sfx.player_collect_cherry
+        self.sound = sfx.player_collect_item
         self.multiplier = 2
         self.effect_time = 10
 
@@ -292,7 +292,7 @@ class Obstacle(pygame.sprite.Sprite):
         if self.rect.right <= -1:
             self.kill()
 
-    def animateCollectible(self, dt):
+    def animateObstacle(self, dt):
         if self.obstacle_type == "high":
             self.anim_frame += 0.5 * dt * TARGET_FRAMERATE
 
@@ -303,5 +303,5 @@ class Obstacle(pygame.sprite.Sprite):
 
     def update(self, platform_speed, dt):
         self.moveObstacle(platform_speed, dt)
-        self.animateCollectible(dt)
+        self.animateObstacle(dt)
 

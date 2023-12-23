@@ -16,10 +16,10 @@ class Score:
         for i in range(5):
             line = f.readline().split(", ")
             high_score_list.append((int(line[0]), line[1].strip()))
-            
+
         high_score_list = sorted(high_score_list, key = lambda x: x[0], reverse = True)
 
-    def updateHighScore(score):
+    def updateHighScore(score: int):
         is_new_high_score = False
         if Score.high_score_list[4][0] < score:
             for i in range(5):

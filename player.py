@@ -100,7 +100,6 @@ class Player(pygame.sprite.Sprite):
 
         self.image = self.player_slash_anim[int(self.slash_frame)]
 
-
     #TODO: animate the player
     def animatePlayer(self, dt):
 
@@ -227,6 +226,9 @@ class Player(pygame.sprite.Sprite):
         self.handlePlatformCollision(platforms)
         for colliable in colliables:
             if self.hitbox.colliderect(colliable.rect):
+                if colliable.type == "enemy":
+                    self.score += self.handleEnemyCollision(colliable) * self.current_multiplier
+
                 if colliable.type == "obstacle":
                     self.die()
 

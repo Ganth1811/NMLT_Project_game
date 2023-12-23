@@ -20,7 +20,7 @@ class State(object):
         self.screen = screen
 
     #TODO: processing the events
-    def processEvent(self, events):
+    def processEvent(self, events: list[pygame.event.Event]):
         for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -44,10 +44,10 @@ class SplashScreen(State):
         self.alpha = 0
         self.start_time = pygame.time.get_ticks()
 
-        sfx.SoundConfig.adjustSoundVolume()
-        sfx.SoundConfig.loadMenuTheme()
+        sfx.adjustSoundVolume()
+        sfx.loadMenuTheme()
 
-    def processEvent(self, events):
+    def processEvent(self, events: list[pygame.event.Event]):
         super().processEvent(events)
         if self.fade:
             return TitleMenu()
@@ -89,7 +89,6 @@ class SplashScreen(State):
     def update(self, dt):
         self.render()
 
-
 #* The title menu displays the game name and different options player can choose
 class TitleMenu(State):
     def __init__(self):
@@ -105,7 +104,7 @@ class TitleMenu(State):
         self.displayed_score = None
         self.event_processed = False
 
-        # sfx.SoundConfig.adjustSoundVolume()
+        # sfx.adjustSoundVolume()
 
         #* initialize the button objects
         self.buttons = self.createButtons()
@@ -138,7 +137,7 @@ class TitleMenu(State):
             "button_group": button_group
         }
 
-    def processEvent(self, events):
+    def processEvent(self, events: list[pygame.event.Event]):
         super().processEvent(events)
 
         for event in events:
@@ -168,7 +167,7 @@ class TitleMenu(State):
 
                             elif button_name == "mute":
                                 st.is_muted = not st.is_muted
-                                sfx.SoundConfig.adjustSoundVolume()
+                                sfx.adjustSoundVolume()
 
                             elif button_name == "how_to_play":
                                 self.is_in_how_to_play = True
@@ -180,7 +179,6 @@ class TitleMenu(State):
                         sfx.button_pressed.play()
                         self.is_in_how_to_play = False
                         self.is_in_high_score = False
-
 
     def displayHighscore(self):
         blur = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -260,7 +258,7 @@ class TitleMenu(State):
         self.handleButtons()
         self.render()
 
-
+#* The pause menu displays the pause screen and pause the game temporarily
 class PauseMenu(State):
     def __init__(self, previous_state):
         super(State, self).__init__()
@@ -303,7 +301,7 @@ class PauseMenu(State):
             "button_group": button_group
         }
 
-    def processEvent(self, events):
+    def processEvent(self, events: list[pygame.event.Event]):
         super().processEvent(events)
 
         #* If the player presses escape then unpause the game
@@ -331,12 +329,12 @@ class PauseMenu(State):
                             return MainGame()
 
                         elif button_name == "main_menu":
-                            sfx.SoundConfig.loadMenuTheme()
+                            sfx.loadMenuTheme()
                             return TitleMenu()
 
                         elif button_name == "mute":
                             st.is_muted = not st.is_muted
-                            sfx.SoundConfig.adjustSoundVolume()
+                            sfx.adjustSoundVolume()
 
     def render(self):
         self.buttons["button_group"].draw(screen)
@@ -345,7 +343,7 @@ class PauseMenu(State):
         self.render()
         self.buttons["button_group"].update()
 
-
+#* The main state of the game while running
 class MainGame(State):
     def __init__(self):
         super(State, self).__init__()
@@ -361,7 +359,7 @@ class MainGame(State):
         self.bg_layer_5 = Background(MainGameImg.bg_5, 1.4)
 
         #* background music
-        sfx.SoundConfig.loadBgMusic()
+        sfx.loadBgMusic()
 
         #* player and bullets
         self.player_sprite = Player()
@@ -421,7 +419,7 @@ class MainGame(State):
         self.total_score = self.player_sprite.score + self.score_by_playtime
         self.score_surf = self.font.render(f"Score: {int(self.total_score):05d} ", 0, "Black")
 
-    def processEvent(self, events):
+    def processEvent(self, events: list[pygame.event.Event]):
         super().processEvent(events)
         if self.player_sprite.is_dead:
             pygame.mixer_music.unload()
@@ -653,16 +651,13 @@ class MainGame(State):
                 screen.blit(icon, icon.get_rect(midright = (self.player_sprite.rect.left, self.player_sprite.rect.centery)))
 
     def handleGameEvent(self):
-        colliables = self.obstacle_group.sprites() + self.collectibles_group.sprites()
+        colliables = self.obstacle_group.sprites() + self.collectibles_group.sprites() + self.enemy_group.sprites()
         self.player_sprite.handleAllCollisions(colliables, self.platform_group.sprites())
 
         for bullet in self.bullet_group.sprites():
             bullet.handlePlatformCollision(self.platform_group.sprites())
             if bullet is not None:
                 self.player_sprite.score += bullet.handleEnemyCollision(self.enemy_group.sprites()) * self.player_sprite.current_multiplier
-
-        for enemy in self.enemy_group.sprites():
-            self.player_sprite.score += self.player_sprite.handleEnemyCollision(enemy) * self.player_sprite.current_multiplier
 
         if self.player_sprite.shockwave is not None:
             self.player_sprite.shockwave.clearHostile(self.obstacle_group.sprites() + self.enemy_group.sprites())
@@ -704,7 +699,7 @@ class MainGame(State):
             self.player_sprite.animatePlayer(dt)
             self.render(dt)
 
-
+#* The state where the player dies and the game is stopped, displaying the score and other info
 class GameOver(State):
     def __init__(self, score, difficulty):
         super(State, self).__init__()
@@ -720,7 +715,7 @@ class GameOver(State):
         self.font1 = pygame.font.Font("font.ttf", 60)
         self.font2 = pygame.font.Font("font.ttf", 40)
 
-        sfx.SoundConfig.loadGameOverMusic()
+        sfx.loadGameOverMusic()
 
 
     #TODO: Transition to the game over screen
@@ -755,7 +750,7 @@ class GameOver(State):
             "button_group": button_group
         }
 
-    def processEvent(self, events):
+    def processEvent(self, events: list[pygame.event.Event]):
         super().processEvent(events)
 
         for event in events:
@@ -772,7 +767,7 @@ class GameOver(State):
                             return MainGame()
 
                         elif button_name == "main_menu":
-                            sfx.SoundConfig.loadMenuTheme()
+                            sfx.loadMenuTheme()
                             return TitleMenu()
 
     #TODO: displaying text
